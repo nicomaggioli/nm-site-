@@ -106,6 +106,14 @@
             .mobile-toggle { display: flex; }
         }
 
+        /* Hide Saved on mobile */
+        @media (max-width: 768px) {
+            .nav-tab[data-page="saved"] { display: none; }
+        }
+        @media (pointer: coarse) {
+            .mob-item[data-page="saved"] { display: none; }
+        }
+
         /* ── MOBILE MENU ─────────────────────────────────────────── */
         .mob-menu {
             position: fixed;
@@ -186,15 +194,15 @@
 
         /* ── MAIN ─────────────────────────────────────────────────── */
         .main {
-            padding-top: calc(var(--nav-h) + 8px);
-            padding-left: 8px;
-            padding-right: 8px;
+            padding-top: calc(var(--nav-h) + 4px);
+            padding-left: 4px;
+            padding-right: 4px;
             padding-bottom: 40px;
             min-height: 100vh;
         }
 
         @media (max-width: 768px) {
-            .main { padding-left: 8px; padding-right: 8px; padding-top: calc(var(--nav-h) + 8px); }
+            .main { padding-left: 4px; padding-right: 4px; padding-top: calc(var(--nav-h) + 4px); }
         }
 
         .page { display: none; opacity: 0; transform: translateY(16px); }
@@ -207,7 +215,7 @@
         @keyframes pageIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── MASONRY ──────────────────────────────────────────────── */
-        .masonry-grid { column-count: 5; column-gap: 8px; }
+        .masonry-grid { column-count: 5; column-gap: 4px; }
 
         @media (max-width: 1200px) { .masonry-grid { column-count: 4; } }
         @media (max-width: 900px)  { .masonry-grid { column-count: 3; } }
@@ -220,7 +228,7 @@
         }
         .pin {
             break-inside: avoid;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             border-radius: var(--r);
             overflow: hidden;
             position: relative;
@@ -231,17 +239,21 @@
             transform-style: preserve-3d;
         }
         .pin.loaded { background: none; animation: none; }
-        @media (max-width: 600px) { .pin { border-radius: 12px; } }
+        @media (max-width: 600px) { .pin { border-radius: 8px; } }
 
         .pin img {
             width: 100%;
             display: block;
             border-radius: var(--r);
             opacity: 0;
-            transition: opacity .3s ease;
+            transform: translateY(12px);
+            transition: opacity .4s ease, transform .4s ease;
         }
-        .pin img.visible { opacity: 1; }
-        @media (max-width: 600px) { .pin img { border-radius: 12px; } }
+        .pin img.visible { opacity: 1; transform: translateY(0); }
+        @media (max-width: 600px) { .pin img { border-radius: 8px; } }
+
+        /* Hide save overlay on touch devices */
+        @media (pointer: coarse) { .pin-overlay { display: none; } }
 
         .pin-overlay {
             position: absolute; inset: 0;
@@ -1000,6 +1012,23 @@ function initTilt(gridId) {
         });
     });
 }
+
+// ── Swipe support for lightbox ────────────────────────────────────
+let _tx = 0, _ty = 0;
+const lb = document.getElementById('lightbox');
+lb.addEventListener('touchstart', e => {
+    _tx = e.touches[0].clientX;
+    _ty = e.touches[0].clientY;
+}, { passive: true });
+lb.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _tx;
+    const dy = e.changedTouches[0].clientY - _ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+        stepImg(dx > 0 ? -1 : 1);          // swipe left = next, right = prev
+    } else if (dy > 80 && Math.abs(dx) < 40) {
+        closeLightbox();                     // swipe down to close
+    }
+}, { passive: true });
 
 // ── Keyboard shortcuts ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
