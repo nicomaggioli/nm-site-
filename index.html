@@ -186,15 +186,15 @@
 
         /* ── MAIN ─────────────────────────────────────────────────── */
         .main {
-            padding-top: calc(var(--nav-h) + 24px);
-            padding-left: 24px;
-            padding-right: 24px;
+            padding-top: calc(var(--nav-h) + 8px);
+            padding-left: 8px;
+            padding-right: 8px;
             padding-bottom: 40px;
             min-height: 100vh;
         }
 
         @media (max-width: 768px) {
-            .main { padding-left: 0; padding-right: 0; padding-top: calc(var(--nav-h) + 12px); }
+            .main { padding-left: 8px; padding-right: 8px; padding-top: calc(var(--nav-h) + 8px); }
         }
 
         .page { display: none; opacity: 0; transform: translateY(16px); }
@@ -207,31 +207,38 @@
         @keyframes pageIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── MASONRY ──────────────────────────────────────────────── */
-        .masonry-grid { column-count: 5; column-gap: 14px; }
+        .masonry-grid { column-count: 5; column-gap: 8px; }
 
         @media (max-width: 1200px) { .masonry-grid { column-count: 4; } }
         @media (max-width: 900px)  { .masonry-grid { column-count: 3; } }
-        @media (max-width: 600px)  { .masonry-grid { column-count: 2; column-gap: 8px; } }
+        @media (max-width: 600px)  { .masonry-grid { column-count: 2; } }
 
         /* ── PIN ──────────────────────────────────────────────────── */
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position:  200% 0; }
+        }
         .pin {
             break-inside: avoid;
-            margin-bottom: 14px;
+            margin-bottom: 8px;
             border-radius: var(--r);
             overflow: hidden;
             position: relative;
             cursor: pointer;
-            background: var(--g1);
+            background: linear-gradient(90deg, #efefef 25%, #e2e2e2 50%, #efefef 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease-in-out infinite;
             transform-style: preserve-3d;
         }
-        @media (max-width: 600px) { .pin { margin-bottom: 8px; border-radius: 12px; } }
+        .pin.loaded { background: none; animation: none; }
+        @media (max-width: 600px) { .pin { border-radius: 12px; } }
 
         .pin img {
             width: 100%;
             display: block;
             border-radius: var(--r);
             opacity: 0;
-            transition: opacity .35s ease;
+            transition: opacity .3s ease;
         }
         .pin img.visible { opacity: 1; }
         @media (max-width: 600px) { .pin img { border-radius: 12px; } }
@@ -343,7 +350,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 50vh;
+            min-height: calc(100vh - var(--nav-h));
             gap: 10px;
             color: var(--muted);
             text-align: center;
@@ -803,6 +810,7 @@ function makePin(src, showSave) {
 }
 
 // ── Lazy-load observer ────────────────────────────────────────────
+const isMobile = window.matchMedia('(pointer:coarse)').matches;
 const pinObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (!entry.isIntersecting) return;
@@ -810,11 +818,15 @@ const pinObserver = new IntersectionObserver((entries) => {
         if (!img) return;
         img.src = img.dataset.src;
         img.removeAttribute('data-src');
-        img.addEventListener('load',  () => img.classList.add('visible'), { once: true });
-        img.addEventListener('error', () => entry.target.style.display = 'none',  { once: true });
+        img.decoding = 'async';
+        img.addEventListener('load', () => {
+            img.classList.add('visible');
+            entry.target.classList.add('loaded');
+        }, { once: true });
+        img.addEventListener('error', () => entry.target.style.display = 'none', { once: true });
         pinObserver.unobserve(entry.target);
     });
-}, { rootMargin: '400px 0px' });
+}, { rootMargin: isMobile ? '150px 0px' : '400px 0px' });
 
 // ── Render ────────────────────────────────────────────────────────
 function renderHome() {
