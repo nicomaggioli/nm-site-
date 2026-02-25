@@ -823,6 +823,13 @@
             border: 1px solid rgba(255,255,255,.09);
             border-radius: var(--r);
             box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 24px 64px rgba(0,0,0,.75);
+            opacity: 0;
+            transform: scale(0.96);
+            transition: opacity 0.85s ease, transform 0.85s ease;
+        }
+        .hud-panel.panel-in {
+            opacity: 1;
+            transform: scale(1);
         }
         /* Panel positions set by JS on desktop */
 
@@ -993,7 +1000,8 @@
 
         /* ── DESKTOP DRAG HINT ── */
         @media (hover: hover) and (min-width: 901px) {
-            .hud-panel { cursor: grab; transition: box-shadow .2s; }
+            .hud-panel { cursor: grab; }
+            .hud-panel.panel-in { transition: box-shadow .2s; }
             .hud-panel.dragging { cursor: grabbing; box-shadow: 0 0 0 2px rgba(255,255,255,.2), 0 32px 80px rgba(0,0,0,.9); transition: none; }
         }
 
@@ -2213,7 +2221,29 @@ document.addEventListener('keydown', e => {
         });
     }
 
-    requestAnimationFrame(() => { place(); initDrag(); initResize(); });
+    function fadeInPanels() {
+        panels.forEach((panel, i) => {
+            setTimeout(() => panel.classList.add('panel-in'), i * 380);
+        });
+    }
+
+    requestAnimationFrame(() => {
+        place();
+        initDrag();
+        initResize();
+
+        // Stagger fade-in after the loader finishes
+        if (document.body.classList.contains('ready')) {
+            fadeInPanels();
+        } else {
+            const obs = new MutationObserver((_, o) => {
+                if (!document.body.classList.contains('ready')) return;
+                o.disconnect();
+                setTimeout(fadeInPanels, 100);
+            });
+            obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        }
+    });
 })();
 
 // ── Init ──────────────────────────────────────────────────────────
