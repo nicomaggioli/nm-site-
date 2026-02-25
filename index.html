@@ -1017,10 +1017,27 @@
 
         /* ── MOBILE ── */
         @media (max-width: 900px) {
-            /* pa + pb + main are positioned by JS; hide the rest */
+            /* Hide desktop-only panels + text overlays */
             .hud-pc, .hud-pd, .hud-pe, .hud-pf,
             .hud-sidebar, .hud-x-bl, .hud-x-br,
             .hud-ambient, .hud-story { display: none; }
+
+            /* CSS-positioned panels — JS skips place() on mobile */
+            .hud-main {
+                top: calc(var(--nav-h) + 6px);
+                left: 6%; width: 82%; height: 63%;
+                z-index: 1;
+            }
+            .hud-pa {
+                top: calc(var(--nav-h) + 22px);
+                left: 4%; width: 46%; height: 37%;
+                z-index: 4;
+            }
+            .hud-pb {
+                top: 53%; left: 49%;
+                width: 45%; height: 33%;
+                z-index: 4;
+            }
         }
         @media (max-width: 600px) {
             .hud-bar-tags, .hud-bar-count { display: none; }
@@ -2111,8 +2128,16 @@ document.addEventListener('keydown', e => {
                 panel.addEventListener('touchstart', e => {
                     sx = e.touches[0].clientX;
                     sy = e.touches[0].clientY;
-                    sl = parseInt(panel.style.left) || 0;
-                    st = parseInt(panel.style.top)  || 0;
+                    // Read from inline style if already dragged, else from rendered position
+                    if (panel.style.left) {
+                        sl = parseInt(panel.style.left);
+                        st = parseInt(panel.style.top);
+                    } else {
+                        const hr = hero.getBoundingClientRect();
+                        const pr = panel.getBoundingClientRect();
+                        sl = pr.left - hr.left;
+                        st = pr.top  - hr.top;
+                    }
                     panel.style.zIndex = ++highZ;
                 }, { passive: true });
 
@@ -2228,7 +2253,7 @@ document.addEventListener('keydown', e => {
     }
 
     requestAnimationFrame(() => {
-        place();
+        if (!isMob) place();   // mobile panels are CSS-positioned
         initDrag();
         initResize();
 
