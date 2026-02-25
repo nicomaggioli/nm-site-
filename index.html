@@ -208,10 +208,10 @@
         @keyframes pageIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── MASONRY ──────────────────────────────────────────────── */
-        .masonry-grid { column-count: 4; column-gap: 8px; padding-top: 8px; }
+        .masonry-grid { column-count: 4; column-gap: 18px; padding-top: 18px; }
 
-        @media (max-width: 900px)  { .masonry-grid { column-count: 3; column-gap: 6px; } }
-        @media (max-width: 600px)  { .masonry-grid { column-count: 2; column-gap: 5px; } }
+        @media (max-width: 900px)  { .masonry-grid { column-count: 3; column-gap: 8px; padding-top: 8px; } }
+        @media (max-width: 600px)  { .masonry-grid { column-count: 2; column-gap: 6px; padding-top: 6px; } }
 
         /* ── PIN ──────────────────────────────────────────────────── */
         @keyframes shimmer {
@@ -220,7 +220,7 @@
         }
         .pin {
             break-inside: avoid;
-            margin-bottom: 8px;
+            margin-bottom: 18px;
             border-radius: var(--r);
             overflow: hidden;
             position: relative;
@@ -231,7 +231,8 @@
             transform-style: preserve-3d;
         }
         .pin.loaded { background: none; animation: none; }
-        @media (max-width: 600px) { .pin { border-radius: 8px; } }
+        @media (max-width: 900px) { .pin { margin-bottom: 8px; } }
+        @media (max-width: 600px) { .pin { border-radius: 8px; margin-bottom: 6px; } }
 
         .pin img {
             width: 100%;
@@ -716,12 +717,7 @@
             pointer-events: none; z-index: 7;
         }
         .p-corner { display: none; }
-        .hud-spec {
-            position: absolute;
-            top: 10px; left: 18px;
-            font-size: 7px; letter-spacing: 2px;
-            color: rgba(255,255,255,.35);
-        }
+        .hud-spec { display: none; }
         .panel-label {
             position: absolute;
             bottom: 0; left: 0; right: 0;
@@ -805,6 +801,31 @@
         .hud-bar-next    { color: rgba(255,255,255,.35); }
         .hud-bar-count   { color: rgba(255,255,255,.22); border-right: none; }
         .hud-plus        { display: none; }
+
+        /* ── PANEL LETTER OVERLAYS (R–A–V–I–S) ── */
+        .panel-char {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22vh;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: rgba(255,255,255,.16);
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
+            pointer-events: none;
+            z-index: 8;
+            user-select: none;
+        }
+        .hud-main .panel-char {
+            font-size: 65vh;
+            color: rgba(255,255,255,.06);
+        }
+        /* Hide on mobile — panels themselves are hidden */
+        @media (max-width: 900px) { .hud-pa .panel-char, .hud-pb .panel-char,
+            .hud-pc .panel-char, .hud-pd .panel-char { display: none; } }
 
         /* ── MOBILE ── */
         @media (max-width: 900px) {
@@ -949,92 +970,77 @@
         <!-- RAVISAUCE LAB — HERO -->
         <div class="hero" id="hero-section">
 
-            <!-- ── PANEL PA — tall portrait left ── -->
+            <!-- ── PANEL PA — R ── -->
             <div class="hud-panel hud-pa">
                 <video autoplay muted loop playsinline class="hud-vid hud-vid-pa">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
+                <div class="panel-char">R</div>
                 <div class="panel-ui">
-                    <div class="p-corner pc-tl"></div>
-                    <div class="p-corner pc-tr"></div>
-                    <div class="hud-spec">SPECIMEN_001</div>
                     <div class="panel-label">
                         <span class="pl-dot"></span>
                         <span class="pl-id">CAM—A</span>
-                        <span class="pl-time">+00:00</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ── PANEL PB — square center-left ── -->
+            <!-- ── PANEL PB — A ── -->
             <div class="hud-panel hud-pb">
                 <video autoplay muted loop playsinline class="hud-vid hud-vid-pb">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
+                <div class="panel-char">A</div>
                 <div class="panel-ui">
-                    <div class="p-corner pc-tl"></div>
-                    <div class="p-corner pc-tr"></div>
-                    <div class="hud-spec">SPECIMEN_002</div>
                     <div class="panel-label">
                         <span class="pl-dot"></span>
                         <span class="pl-id">CAM—B</span>
-                        <span class="pl-time">+00:07</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ── PANEL PC — overlaps main ── -->
+            <!-- ── PANEL PC — V ── -->
             <div class="hud-panel hud-pc">
                 <video autoplay muted loop playsinline class="hud-vid hud-vid-pc">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
+                <div class="panel-char">V</div>
                 <div class="panel-ui">
-                    <div class="p-corner pc-tl"></div>
-                    <div class="p-corner pc-tr"></div>
-                    <div class="hud-spec">SPECIMEN_003</div>
                     <div class="panel-label">
                         <span class="pl-dot"></span>
                         <span class="pl-id">CAM—C</span>
-                        <span class="pl-time">+00:14</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ── PANEL PD — wide bottom-left ── -->
+            <!-- ── PANEL PD — I ── -->
             <div class="hud-panel hud-pd">
                 <video autoplay muted loop playsinline class="hud-vid hud-vid-pd">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
+                <div class="panel-char">I</div>
                 <div class="panel-ui">
-                    <div class="p-corner pc-tl"></div>
-                    <div class="p-corner pc-tr"></div>
-                    <div class="hud-spec">SPECIMEN_004</div>
                     <div class="panel-label">
                         <span class="pl-dot"></span>
                         <span class="pl-id">CAM—D</span>
-                        <span class="pl-time">+00:21</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ── MAIN PANEL — primary cinematic view ── -->
+            <!-- ── MAIN PANEL — S (primary cinematic view) ── -->
             <div class="hud-panel hud-main">
                 <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
+                <div class="panel-char">S</div>
                 <div class="panel-ui">
-                    <div class="p-corner pc-tl"></div>
-                    <div class="p-corner pc-tr"></div>
-                    <div class="hud-spec">SPECIMEN_005 / RAVISAUCE LAB</div>
                     <div class="panel-label">
                         <span class="pl-dot"></span>
                         <span class="pl-id">CAM—MAIN / PRIMARY FEED</span>
-                        <span class="pl-time">+00:28</span>
                     </div>
                 </div>
             </div>
