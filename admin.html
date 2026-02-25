@@ -255,13 +255,6 @@ input,textarea,select{font-family:var(--font)}
   <div class="settings-box">
     <button class="settings-close" onclick="closeSettings()">&#215;</button>
     <h2>GitHub Token</h2>
-    <p>The admin panel reads and saves directly to your GitHub repo. You need a Personal Access Token with <strong>repo</strong> scope.</p>
-    <ol>
-      <li>Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a></li>
-      <li>Name it "RAVISAUCE Admin"</li>
-      <li>Check the <strong>repo</strong> checkbox</li>
-      <li>Click "Generate token" and paste it below</li>
-    </ol>
     <input class="token-input" id="token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
     <button class="token-save-btn" onclick="saveToken()">Connect</button>
   </div>
@@ -411,10 +404,16 @@ function renderEditor(p) {
     <div class="img-list" id="img-list"></div>
     <button class="add-img-btn" onclick="addImage()">+ Add Image</button>
 
-    <div class="section-label">Sizes / Options</div>
+    <div class="field-row" style="margin-top:8px">
+      <div class="field">
+        <label>Variant Label</label>
+        <input id="f-variant-label" type="text" value="${esc(p.variantLabel||'Size')}" placeholder="Size, Color, Style…" oninput="markDirty()">
+      </div>
+    </div>
+    <div class="section-label" id="variant-section-label">${esc(p.variantLabel||'Size')} Options</div>
     <div class="sizes-wrap" id="sizes-wrap"></div>
     <div class="size-add-row">
-      <input class="size-input" id="size-input" type="text" placeholder="e.g. XL" onkeydown="if(event.key==='Enter')addSize()">
+      <input class="size-input" id="size-input" type="text" placeholder="e.g. XL, Black…" onkeydown="if(event.key==='Enter')addSize()">
       <button class="size-add-btn" onclick="addSize()">Add</button>
     </div>
   `;
@@ -504,11 +503,13 @@ function commitEditorToProduct() {
   const cat   = document.getElementById('f-cat');
   const desc  = document.getElementById('f-desc');
   if (!name) return;
-  p.name  = name.value;
-  p.price = parseFloat(price.value) || 0;
-  p.spec  = spec.value;
-  p.cat   = cat.value;
-  p.desc  = desc.value;
+  const vl = document.getElementById('f-variant-label');
+  p.name         = name.value;
+  p.price        = parseFloat(price.value) || 0;
+  p.spec         = spec.value;
+  p.cat          = cat.value;
+  p.desc         = desc.value;
+  if (vl) p.variantLabel = vl.value || 'Size';
   // imgs and sizes are updated live
   renderList();
 }
@@ -521,7 +522,7 @@ function addProduct() {
   products.push({
     id, spec: id.toUpperCase().replace('-','-') + ' / TEE',
     name: 'New Product', price: 0, cat: 'tee',
-    imgs: ['store/'], desc: '', sizes: ['XS','S','M','L','XL'],
+    imgs: ['store/'], desc: '', sizes: ['XS','S','M','L','XL'], variantLabel: 'Size',
   });
   activeIdx = products.length - 1;
   renderList();

@@ -387,23 +387,26 @@
             text-align: center;
             padding: 40px 20px;
         }
-        .saved-empty-icon { font-size: 48px; margin-bottom: 8px; }
-        .saved-empty h3   { font-size: 22px; font-weight: 400; color: var(--black); }
-        .saved-empty p    { font-size: 15px; max-width: 300px; line-height: 1.6; }
+        .saved-empty-mono { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+        .saved-empty p    { font-size: 14px; max-width: 280px; line-height: 1.6; }
 
         .browse-link {
-            margin-top: 8px;
+            margin-top: 16px;
             display: inline-block;
-            padding: 12px 28px;
-            background: var(--black);
-            color: #fff;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: .5px;
-            transition: background .2s, transform .2s;
+            padding: 11px 26px;
+            background: transparent;
+            color: var(--black);
+            border: 1px solid var(--black);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            transition: background .2s, color .2s;
         }
-        .browse-link:hover { background: var(--green); color: #000; transform: translateY(-2px); }
+        .browse-link:hover { background: var(--green); color: #000; border-color: var(--green); }
 
         /* ── SHOP — COMING SOON ───────────────────────────────────── */
         .coming-soon {
@@ -574,6 +577,33 @@
         .shop-item-price {
             font-family: 'Courier New', monospace; font-size: 12px;
             color: rgba(255,255,255,.4); letter-spacing: 1px;
+        }
+        .shop-item-braille-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; padding-top: 8px; border-top: 1px solid #1a1a1a;
+        }
+        .shop-item-braille {
+            font-family: 'Courier New', monospace; font-size: 10px;
+            color: rgba(255,255,255,.1); letter-spacing: 1px;
+            overflow: hidden; white-space: nowrap; max-width: 74%;
+            transition: color .4s;
+        }
+        .shop-item:hover .shop-item-braille { color: rgba(45,213,18,.3); }
+        .shop-item-idx {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            color: rgba(255,255,255,.18); flex-shrink: 0; letter-spacing: 0;
+        }
+        /* Braille scrolling strip */
+        .braille-strip {
+            overflow: hidden; white-space: nowrap;
+            padding: 9px 0; margin-bottom: 20px;
+            border-top: 1px solid #141414; border-bottom: 1px solid #141414;
+        }
+        .braille-strip-inner {
+            display: inline-block;
+            animation: scroll-left 120s linear infinite;
+            font-family: 'Courier New', monospace; font-size: 12px;
+            color: rgba(45,213,18,.18); letter-spacing: 5px;
         }
         .shop-item-info { padding: 0 0 20px; }
 
@@ -823,54 +853,64 @@
         .contact-wrap {
             max-width: 480px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 40px 20px;
             min-height: calc(100vh - var(--nav-h));
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
-        .contact-wrap h2 {
-            font-size: 32px;
-            font-weight: 300;
-            letter-spacing: -1px;
-            margin-bottom: 32px;
-            text-align: center;
+        .contact-hd-tag {
+            font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 3px;
+            color: var(--green); text-transform: uppercase; display: block; margin-bottom: 10px;
         }
-        .contact-form { display: flex; flex-direction: column; gap: 20px; }
-
+        .contact-wrap h2 {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            margin-bottom: 36px;
+        }
+        .contact-form { display: flex; flex-direction: column; gap: 26px; }
+        .form-field-label {
+            font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 2px;
+            color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;
+        }
         .form-field input,
         .form-field textarea {
             width: 100%;
-            padding: 14px 0;
+            padding: 10px 0;
             background: transparent;
             border: none;
-            border-bottom: 1.5px solid var(--g2);
-            font-size: 16px;
+            border-bottom: 1px solid #222;
+            font-size: 15px;
             font-family: var(--font);
             color: var(--black);
             outline: none;
             transition: border-color .2s;
+            -webkit-appearance: none;
         }
         .form-field input:focus,
-        .form-field textarea:focus { border-bottom-color: var(--black); }
+        .form-field textarea:focus { border-bottom-color: var(--green); }
         .form-field input::placeholder,
-        .form-field textarea::placeholder { color: var(--g3); }
-        .form-field textarea { resize: vertical; min-height: 120px; }
+        .form-field textarea::placeholder { color: #444; }
+        .form-field textarea { resize: none; min-height: 100px; }
 
         .submit-btn {
-            align-self: center;
-            padding: 14px 36px;
-            background: var(--black);
-            color: #fff;
-            border: none;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: .5px;
-            transition: background .2s, transform .2s;
-            margin-top: 8px;
+            align-self: flex-start;
+            padding: 11px 26px;
+            background: transparent;
+            color: var(--green);
+            border: 1px solid rgba(45,213,18,.5);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background .2s, color .2s, border-color .2s;
+            margin-top: 4px;
         }
-        .submit-btn:hover { background: var(--green); color: #000; transform: translateY(-2px); }
+        .submit-btn:hover { background: var(--green); color: #000; border-color: var(--green); }
 
 
         /* ── TOAST ────────────────────────────────────────────────── */
@@ -1301,16 +1341,16 @@
         /* shop is always light — no dark overrides needed */
 
         .contact-wrap h2 { color: #d0d0d0; }
-        .form-field input, .form-field textarea { color: #d0d0d0; border-bottom-color: #2a2a2a; }
-        .form-field input:focus, .form-field textarea:focus { border-bottom-color: #555; }
-        .form-field input::placeholder, .form-field textarea::placeholder { color: #3a3a3a; }
-        .submit-btn       { background: #d0d0d0; color: #0a0a0a; }
-        .submit-btn:hover { background: var(--green); color: #000; }
+        .form-field input, .form-field textarea { color: #d0d0d0; border-bottom-color: #222; }
+        .form-field input:focus, .form-field textarea:focus { border-bottom-color: var(--green); }
+        .form-field input::placeholder, .form-field textarea::placeholder { color: #333; }
+        .submit-btn       { background: transparent; color: var(--green); border-color: rgba(45,213,18,.4); }
+        .submit-btn:hover { background: var(--green); color: #000; border-color: var(--green); }
 
-        .saved-empty h3   { color: #d0d0d0; }
+        .saved-empty-mono { color: #2a2a2a; }
         .saved-empty p    { color: #555; }
-        .browse-link      { background: #d0d0d0; color: #0a0a0a; }
-        .browse-link:hover { background: var(--green); color: #000; }
+        .browse-link      { background: transparent; color: rgba(45,213,18,.6); border-color: rgba(45,213,18,.25); }
+        .browse-link:hover { background: var(--green); color: #000; border-color: var(--green); }
 
         .back-top         { background: #111; border-color: #222; color: #d0d0d0; }
         .back-top:hover   { background: var(--green); color: #000; }
@@ -1344,7 +1384,7 @@
 <header class="header" id="header">
     <div class="logo-wrap">
         <button class="logo" onclick="showPage('home')" aria-label="Home">
-            <img src="https://i.imgur.com/CsYuIfd.png" alt="Ravi Sauce">
+            <img src="favicon.png" alt="Ravi Sauce">
         </button>
     </div>
 
@@ -1594,8 +1634,7 @@
     <div id="saved-page" class="page">
         <div class="masonry-grid" id="saved-grid"></div>
         <div class="saved-empty" id="saved-empty" style="display:none;">
-            <div class="saved-empty-icon">📌</div>
-            <h3>Nothing saved yet</h3>
+            <div class="saved-empty-mono">— COLLECTION EMPTY —</div>
             <p>Tap Save on any image to start your collection.</p>
             <a href="#" class="browse-link" onclick="showPage('home');return false;">Browse Work</a>
         </div>
@@ -1621,6 +1660,11 @@
             </div>
 
 
+            <!-- BRAILLE STRIP -->
+            <div class="braille-strip">
+                <span class="braille-strip-inner" id="braille-strip-inner"></span>
+            </div>
+
             <!-- GRID — populated by JS -->
             <div class="shop-grid" id="shop-grid"></div>
 
@@ -1630,12 +1674,24 @@
     <!-- CONTACT -->
     <div id="contact-page" class="page">
         <div class="contact-wrap">
-            <h2>Get in touch.</h2>
+            <div>
+                <span class="contact-hd-tag">// CONTACT</span>
+                <h2>Get in touch.</h2>
+            </div>
             <form class="contact-form" onsubmit="handleContact(event)">
-                <div class="form-field"><input type="text"  placeholder="Name"        required></div>
-                <div class="form-field"><input type="email" placeholder="Email"       required></div>
-                <div class="form-field"><textarea placeholder="Message..." rows="6"   required></textarea></div>
-                <button type="submit" class="submit-btn">Send Message</button>
+                <div class="form-field">
+                    <label class="form-field-label">NAME //</label>
+                    <input type="text" required autocomplete="name">
+                </div>
+                <div class="form-field">
+                    <label class="form-field-label">EMAIL //</label>
+                    <input type="email" required autocomplete="email">
+                </div>
+                <div class="form-field">
+                    <label class="form-field-label">MESSAGE //</label>
+                    <textarea rows="5" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">TRANSMIT →</button>
             </form>
         </div>
     </div>
@@ -1655,7 +1711,7 @@
             <h2 class="pdp-name" id="pdp-name"></h2>
             <div class="pdp-price" id="pdp-price"></div>
             <p class="pdp-desc" id="pdp-desc"></p>
-            <div class="pdp-size-label">Select Size</div>
+            <div class="pdp-size-label" id="pdp-size-label">Select Size</div>
             <div class="pdp-sizes" id="pdp-sizes"></div>
             <button class="pdp-add-btn" onclick="addToCart()">Add to Cart</button>
         </div>
@@ -2113,16 +2169,60 @@ function refreshArrows() {
 // ── PRODUCTS DATA (loaded from products.json) ─────────────────────
 let PRODUCTS = [];
 
+// ── BRAILLE ───────────────────────────────────────────────────────
+const BRAILLE_MAP = {
+    a:'⠁',b:'⠃',c:'⠉',d:'⠙',e:'⠑',f:'⠋',g:'⠛',h:'⠓',i:'⠊',j:'⠚',
+    k:'⠅',l:'⠇',m:'⠍',n:'⠝',o:'⠕',p:'⠏',q:'⠟',r:'⠗',s:'⠎',t:'⠞',
+    u:'⠥',v:'⠧',w:'⠺',x:'⠭',y:'⠽',z:'⠵',' ':'⠀'
+};
+function toBraille(s) { return [...s.toLowerCase()].map(c => BRAILLE_MAP[c] || c).join(''); }
+const UNIVERSE_FACTS = [
+    'space is completely silent',
+    'we are made of star stuff',
+    'time moves slower near gravity',
+    'light takes eight minutes to reach earth',
+    'the universe is 13 billion years old',
+    'neutron stars spin 600 times per second',
+    'more stars than grains of sand on earth',
+    'black holes bend light itself',
+    'a day on venus is longer than its year',
+    'saturn would float on water',
+    'dark matter makes up most of the universe',
+    'the sun loses four million tons per second',
+    'you are made of exploded stars',
+    'a teaspoon of neutron star weighs a billion tons',
+    'the milky way has 400 billion stars',
+    'empty space is not actually empty',
+];
+const BRAILLE_FACTS = UNIVERSE_FACTS.map(toBraille);
+
+// Circled digit pairs: ⓪①②…⑨
+function circledPair(n) {
+    const c = ['⓪','①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
+    const s = String(n).padStart(2, '0');
+    return s.split('').map(d => c[+d]).join('');
+}
+
+// Populate the braille strip
+(function initBrailleStrip() {
+    const el = document.getElementById('braille-strip-inner');
+    if (!el) return;
+    const chunk = BRAILLE_FACTS.join('  ⠂  ');
+    el.textContent = chunk + '  ⠂  ' + chunk + '  ⠂  ';
+})();
+
 // ── SHOP RENDER ───────────────────────────────────────────────────
 function renderShop(cat) {
     const grid = document.getElementById('shop-grid');
     grid.innerHTML = '';
     const list = cat === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === cat);
-    list.forEach(p => {
+    list.forEach((p, idx) => {
         const item = document.createElement('div');
         item.className = 'shop-item';
         item.dataset.cat = p.cat;
         item.onclick = () => openPDP(p.id);
+        const bFact = BRAILLE_FACTS[idx % BRAILLE_FACTS.length];
+        const bTitle = UNIVERSE_FACTS[idx % UNIVERSE_FACTS.length];
         item.innerHTML = `
             <div class="shop-img-wrap">
                 <img src="${p.imgs[0]}" alt="${p.name}" loading="lazy">
@@ -2132,6 +2232,10 @@ function renderShop(cat) {
                 <div class="shop-item-spec">${p.spec}</div>
                 <span class="shop-item-name">${p.name}</span>
                 <span class="shop-item-price">$${p.price}</span>
+                <div class="shop-item-braille-row">
+                    <span class="shop-item-braille" title="${bTitle}">${bFact}</span>
+                    <span class="shop-item-idx">${circledPair(idx)}</span>
+                </div>
             </div>`;
         grid.appendChild(item);
     });
@@ -2155,11 +2259,12 @@ function openPDP(id) {
     currentPDP = p;
     selectedSize = p.sizes.length === 1 ? p.sizes[0] : null;
 
-    document.getElementById('pdp-spec').textContent  = p.spec;
-    document.getElementById('pdp-name').textContent  = p.name;
-    document.getElementById('pdp-price').textContent = '$' + p.price;
-    document.getElementById('pdp-desc').textContent  = p.desc;
-    document.getElementById('pdp-main-img').src      = p.imgs[0];
+    document.getElementById('pdp-spec').textContent      = p.spec;
+    document.getElementById('pdp-name').textContent      = p.name;
+    document.getElementById('pdp-price').textContent     = '$' + p.price;
+    document.getElementById('pdp-desc').textContent      = p.desc;
+    document.getElementById('pdp-main-img').src          = p.imgs[0];
+    document.getElementById('pdp-size-label').textContent = 'Select ' + (p.variantLabel || 'Size');
 
     const thumbs = document.getElementById('pdp-thumbs');
     thumbs.innerHTML = '';
