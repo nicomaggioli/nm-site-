@@ -392,21 +392,22 @@
 
         .browse-link {
             margin-top: 16px;
-            display: inline-block;
-            padding: 11px 26px;
-            background: transparent;
-            color: var(--black);
-            border: 1px solid var(--black);
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 20px;
+            background: var(--black);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
             text-decoration: none;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
-            transition: background .2s, color .2s;
+            font-family: var(--font);
+            transition: opacity .15s;
         }
-        .browse-link:hover { background: var(--green); color: #000; border-color: var(--green); }
+        .browse-link:hover { opacity: .75; }
 
         /* ── SHOP — COMING SOON ───────────────────────────────────── */
         .coming-soon {
@@ -829,6 +830,93 @@
             .shop-filter-btn { height: 36px; padding: 0 14px; font-size: 14px; }
         }
 
+        /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
+        .solo-view { display: flex; flex-direction: column; min-height: calc(100vh - var(--nav-h)); padding: 0 0 60px; }
+
+        .solo-nav-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 0; border-bottom: 1px solid #1a1a1a;
+        }
+        .solo-counter {
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 3px; color: rgba(255,255,255,.3); text-transform: uppercase;
+        }
+        .solo-arrow {
+            width: 40px; height: 40px; border-radius: 20px;
+            border: 1px solid #2a2a2a; background: transparent;
+            color: rgba(255,255,255,.4); font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .2s, color .2s, background .2s; font-family: var(--font);
+        }
+        .solo-arrow:hover { border-color: var(--green); color: var(--green); background: rgba(45,213,18,.05); }
+
+        .solo-body {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+            padding: 40px 0; align-items: start;
+        }
+        @media (max-width: 700px) { .solo-body { grid-template-columns: 1fr; gap: 28px; padding: 28px 0; } }
+
+        .solo-img-col { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--nav-h) + 20px); }
+        .solo-img-wrap {
+            aspect-ratio: 1; background: #0d0d0d; border-radius: 20px;
+            border: 1px solid #1a1a1a; overflow: hidden; position: relative;
+            transition: border-color .3s;
+        }
+        .solo-img-wrap:hover { border-color: #2a2a2a; }
+        .solo-img-wrap img {
+            width: 100%; height: 100%; object-fit: contain; padding: 8%;
+            filter: drop-shadow(0 4px 24px rgba(0,0,0,.8));
+            transition: transform .6s cubic-bezier(.34,1.56,.64,1);
+        }
+        .solo-img-wrap:hover img { transform: scale(1.03); }
+
+        .solo-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .solo-thumb {
+            width: 56px; height: 56px; border-radius: 10px; border: 1px solid #1e1e1e;
+            background: #111; cursor: pointer; overflow: hidden; padding: 6px;
+            transition: border-color .2s;
+        }
+        .solo-thumb.active { border-color: var(--green); }
+        .solo-thumb img { width: 100%; height: 100%; object-fit: contain; }
+
+        .solo-info-col { display: flex; flex-direction: column; gap: 18px; padding-top: 8px; }
+
+        .solo-spec {
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 3px; color: rgba(45,213,18,.7); text-transform: uppercase;
+        }
+        .solo-name { font-size: 28px; font-weight: 700; color: #f0f0f0; letter-spacing: -0.5px; line-height: 1.15; }
+        .solo-price { font-family: 'Courier New', monospace; font-size: 22px; color: var(--green); letter-spacing: 1px; }
+        .solo-desc { font-size: 14px; line-height: 1.65; color: rgba(255,255,255,.45); }
+
+        .solo-size-label {
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 2px; color: rgba(255,255,255,.35); text-transform: uppercase;
+        }
+        .solo-sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+        .solo-sizes.shake { animation: shake .4s ease; }
+
+        .solo-add-btn {
+            height: 50px; border-radius: 25px; border: none;
+            background: var(--green); color: #000;
+            font-family: var(--font); font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: opacity .2s, transform .1s; width: 100%;
+        }
+        .solo-add-btn:hover { opacity: .88; transform: translateY(-1px); }
+        .solo-add-btn:active { transform: translateY(0); }
+
+        .solo-braille-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 16px; border-top: 1px solid #1a1a1a; margin-top: 4px;
+        }
+        .solo-braille {
+            font-family: 'Courier New', monospace; font-size: 11px;
+            color: rgba(255,255,255,.1); letter-spacing: 1px;
+            overflow: hidden; white-space: nowrap; max-width: 76%; transition: color .4s;
+        }
+        .solo-braille:hover { color: rgba(45,213,18,.3); }
+        .solo-idx { font-family: 'Courier New', monospace; font-size: 10px; color: rgba(255,255,255,.18); }
+
         /* ── CONTACT ──────────────────────────────────────────────── */
         .contact-wrap {
             max-width: 480px;
@@ -876,21 +964,20 @@
 
         .submit-btn {
             align-self: flex-start;
-            padding: 11px 26px;
-            background: transparent;
-            color: var(--green);
-            border: 1px solid rgba(45,213,18,.5);
-            border-radius: 24px;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
+            height: 40px;
+            padding: 0 22px;
+            background: var(--black);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: var(--font);
             cursor: pointer;
-            transition: background .2s, color .2s, border-color .2s;
+            transition: opacity .15s;
             margin-top: 4px;
         }
-        .submit-btn:hover { background: var(--green); color: #000; border-color: var(--green); }
+        .submit-btn:hover { opacity: .75; }
 
 
         /* ── TOAST ────────────────────────────────────────────────── */
@@ -1324,13 +1411,13 @@
         .form-field input, .form-field textarea { color: #d0d0d0; border-bottom-color: #222; }
         .form-field input:focus, .form-field textarea:focus { border-bottom-color: var(--green); }
         .form-field input::placeholder, .form-field textarea::placeholder { color: #333; }
-        .submit-btn       { background: transparent; color: var(--green); border-color: rgba(45,213,18,.4); }
-        .submit-btn:hover { background: var(--green); color: #000; border-color: var(--green); }
+        .submit-btn       { background: #d0d0d0; color: #0a0a0a; }
+        .submit-btn:hover { opacity: .75; }
 
         .saved-empty-mono { color: #2a2a2a; }
         .saved-empty p    { color: #555; }
-        .browse-link      { background: transparent; color: rgba(45,213,18,.6); border-color: rgba(45,213,18,.25); }
-        .browse-link:hover { background: var(--green); color: #000; border-color: var(--green); }
+        .browse-link      { background: #d0d0d0; color: #0a0a0a; }
+        .browse-link:hover { opacity: .75; }
 
         .back-top         { background: #111; border-color: #222; color: #d0d0d0; }
         .back-top:hover   { background: var(--green); color: #000; }
@@ -1645,8 +1732,40 @@
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
 
-            <!-- GRID — populated by JS -->
+            <!-- SOLO VIEW — focused single-item display -->
+            <div class="solo-view" id="solo-view">
+                <div class="solo-nav-bar">
+                    <button class="solo-arrow" onclick="soloStep(-1)">←</button>
+                    <span class="solo-counter" id="solo-counter">01 / 01</span>
+                    <button class="solo-arrow" onclick="soloStep(1)">→</button>
+                </div>
+                <div class="solo-body">
+                    <div class="solo-img-col">
+                        <div class="solo-img-wrap">
+                            <img id="solo-img" src="" alt="">
+                            <div class="shop-scan"></div>
+                        </div>
+                        <div class="solo-thumbs" id="solo-thumbs"></div>
+                    </div>
+                    <div class="solo-info-col">
+                        <span class="solo-spec" id="solo-spec"></span>
+                        <h2 class="solo-name" id="solo-name"></h2>
+                        <div class="solo-price" id="solo-price"></div>
+                        <p class="solo-desc" id="solo-desc"></p>
+                        <div class="solo-size-label" id="solo-size-label">Select Size</div>
+                        <div class="solo-sizes" id="solo-sizes"></div>
+                        <button class="solo-add-btn" onclick="soloAddToCart()">Add to Cart</button>
+                        <div class="solo-braille-row">
+                            <span class="solo-braille" id="solo-braille"></span>
+                            <span class="solo-idx" id="solo-idx"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID VIEW (preserved for future use)
             <div class="shop-grid" id="shop-grid"></div>
+            -->
 
         </div><!-- /shop-wrap -->
     </div>
@@ -1937,18 +2056,27 @@ const images = [
     'images/ravi-avatar.png', // g-020 is duplicate — removed
     'images/ravi-float.png',
     'images/ravi-moon.png',
-    'images/ravi-print.png',  // g-033 is duplicate — removed
+    'images/ravi-print.png',
     'images/ravi-puffer.png',
     'images/rock4.png',
     'images/woodravi.png',
+    'images/g-012.png',
+    'images/g-015.png',
+    'images/g-020.png',
+    'images/g-028.jpg',
+    'images/g-031.jpg',
+    'images/g-033.png',
+    'images/g-040.jpg',
+    'images/g-084.jpg',
+    'images/g-087.jpg',
+    'videos/animation-reel.mp4',
+    'videos/astro-final.mp4',
+    'videos/flag-loop.mp4',
+    'videos/rock-loop.mp4',
+    'videos/ravi-new.mp4',
     'images/v-clip-a.gif',
     'images/v-clip-b.gif',
     'images/v-clip-c.gif',
-    'images/v-animation.gif',
-    'images/v-astro.gif',
-    'images/v-flag.gif',
-    'images/v-rock.gif',
-    'images/v-ravi-new2.gif',
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -1965,14 +2093,20 @@ let shuffled = shuffle(images);
 let saved    = JSON.parse(localStorage.getItem('savedPins') || '[]');
 
 // ── Create a pin card ─────────────────────────────────────────────
+const isVideo = src => /\.(mp4|webm|mov)$/i.test(src);
+
 function makePin(src, showSave) {
     const div = document.createElement('div');
     div.className = 'pin';
     const isSaved = saved.includes(src);
     const safe    = src.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
+    const media = isVideo(src)
+        ? `<video src="${src}" autoplay loop muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"></video>`
+        : `<img data-src="${src}" alt="">`;
+
     div.innerHTML = `
-        <img data-src="${src}" alt="">
+        ${media}
         ${showSave ? `
         <div class="pin-overlay">
             <button class="save-btn ${isSaved ? 'saved' : ''}"
@@ -1982,9 +2116,11 @@ function makePin(src, showSave) {
         </div>` : ''}
     `;
 
-    div.addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') openLightbox(src);
-    });
+    if (!isVideo(src)) {
+        div.addEventListener('click', e => {
+            if (e.target.tagName !== 'BUTTON') openLightbox(src);
+        });
+    }
 
     return div;
 }
@@ -2191,15 +2327,92 @@ function circledPair(n) {
     el.textContent = chunk + '  ⠂  ' + chunk + '  ⠂  ';
 })();
 
-// ── SHOP RENDER ───────────────────────────────────────────────────
+// ── SOLO SHOP VIEW ─────────────────────────────────────────────────
+let soloIdx  = 0;
+let soloSize = null;
+
+function renderSoloShop() {
+    if (!PRODUCTS || PRODUCTS.length === 0) return;
+    const p     = PRODUCTS[soloIdx];
+    const total = PRODUCTS.length;
+    soloSize = p.sizes.length === 1 ? p.sizes[0] : null;
+
+    document.getElementById('solo-counter').textContent =
+        String(soloIdx + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.getElementById('shop-count').textContent =
+        String(soloIdx + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0') + ' specimens';
+    document.getElementById('solo-spec').textContent  = p.spec;
+    document.getElementById('solo-name').textContent  = p.name;
+    document.getElementById('solo-price').textContent = '$' + p.price;
+    document.getElementById('solo-desc').textContent  = p.desc;
+    document.getElementById('solo-size-label').textContent = 'Select ' + (p.variantLabel || 'Size');
+
+    const img = document.getElementById('solo-img');
+    img.src = p.imgs[0]; img.alt = p.name;
+
+    const thumbs = document.getElementById('solo-thumbs');
+    thumbs.innerHTML = '';
+    if (p.imgs.length > 1) {
+        p.imgs.forEach((src, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'solo-thumb' + (i === 0 ? ' active' : '');
+            btn.innerHTML = `<img src="${src}" alt="">`;
+            btn.onclick = () => {
+                img.src = src;
+                thumbs.querySelectorAll('.solo-thumb').forEach((t, j) => t.classList.toggle('active', j === i));
+            };
+            thumbs.appendChild(btn);
+        });
+    }
+
+    const sizesEl = document.getElementById('solo-sizes');
+    sizesEl.innerHTML = '';
+    p.sizes.forEach(sz => {
+        const btn = document.createElement('button');
+        btn.className = 'pdp-size-btn' + (p.sizes.length === 1 ? ' active' : '');
+        btn.textContent = sz;
+        btn.onclick = () => {
+            soloSize = sz;
+            sizesEl.querySelectorAll('.pdp-size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        sizesEl.appendChild(btn);
+    });
+
+    const bFact = BRAILLE_FACTS[soloIdx % BRAILLE_FACTS.length];
+    const bTitle = UNIVERSE_FACTS[soloIdx % UNIVERSE_FACTS.length];
+    const brailleEl = document.getElementById('solo-braille');
+    brailleEl.textContent = bFact; brailleEl.title = bTitle;
+    document.getElementById('solo-idx').textContent = circledPair(soloIdx);
+}
+
+function soloStep(dir) {
+    soloIdx = (soloIdx + dir + PRODUCTS.length) % PRODUCTS.length;
+    renderSoloShop();
+}
+
+function soloAddToCart() {
+    if (!soloSize) {
+        const el = document.getElementById('solo-sizes');
+        el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+        return;
+    }
+    const p  = PRODUCTS[soloIdx];
+    const ex = cart.find(i => i.id === p.id && i.size === soloSize);
+    if (ex) { ex.qty++; } else { cart.push({ id: p.id, size: soloSize, qty: 1 }); }
+    saveCart(); updateCartBadge();
+    toast('Added to cart', '✓');
+}
+
+// ── GRID SHOP (preserved for future use) ──────────────────────────
 function renderShop(cat) {
     const grid = document.getElementById('shop-grid');
+    if (!grid) return;
     grid.innerHTML = '';
     const list = cat === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === cat);
     list.forEach((p, idx) => {
         const item = document.createElement('div');
-        item.className = 'shop-item';
-        item.dataset.cat = p.cat;
+        item.className = 'shop-item'; item.dataset.cat = p.cat;
         item.onclick = () => openPDP(p.id);
         const bFact = BRAILLE_FACTS[idx % BRAILLE_FACTS.length];
         const bTitle = UNIVERSE_FACTS[idx % UNIVERSE_FACTS.length];
@@ -2219,14 +2432,6 @@ function renderShop(cat) {
             </div>`;
         grid.appendChild(item);
     });
-    document.getElementById('shop-count').textContent = list.length + ' specimen' + (list.length !== 1 ? 's' : '');
-}
-
-function filterShop(cat) {
-    document.querySelectorAll('.shop-filter-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.filter === cat)
-    );
-    renderShop(cat);
 }
 
 // ── PRODUCT DETAIL ────────────────────────────────────────────────
@@ -2448,7 +2653,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetch('products.json?v=' + Date.now());
         PRODUCTS = await res.json();
     } catch(e) { console.warn('products.json not found, shop empty'); }
-    renderShop('all');
+    renderSoloShop();
     updateCartBadge();
 
     document.getElementById('co-card')?.addEventListener('input', e => {
@@ -2463,6 +2668,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('co-cvv')?.addEventListener('input', e => {
         e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
     });
+});
+
+// ── Keyboard nav for solo shop ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+    const shopActive = document.getElementById('shop-page')?.classList.contains('active');
+    if (!shopActive || document.body.style.overflow === 'hidden') return;
+    if (e.key === 'ArrowLeft')  soloStep(-1);
+    if (e.key === 'ArrowRight') soloStep(1);
 });
 
 // ── Contact ───────────────────────────────────────────────────────
