@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAVISAUCE — Admin</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#181818;--border:#222;
+  --green:#2DD512;--text:#e0e0e0;--muted:#666;--red:#ff4444;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+button{font-family:var(--font);cursor:pointer}
+input,textarea,select{font-family:var(--font)}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:56px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  position:sticky;top:0;z-index:100;flex-shrink:0;
+}
+.topbar-brand{font-size:11px;letter-spacing:3px;color:var(--green);font-family:'Courier New',monospace;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.save-btn{
+  height:36px;padding:0 20px;border-radius:18px;border:none;
+  background:var(--green);color:#000;font-size:13px;font-weight:700;
+  transition:opacity .2s;
+}
+.save-btn:hover{opacity:.85}
+.save-btn:disabled{opacity:.4;cursor:not-allowed}
+.save-status{font-family:'Courier New',monospace;font-size:10px;color:var(--muted)}
+.settings-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.settings-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex:1;overflow:hidden;height:calc(100vh - 56px)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:260px;flex-shrink:0;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar-head{
+  padding:16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-title{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'Courier New',monospace}
+.add-btn{
+  height:28px;padding:0 12px;border-radius:14px;border:1px solid var(--border);
+  background:transparent;color:var(--green);font-size:12px;font-weight:600;
+  transition:all .15s;
+}
+.add-btn:hover{background:rgba(45,213,18,.1);border-color:var(--green)}
+.product-list{flex:1;overflow-y:auto;padding:8px}
+.product-list::-webkit-scrollbar{width:4px}
+.product-list::-webkit-scrollbar-track{background:transparent}
+.product-list::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.product-item{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  border-radius:8px;cursor:pointer;border:1px solid transparent;
+  transition:all .15s;margin-bottom:2px;
+}
+.product-item:hover{background:var(--surface2)}
+.product-item.active{background:var(--surface2);border-color:var(--border)}
+.product-item.active .pi-name{color:#fff}
+.pi-img{
+  width:40px;height:40px;border-radius:6px;object-fit:contain;
+  background:#0d0d0d;padding:4px;flex-shrink:0;
+}
+.pi-info{flex:1;min-width:0}
+.pi-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-meta{font-family:'Courier New',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+.pi-del{
+  width:24px;height:24px;border-radius:50%;border:none;background:transparent;
+  color:var(--muted);font-size:16px;opacity:0;transition:all .15s;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.product-item:hover .pi-del{opacity:1}
+.pi-del:hover{color:var(--red);background:rgba(255,68,68,.1)}
+
+/* ── EDITOR ── */
+.editor{flex:1;overflow-y:auto;padding:32px;background:var(--bg)}
+.editor::-webkit-scrollbar{width:6px}
+.editor::-webkit-scrollbar-track{background:transparent}
+.editor::-webkit-scrollbar-thumb{background:#222;border-radius:3px}
+.empty-state{
+  height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  color:var(--muted);text-align:center;
+}
+.empty-state-icon{font-size:40px;opacity:.3}
+.empty-state p{font-size:14px}
+
+.editor-form{max-width:680px}
+.form-title{
+  font-size:20px;font-weight:700;color:#f0f0f0;margin-bottom:24px;
+  padding-bottom:16px;border-bottom:1px solid var(--border);
+}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.field-row.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{
+  font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;
+  color:var(--muted);text-transform:uppercase;
+}
+.field input,.field textarea,.field select{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);border-radius:8px;padding:10px 14px;
+  font-size:14px;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field textarea:focus,.field select{
+  border-color:rgba(45,213,18,.4);
+}
+.field textarea{resize:vertical;min-height:90px;line-height:1.5}
+.field select{appearance:none;cursor:pointer}
+
+/* image list */
+.img-list{display:flex;flex-direction:column;gap:8px}
+.img-row{display:flex;align-items:center;gap:10px}
+.img-preview{width:52px;height:52px;border-radius:6px;background:#0d0d0d;object-fit:contain;padding:4px;flex-shrink:0}
+.img-input{flex:1}
+.img-del-btn{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:14px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;
+}
+.img-del-btn:hover{border-color:var(--red);color:var(--red)}
+.add-img-btn{
+  height:36px;padding:0 14px;border-radius:8px;
+  border:1px dashed var(--border);background:transparent;
+  color:var(--muted);font-size:12px;margin-top:4px;
+  transition:all .15s;width:100%;
+}
+.add-img-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* sizes */
+.sizes-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.size-tag{
+  height:32px;padding:0 14px;border-radius:16px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text);font-size:12px;display:flex;align-items:center;gap:6px;
+}
+.size-remove{
+  background:none;border:none;color:var(--muted);font-size:14px;
+  cursor:pointer;padding:0;line-height:1;transition:color .15s;
+}
+.size-remove:hover{color:var(--red)}
+.size-add-row{display:flex;gap:8px;margin-top:4px}
+.size-input{
+  height:32px;padding:0 12px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:13px;width:80px;outline:none;
+}
+.size-add-btn{
+  height:32px;padding:0 14px;border-radius:16px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--green);font-size:12px;font-weight:600;
+  transition:all .15s;
+}
+.size-add-btn:hover{background:rgba(45,213,18,.1);border-color:var(--green)}
+
+/* section labels */
+.section-label{
+  font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;
+  color:var(--muted);text-transform:uppercase;margin:24px 0 12px;
+}
+
+/* ── SETTINGS PANEL ── */
+.settings-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.settings-overlay.open{opacity:1;pointer-events:all}
+.settings-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  width:480px;max-width:95vw;padding:32px;
+}
+.settings-box h2{font-size:18px;font-weight:700;margin-bottom:8px}
+.settings-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.settings-box ol{font-size:13px;color:var(--muted);line-height:2;padding-left:20px;margin-bottom:20px}
+.settings-box ol a{color:var(--green)}
+.token-input{
+  width:100%;height:44px;padding:0 14px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg);
+  color:var(--text);font-size:13px;outline:none;margin-bottom:12px;
+  font-family:'Courier New',monospace;
+}
+.token-input:focus{border-color:rgba(45,213,18,.4)}
+.token-save-btn{
+  height:44px;width:100%;border-radius:22px;border:none;
+  background:var(--green);color:#000;font-size:14px;font-weight:700;
+}
+.settings-close{
+  float:right;background:transparent;border:none;color:var(--muted);
+  font-size:22px;cursor:pointer;margin-top:-4px;
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:#1a1a1a;border:1px solid var(--border);border-radius:24px;
+  padding:10px 20px;font-size:13px;color:var(--text);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:500;
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">RAVISAUCE // Admin</span>
+  <div class="topbar-right">
+    <span class="save-status" id="save-status"></span>
+    <button class="save-btn" id="save-btn" onclick="saveProducts()" disabled>Save Changes</button>
+    <button class="settings-btn" onclick="openSettings()" title="GitHub Token">&#9881;</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <span class="sidebar-title">Products</span>
+      <button class="add-btn" onclick="addProduct()">+ New</button>
+    </div>
+    <div class="product-list" id="product-list"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor" id="editor">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-state-icon">&#9672;</div>
+      <p>Select a product to edit</p>
+    </div>
+    <div class="editor-form" id="editor-form" style="display:none"></div>
+  </div>
+
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-box">
+    <button class="settings-close" onclick="closeSettings()">&#215;</button>
+    <h2>GitHub Token</h2>
+    <p>The admin panel reads and saves directly to your GitHub repo. You need a Personal Access Token with <strong>repo</strong> scope.</p>
+    <ol>
+      <li>Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a></li>
+      <li>Name it "RAVISAUCE Admin"</li>
+      <li>Check the <strong>repo</strong> checkbox</li>
+      <li>Click "Generate token" and paste it below</li>
+    </ol>
+    <input class="token-input" id="token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <button class="token-save-btn" onclick="saveToken()">Connect</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const REPO  = 'nicomaggioli/ravi-sauce-site';
+const FILE  = 'products.json';
+const BASE  = 'https://api.github.com';
+
+let token    = localStorage.getItem('rsl-admin-token') || '';
+let products = [];
+let fileSha  = '';
+let activeIdx = null;
+let dirty    = false;
+
+// ── API ───────────────────────────────────────────────────────────
+async function ghAPI(method, path, body) {
+  const r = await fetch(`${BASE}/repos/${REPO}/${path}`, {
+    method,
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.statusText); }
+  return r.json();
+}
+
+// ── LOAD ──────────────────────────────────────────────────────────
+async function loadProducts() {
+  if (!token) { openSettings(); return; }
+  setStatus('Loading...');
+  try {
+    const data = await ghAPI('GET', `contents/${FILE}`);
+    fileSha  = data.sha;
+    products = JSON.parse(atob(data.content.replace(/\n/g,'')));
+    renderList();
+    setStatus('Loaded ' + products.length + ' products');
+  } catch(e) {
+    setStatus('Error: ' + e.message);
+    toast(e.message, 'error');
+    if (e.message.includes('Bad credentials') || e.message.includes('Not Found')) openSettings();
+  }
+}
+
+// ── SAVE ──────────────────────────────────────────────────────────
+async function saveProducts() {
+  if (!token) { openSettings(); return; }
+  commitEditorToProduct();
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(products, null, 2))));
+  document.getElementById('save-btn').disabled = true;
+  setStatus('Saving...');
+  try {
+    const data = await ghAPI('PUT', `contents/${FILE}`, {
+      message: 'Update products via admin panel',
+      content,
+      sha: fileSha,
+    });
+    fileSha = data.content.sha;
+    dirty   = false;
+    document.getElementById('save-btn').disabled = true;
+    setStatus('Saved \u2713');
+    toast('Products saved!', 'success');
+  } catch(e) {
+    setStatus('Save failed: ' + e.message);
+    toast('Save failed: ' + e.message, 'error');
+    document.getElementById('save-btn').disabled = false;
+  }
+}
+
+// ── RENDER LIST ───────────────────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('product-list');
+  list.innerHTML = '';
+  products.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'product-item' + (i === activeIdx ? ' active' : '');
+    item.innerHTML = `
+      <img class="pi-img" src="${p.imgs[0] || ''}" onerror="this.src=''" alt="">
+      <div class="pi-info">
+        <div class="pi-name">${p.name}</div>
+        <div class="pi-meta">${p.spec} &middot; $${p.price}</div>
+      </div>
+      <button class="pi-del" onclick="deleteProduct(event,${i})" title="Delete">&times;</button>`;
+    item.addEventListener('click', () => selectProduct(i));
+    list.appendChild(item);
+  });
+}
+
+// ── SELECT ────────────────────────────────────────────────────────
+function selectProduct(i) {
+  if (activeIdx !== null && activeIdx !== i) commitEditorToProduct();
+  activeIdx = i;
+  renderList();
+  renderEditor(products[i]);
+}
+
+// ── EDITOR ────────────────────────────────────────────────────────
+function renderEditor(p) {
+  document.getElementById('empty-state').style.display = 'none';
+  const form = document.getElementById('editor-form');
+  form.style.display = 'block';
+
+  form.innerHTML = `
+    <div class="form-title" id="form-title">${esc(p.name)}</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Product Name</label>
+        <input id="f-name" type="text" value="${esc(p.name)}" oninput="markDirty();updateTitle()">
+      </div>
+      <div class="field">
+        <label>Price ($)</label>
+        <input id="f-price" type="number" value="${p.price}" min="0" oninput="markDirty()">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Spec Label</label>
+        <input id="f-spec" type="text" value="${esc(p.spec)}" oninput="markDirty()">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="f-cat" onchange="markDirty()">
+          <option value="tee"  ${p.cat==='tee' ?'selected':''}>Tee</option>
+          <option value="acc"  ${p.cat==='acc' ?'selected':''}>Accessory</option>
+          <option value="obj"  ${p.cat==='obj' ?'selected':''}>Object</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row full">
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc" oninput="markDirty()">${esc(p.desc)}</textarea>
+      </div>
+    </div>
+
+    <div class="section-label">Images (front first, then back)</div>
+    <div class="img-list" id="img-list"></div>
+    <button class="add-img-btn" onclick="addImage()">+ Add Image</button>
+
+    <div class="section-label">Sizes / Options</div>
+    <div class="sizes-wrap" id="sizes-wrap"></div>
+    <div class="size-add-row">
+      <input class="size-input" id="size-input" type="text" placeholder="e.g. XL" onkeydown="if(event.key==='Enter')addSize()">
+      <button class="size-add-btn" onclick="addSize()">Add</button>
+    </div>
+  `;
+
+  renderImages(p.imgs);
+  renderSizes(p.sizes);
+}
+
+function renderImages(imgs) {
+  const list = document.getElementById('img-list');
+  list.innerHTML = '';
+  imgs.forEach((src, i) => {
+    const row = document.createElement('div');
+    row.className = 'img-row';
+    row.innerHTML = `
+      <img class="img-preview" src="${esc(src)}" onerror="this.src=''" alt="">
+      <input class="field input img-input" type="text" value="${esc(src)}"
+             placeholder="store/filename.png"
+             oninput="updateImgSrc(this,${i});markDirty()">
+      <button class="img-del-btn" onclick="removeImage(${i})">&times;</button>`;
+    list.appendChild(row);
+  });
+}
+
+function renderSizes(sizes) {
+  const wrap = document.getElementById('sizes-wrap');
+  wrap.innerHTML = '';
+  sizes.forEach((sz, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'size-tag';
+    tag.innerHTML = `${esc(sz)}<button class="size-remove" onclick="removeSize(${i})">&times;</button>`;
+    wrap.appendChild(tag);
+  });
+}
+
+function updateImgSrc(input, i) {
+  const p = products[activeIdx];
+  p.imgs[i] = input.value;
+  const preview = input.closest('.img-row').querySelector('.img-preview');
+  preview.src = input.value;
+}
+
+function addImage() {
+  const p = products[activeIdx];
+  p.imgs.push('store/');
+  renderImages(p.imgs);
+  markDirty();
+}
+
+function removeImage(i) {
+  const p = products[activeIdx];
+  p.imgs.splice(i, 1);
+  renderImages(p.imgs);
+  markDirty();
+}
+
+function addSize() {
+  const input = document.getElementById('size-input');
+  const val = input.value.trim();
+  if (!val) return;
+  const p = products[activeIdx];
+  p.sizes.push(val);
+  renderSizes(p.sizes);
+  input.value = '';
+  markDirty();
+}
+
+function removeSize(i) {
+  const p = products[activeIdx];
+  p.sizes.splice(i, 1);
+  renderSizes(p.sizes);
+  markDirty();
+}
+
+function updateTitle() {
+  const t = document.getElementById('form-title');
+  if (t) t.textContent = document.getElementById('f-name').value || 'New Product';
+}
+
+// Read editor fields back into products array
+function commitEditorToProduct() {
+  if (activeIdx === null) return;
+  const p = products[activeIdx];
+  const name  = document.getElementById('f-name');
+  const price = document.getElementById('f-price');
+  const spec  = document.getElementById('f-spec');
+  const cat   = document.getElementById('f-cat');
+  const desc  = document.getElementById('f-desc');
+  if (!name) return;
+  p.name  = name.value;
+  p.price = parseFloat(price.value) || 0;
+  p.spec  = spec.value;
+  p.cat   = cat.value;
+  p.desc  = desc.value;
+  // imgs and sizes are updated live
+  renderList();
+}
+
+// ── ADD / DELETE ──────────────────────────────────────────────────
+function addProduct() {
+  if (activeIdx !== null) commitEditorToProduct();
+  const num = products.length + 1;
+  const id  = 'spx-' + String(num).padStart(3,'0');
+  products.push({
+    id, spec: id.toUpperCase().replace('-','-') + ' / TEE',
+    name: 'New Product', price: 0, cat: 'tee',
+    imgs: ['store/'], desc: '', sizes: ['XS','S','M','L','XL'],
+  });
+  activeIdx = products.length - 1;
+  renderList();
+  renderEditor(products[activeIdx]);
+  markDirty();
+}
+
+function deleteProduct(e, i) {
+  e.stopPropagation();
+  if (!confirm(`Delete "${products[i].name}"?`)) return;
+  products.splice(i, 1);
+  if (activeIdx === i) {
+    activeIdx = null;
+    document.getElementById('editor-form').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'flex';
+  } else if (activeIdx > i) {
+    activeIdx--;
+  }
+  renderList();
+  markDirty();
+}
+
+// ── DIRTY STATE ───────────────────────────────────────────────────
+function markDirty() {
+  dirty = true;
+  document.getElementById('save-btn').disabled = false;
+  setStatus('Unsaved changes');
+}
+
+function setStatus(msg) {
+  document.getElementById('save-status').textContent = msg;
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('token-input').value = token;
+  document.getElementById('settings-overlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) return;
+  token = val;
+  localStorage.setItem('rsl-admin-token', token);
+  closeSettings();
+  loadProducts();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── INIT ──────────────────────────────────────────────────────────
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue=''; }
+});
+
+loadProducts();
+</script>
+</body>
+</html>
