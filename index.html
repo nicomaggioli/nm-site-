@@ -576,10 +576,11 @@
             font-family: 'Courier New', monospace; font-size: 9px;
             color: rgba(255,255,255,.18); flex-shrink: 0; letter-spacing: 0;
         }
-        /* Braille scrolling strip */
+        /* Braille scrolling strip — shared across all pages */
+        @keyframes scroll-left { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
         .braille-strip {
             overflow: hidden; white-space: nowrap;
-            padding: 9px 0; margin-bottom: 20px;
+            padding: 9px 0;
             border-top: 1px solid #141414; border-bottom: 1px solid #141414;
         }
         .braille-strip-inner {
@@ -588,6 +589,9 @@
             font-family: 'Courier New', monospace; font-size: 12px;
             color: rgba(45,213,18,.18); letter-spacing: 5px;
         }
+        /* Strip spacing variants */
+        .braille-strip.shop-strip { margin-bottom: 20px; }
+        .braille-strip.page-strip { margin: 28px 0 0; }
         .shop-item-info { padding: 0 0 20px; }
 
         /* ── CART BUTTON (nav) ───────────────────────────────────────── */
@@ -1797,10 +1801,16 @@
         </div>
 
         <div class="masonry-grid" id="home-grid"></div>
+        <div class="braille-strip page-strip">
+            <span class="braille-strip-inner" id="braille-strip-home"></span>
+        </div>
     </div>
 
     <!-- SAVED -->
     <div id="saved-page" class="page">
+        <div class="braille-strip page-strip" style="margin-bottom:12px;">
+            <span class="braille-strip-inner" id="braille-strip-saved"></span>
+        </div>
         <div class="masonry-grid" id="saved-grid"></div>
         <div class="saved-empty" id="saved-empty" style="display:none;">
             <div class="saved-empty-mono">— COLLECTION EMPTY —</div>
@@ -1830,7 +1840,7 @@
 
 
             <!-- BRAILLE STRIP -->
-            <div class="braille-strip">
+            <div class="braille-strip shop-strip">
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
 
@@ -1880,6 +1890,9 @@
 
     <!-- CONTACT -->
     <div id="contact-page" class="page">
+        <div class="braille-strip page-strip" style="margin-bottom:0;">
+            <span class="braille-strip-inner" id="braille-strip-contact"></span>
+        </div>
         <div class="contact-wrap">
             <div>
                 <span class="contact-hd-tag">// CONTACT</span>
@@ -2428,12 +2441,13 @@ function circledPair(n) {
     return s.split('').map(d => c[+d]).join('');
 }
 
-// Populate the braille strip
+// Populate all braille strips
 (function initBrailleStrip() {
-    const el = document.getElementById('braille-strip-inner');
-    if (!el) return;
     const chunk = BRAILLE_FACTS.join('  ⠂  ');
-    el.textContent = chunk + '  ⠂  ' + chunk + '  ⠂  ';
+    const content = chunk + '  ⠂  ' + chunk + '  ⠂  ';
+    document.querySelectorAll('.braille-strip-inner').forEach(el => {
+        el.textContent = content;
+    });
 })();
 
 // ── SOLO SHOP VIEW ─────────────────────────────────────────────────
