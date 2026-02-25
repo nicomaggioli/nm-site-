@@ -761,12 +761,11 @@
             pointer-events: none; z-index: 15;
             text-transform: uppercase;
         }
-        .hud-amb-g   { color: rgba(45,213,18,.28); }
-        .hud-amb-sep { opacity: .25; }
-        .hud-amb-top { top: 3vh;    left: 50%; transform: translateX(-50%); white-space: nowrap; letter-spacing: 2.5px; }
-        .hud-amb-right { top: 10vh; right: 2%; text-align: right; }
-        .hud-amb-bl  { bottom: 13vh; left: 2%; }
-        .hud-amb-br  { bottom: 13vh; right: 2%; text-align: right; }
+        .hud-amb-g   { color: rgba(45,213,18,.30); }
+        .hud-amb-sep { opacity: .25; display: block; margin: 2px 0; }
+        /* Left-side only — tl sits top-left, ml floats mid-left */
+        .hud-amb-tl  { top: 4vh;  left: 2%; }
+        .hud-amb-ml  { top: 42%;  left: 2%; transform: translateY(-50%); }
 
         /* ── CORNER X DECO ── */
         .hud-x-deco {
@@ -1018,61 +1017,33 @@
                 </div>
             </div>
 
-            <!-- AMBIENT LAB TEXT -->
+            <!-- AMBIENT LAB TEXT — left side only -->
 
-            <!-- Top center — identity strip -->
-            <div class="hud-ambient hud-amb-top">
-                RAVISAUCE LABS &nbsp;///&nbsp; CURIOSITY : [INFINITE] &nbsp;///&nbsp; NATURE + SCIENCE + ART
+            <!-- Top-left: identity -->
+            <div class="hud-ambient hud-amb-tl">
+                RAVISAUCE LABORATORIES<br>
+                <span class="hud-amb-sep">───────────────────</span>
+                CURIOSITY &nbsp;: [INFINITE]<br>
+                SIGNAL &nbsp;&nbsp;&nbsp;&nbsp;: NATURE + ART<br>
+                EST &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 2026 — EARTH
             </div>
 
-            <!-- Right column — constants + fibonacci + nature -->
-            <div class="hud-ambient hud-amb-right">
-                <span class="hud-amb-sep">— MATHEMATICAL CONSTANTS —</span><br>
-                φ &nbsp;: 1.6180339887 &nbsp;[GOLDEN RATIO]<br>
-                π &nbsp;: 3.14159265358 [CIRCLE RATIO]<br>
-                e &nbsp;: 2.71828182845 [EULER NUMBER]<br>
+            <!-- Mid-left: nature / fibonacci / philosophy -->
+            <div class="hud-ambient hud-amb-ml">
+                <span class="hud-amb-sep">— φ = 1.6180339887 —</span>
+                GOLDEN RATIO<br>
                 <br>
-                <span class="hud-amb-sep">— FIBONACCI SEQUENCE —</span><br>
-                <span class="hud-amb-g">0, 1, 1, 2, 3, 5, 8, 13, 21,</span><br>
-                <span class="hud-amb-g">34, 55, 89, 144, 233 → ∞</span><br>
+                FIBONACCI SEQUENCE<br>
+                <span class="hud-amb-g">0, 1, 1, 2, 3, 5, 8, 13</span><br>
+                <span class="hud-amb-g">21, 34, 55, 89 → ∞</span><br>
                 <br>
-                <span class="hud-amb-sep">— FOUND IN NATURE —</span><br>
-                / NAUTILUS SHELL SPIRALS<br>
-                / SUNFLOWER SEED HEADS<br>
-                / GALAXY ARM STRUCTURE<br>
-                / TREE BRANCH ANGLES<br>
-                / DNA HELIX COILS<br>
-                / HUMAN PROPORTIONS<br>
+                <span class="hud-amb-sep">— FOUND IN —</span>
+                SHELLS &nbsp;/ GALAXIES<br>
+                TREES &nbsp;&nbsp;/ DNA / YOU<br>
                 <br>
-                <span class="hud-amb-sep">— — — — — — — — — — —</span><br>
-                ENTROPY &nbsp;: DECREASING<br>
-                SIGNAL &nbsp;&nbsp;: [ORGANIC]<br>
-                STATUS &nbsp;&nbsp;: OBSERVING
-            </div>
-
-            <!-- Bottom left — philosophy -->
-            <div class="hud-ambient hud-amb-bl">
-                WHAT RAVI SAUCE REPRESENTS:<br>
-                <span class="hud-amb-sep">— — —</span><br>
-                CURIOSITY ABOUT EXISTENCE<br>
-                THE SPACE BETWEEN NATURE<br>
-                AND THE MACHINE THAT READS IT<br>
-                PATTERNS HIDING IN PLAIN SIGHT<br>
-                <span class="hud-amb-sep">— — —</span><br>
-                <span class="hud-amb-g">LOOK CLOSER. LOOK AGAIN.</span>
-            </div>
-
-            <!-- Bottom right — universe observation -->
-            <div class="hud-ambient hud-amb-br">
-                THE PATTERN THAT REPEATS<br>
-                FROM ATOM TO GALAXY<br>
-                IT IS ALL ONE FORMULA<br>
-                <span class="hud-amb-sep">— — —</span><br>
-                WHAT EXISTS IN THIS WORLD<br>
-                IS WAITING TO BE NOTICED<br>
-                <span class="hud-amb-sep">— — —</span><br>
-                <span class="hud-amb-g">THE UNIVERSE COMPUTES</span><br>
-                <span class="hud-amb-g">ITSELF THROUGH GEOMETRY</span>
+                <span class="hud-amb-sep">———————————</span>
+                WHAT EXISTS IS<br>
+                <span class="hud-amb-g">WAITING TO BE NOTICED</span>
             </div>
 
             <!-- SCREEN CORNER COORDS -->
@@ -1753,25 +1724,28 @@ document.addEventListener('keydown', e => {
     const PAD    = 20;   // px buffer from hero edges
     const BAR_H  = 50;   // approx bottom bar height
 
-    // [minW, maxW, minH, maxH] as fraction of hero dimensions
-    // Order matches DOM: pa, pb, pc, pd, main
-    const SIZES = [
-        [0.11, 0.19, 0.28, 0.50],
-        [0.10, 0.17, 0.20, 0.38],
-        [0.09, 0.16, 0.18, 0.34],
-        [0.17, 0.28, 0.28, 0.48],
-        [0.32, 0.52, 0.52, 0.82],
+    // Designed editorial layout — [leftF, topF, widthF, heightF, wobblePx]
+    // Panels: pa (tall portrait left), pb (small below pa), pc (thin strip top),
+    //         pd (thin strip bottom), main (dominant right)
+    // A small wobble keeps each refresh slightly different while always looking good.
+    const LAYOUTS = [
+        [0.02, 0.05, 0.13, 0.50, 14],  // pa — tall portrait, far left
+        [0.02, 0.58, 0.13, 0.32, 14],  // pb — small, same column below pa
+        [0.17, 0.05, 0.08, 0.30, 10],  // pc — thin strip, top center-left
+        [0.17, 0.37, 0.08, 0.30, 10],  // pd — thin strip, bottom center-left
+        [0.27, 0.04, 0.70, 0.88,  8],  // main — dominant right panel
     ];
 
     function place() {
         const W = hero.offsetWidth;
         const H = hero.offsetHeight;
+        const wobble = (px) => Math.round((Math.random() - 0.5) * 2 * px);
         panels.forEach((panel, i) => {
-            const [minW, maxW, minH, maxH] = SIZES[i];
-            const w = Math.round((minW + Math.random() * (maxW - minW)) * W);
-            const h = Math.round((minH + Math.random() * (maxH - minH)) * (H - BAR_H));
-            const left = Math.round(PAD + Math.random() * Math.max(0, W - w - PAD * 2));
-            const top  = Math.round(PAD + Math.random() * Math.max(0, H - BAR_H - h - PAD * 2));
+            const [lf, tf, wf, hf, wob] = LAYOUTS[i];
+            const w    = Math.round(wf * W);
+            const h    = Math.round(hf * (H - BAR_H));
+            const left = Math.max(PAD, Math.round(lf * W) + wobble(wob));
+            const top  = Math.max(PAD, Math.round(tf * (H - BAR_H)) + wobble(wob));
             panel.style.left   = left + 'px';
             panel.style.top    = top  + 'px';
             panel.style.width  = w    + 'px';
