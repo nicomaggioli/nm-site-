@@ -212,9 +212,8 @@
         @keyframes pageIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── MASONRY ──────────────────────────────────────────────── */
-        .masonry-grid { column-count: 5; column-gap: 4px; padding-top: 8px; }
+        .masonry-grid { column-count: 4; column-gap: 4px; padding-top: 8px; }
 
-        @media (max-width: 1200px) { .masonry-grid { column-count: 4; } }
         @media (max-width: 900px)  { .masonry-grid { column-count: 3; } }
         @media (max-width: 600px)  { .masonry-grid { column-count: 2; } }
 
@@ -630,7 +629,7 @@
             text-transform: uppercase;
         }
 
-        /* ── HERO / HUD ──────────────────────────────────────────── */
+        /* ── HERO / RAVISAUCE LAB ────────────────────────────────── */
         .hero {
             position: relative;
             height: 100vh;
@@ -638,8 +637,10 @@
             margin-top: calc(-1 * (var(--nav-h) + 4px));
             margin-left: -3%;
             margin-right: -3%;
-            overflow: visible;          /* allow panels to cast shadow beyond edge */
-            background: #fff;
+            overflow: hidden;
+            background: #060606;
+            background-image: radial-gradient(circle, rgba(255,255,255,.032) 1px, transparent 1px);
+            background-size: 28px 28px;
             font-family: 'Courier New', Courier, monospace;
         }
 
@@ -647,37 +648,27 @@
         .hud-panel {
             position: absolute;
             overflow: hidden;
-            background: #111;
-            border: 1px solid rgba(0,0,0,.06);
-            border-radius: var(--r);        /* same 16px as pin images */
-            box-shadow: 0 12px 40px rgba(0,0,0,.13);
+            background: #0c0c0c;
+            border: 1px solid rgba(255,255,255,.09);
+            border-radius: var(--r);
+            box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 24px 64px rgba(0,0,0,.75);
         }
-        /* main panel — right side, bleeds to edge */
+        /* MAIN — dominant right panel, bleeds to viewport edge */
         .hud-main {
-            left: 24%;
-            top: 10vh;
-            right: 0;
-            bottom: 7vh;
+            left: 30%;  top: 8vh;  right: 0;  bottom: 7vh;
             z-index: 1;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
+            border-right: none;
         }
-        /* sm1 — top-left, overlaps main */
-        .hud-sm1 {
-            left: 3%;
-            top: 13vh;
-            width: 30%;
-            height: 34vh;
-            z-index: 3;
-        }
-        /* sm2 — bottom-left, shifted right, overlaps main */
-        .hud-sm2 {
-            left: 9%;
-            bottom: 8vh;
-            width: 28%;
-            height: 32vh;
-            z-index: 2;
-        }
+        /* PA — tall portrait, far left */
+        .hud-pa { left: 2%;  top: 9vh;    width: 13%;  height: 42vh;  z-index: 3; }
+        /* PB — square, right of PA */
+        .hud-pb { left: 16%; top: 9vh;    width: 12%;  height: 26vh;  z-index: 3; }
+        /* PC — overlaps left edge of main panel */
+        .hud-pc { left: 21%; top: 9vh;    width: 12%;  height: 20vh;  z-index: 5; }
+        /* PD — wide, bottom-left, anchored to bar */
+        .hud-pd { left: 2%;  bottom: 7vh; width: 26%;  height: 30vh;  z-index: 2; }
 
         /* ── PANEL VIDEOS ── */
         .hud-vid {
@@ -686,147 +677,159 @@
             width: 110%; height: 110%;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 1.4s ease;
+            transition: opacity 1.6s ease;
         }
-        .hud-vid.playing  { opacity: 1; }
-        .hud-vid-main     { object-position: 50% 50%; }
-        .hud-vid-sm1      { object-position: 25% 20%; }
-        .hud-vid-sm2      { object-position: 70% 75%; }
+        .hud-vid.playing { opacity: 1; }
+        .hud-vid-main { object-position: 50% 40%; }
+        .hud-vid-pa   { object-position: 20% 30%; }
+        .hud-vid-pb   { object-position: 70% 20%; }
+        .hud-vid-pc   { object-position: 80% 65%; }
+        .hud-vid-pd   { object-position: 35% 75%; }
 
-        /* ── INNER PANEL COORD TAGS ── */
-        .hud-inner-tag {
-            position: absolute;
-            top: 9px; left: 9px;
-            font-size: 7.5px;
-            letter-spacing: 1.5px;
-            color: rgba(255,255,255,.55);
-            pointer-events: none;
-            z-index: 5;
-            white-space: nowrap;
+        /* ── SCAN LINE (moves top → bottom, different timing per panel) ── */
+        @keyframes scan {
+            0%   { top: -2px; opacity: 0; }
+            4%   { opacity: 1; }
+            96%  { opacity: .5; }
+            100% { top: 100%; opacity: 0; }
         }
+        .scan-line {
+            position: absolute;
+            left: 0; right: 0; top: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent 0%, rgba(45,213,18,.2) 50%, transparent 100%);
+            animation: scan 7s linear infinite;
+            pointer-events: none;
+            z-index: 6;
+        }
+        .hud-pa   .scan-line { animation-delay:  0s;    }
+        .hud-pb   .scan-line { animation-delay: -1.4s;  }
+        .hud-pc   .scan-line { animation-delay: -3.5s;  }
+        .hud-pd   .scan-line { animation-delay: -5.1s;  }
+        .hud-main .scan-line { animation-delay: -2.6s;  }
+
+        /* ── PANEL UI LAYER (corners, label, specimen tag) ── */
+        .panel-ui {
+            position: absolute; inset: 0;
+            pointer-events: none; z-index: 7;
+        }
+        .p-corner {
+            position: absolute;
+            width: 12px; height: 12px;
+            border-color: rgba(255,255,255,.2);
+            border-style: solid;
+        }
+        .pc-tl { top: 7px;  left: 7px;  border-width: 1px 0 0 1px; }
+        .pc-tr { top: 7px;  right: 7px; border-width: 1px 1px 0 0; }
+        .hud-spec {
+            position: absolute;
+            top: 10px; left: 18px;
+            font-size: 7px; letter-spacing: 2px;
+            color: rgba(255,255,255,.35);
+        }
+        .panel-label {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 28px;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255,255,255,.06);
+            display: flex; align-items: center;
+            padding: 0 9px; gap: 7px;
+        }
+        .pl-dot {
+            width: 5px; height: 5px;
+            background: var(--green); border-radius: 50%;
+            animation: pulse 1.8s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .pl-id   { font-size: 7px; letter-spacing: 2px; color: rgba(255,255,255,.4); }
+        .pl-time { margin-left: auto; font-size: 7px; letter-spacing: 1px; color: rgba(255,255,255,.22); }
 
         /* ── SCREEN CORNER COORDS ── */
         .hud-corner {
             position: absolute;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 8.5px;
-            letter-spacing: 1.5px;
-            color: rgba(0,0,0,.3);
-            pointer-events: none;
-            z-index: 20;
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 7px;
+            font-size: 8px; letter-spacing: 1.5px;
+            color: rgba(255,255,255,.25);
+            pointer-events: none; z-index: 20; white-space: nowrap;
         }
         .hud-corner-tl { top: 2.5vh; left: 3%; }
         .hud-corner-tr { top: 2.5vh; right: 3%; }
-
         .hud-circle {
-            width: 13px; height: 13px;
-            border: 1px solid rgba(0,0,0,.25);
-            border-radius: 50%;
-            flex-shrink: 0;
+            width: 12px; height: 12px;
+            border: 1px solid rgba(255,255,255,.22); border-radius: 50%; flex-shrink: 0;
         }
         .hud-xbox {
-            width: 13px; height: 13px;
-            border: 1px solid rgba(0,0,0,.25);
-            position: relative;
-            flex-shrink: 0;
+            width: 12px; height: 12px;
+            border: 1px solid rgba(255,255,255,.22);
+            position: relative; flex-shrink: 0;
         }
         .hud-xbox::before, .hud-xbox::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 7px; height: 1px;
-            background: rgba(0,0,0,.3);
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 6px; height: 1px; background: rgba(255,255,255,.28);
         }
         .hud-xbox::before { transform: translate(-50%,-50%) rotate(45deg); }
         .hud-xbox::after  { transform: translate(-50%,-50%) rotate(-45deg); }
 
-        /* ── METADATA TEXT ── */
+        /* ── METADATA TEXT (above main panel) ── */
         .hud-meta {
-            position: absolute;
-            top: 1.5vh;
-            left: 25%;
-            right: 22%;
-            font-size: 7.5px;
-            letter-spacing: 1px;
-            line-height: 1.85;
-            color: rgba(0,0,0,.2);
-            pointer-events: none;
-            z-index: 15;
+            position: absolute; top: 1.5vh; left: 30%; right: 20%;
+            font-size: 7px; letter-spacing: 1px; line-height: 1.9;
+            color: rgba(255,255,255,.16);
+            pointer-events: none; z-index: 15;
         }
 
-        /* ── SIDEBAR (gap between small panels) ── */
+        /* ── SIDEBAR ── */
         .hud-sidebar {
-            position: absolute;
-            left: 3%;
-            top: calc(13vh + 34vh + 2.5vh);
-            font-size: 7.5px;
-            letter-spacing: 1.5px;
-            line-height: 2.1;
-            color: rgba(0,0,0,.26);
-            pointer-events: none;
-            z-index: 15;
+            position: absolute; left: 2%;
+            top: calc(9vh + 42vh + 2.5vh);
+            font-size: 7.5px; letter-spacing: 1.5px; line-height: 2.1;
+            color: rgba(255,255,255,.2);
+            pointer-events: none; z-index: 15;
         }
-        .hud-sidebar-sep { opacity: .25; }
+        .hud-sidebar-sep { opacity: .2; }
 
-        /* ── PANEL JUNCTION MARKS ── */
-        .hud-plus { display: none; }   /* hidden with overlapping layout */
-
-        /* ── CORNER X DECORATIONS ── */
+        /* ── CORNER X DECO ── */
         .hud-x-deco {
-            position: absolute;
-            width: 18px; height: 18px;
-            border: 1px solid rgba(0,0,0,.12);
+            position: absolute; width: 16px; height: 16px;
+            border: 1px solid rgba(255,255,255,.1);
             display: flex; align-items: center; justify-content: center;
-            font-size: 8px;
-            color: rgba(0,0,0,.18);
-            pointer-events: none;
-            z-index: 15;
+            font-size: 7px; color: rgba(255,255,255,.14);
+            pointer-events: none; z-index: 15;
         }
-        .hud-x-bl { left: 3%;  bottom: calc(7vh + 3px); }
+        .hud-x-bl { left: 2%;  bottom: calc(7vh + 3px); }
         .hud-x-br { right: 3%; bottom: calc(7vh + 3px); }
 
         /* ── BOTTOM STATUS BAR ── */
         .hud-bar {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 7vh;
-            max-height: 52px; min-height: 38px;
-            display: flex;
-            align-items: center;
-            border-top: 1px solid rgba(0,0,0,.06);
-            font-size: 8.5px;
-            letter-spacing: 2px;
-            overflow: hidden;
-            background: #fff;
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 7vh; max-height: 52px; min-height: 38px;
+            display: flex; align-items: center;
+            border-top: 1px solid rgba(255,255,255,.07);
+            font-size: 8.5px; letter-spacing: 2px; overflow: hidden;
+            background: rgba(4,4,4,.9); backdrop-filter: blur(12px);
         }
         .hud-bar-seg {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            padding: 0 18px;
-            border-right: 1px solid rgba(0,0,0,.05);
-            white-space: nowrap;
-            color: rgba(0,0,0,.35);
+            height: 100%; display: flex; align-items: center;
+            padding: 0 18px; border-right: 1px solid rgba(255,255,255,.06);
+            white-space: nowrap; color: rgba(255,255,255,.35);
         }
-        .hud-bar-path    { color: rgba(0,0,0,.28); }
-        .hud-bar-plus    { color: rgba(0,0,0,.16); padding: 0 10px; }
-        .hud-bar-project { color: rgba(0,0,0,.62); flex: 1; letter-spacing: 2.5px; }
-        .hud-bar-tags    { color: rgba(0,0,0,.22); }
-        .hud-bar-next    { color: rgba(0,0,0,.35); }
-        .hud-bar-count   { color: rgba(0,0,0,.25); border-right: none; padding-right: 16px; }
+        .hud-bar-path    { color: rgba(255,255,255,.25); }
+        .hud-bar-plus    { color: rgba(255,255,255,.14); padding: 0 10px; }
+        .hud-bar-project { color: rgba(255,255,255,.62); flex: 1; letter-spacing: 2.5px; }
+        .hud-bar-tags    { color: rgba(255,255,255,.2); }
+        .hud-bar-next    { color: rgba(255,255,255,.35); }
+        .hud-bar-count   { color: rgba(255,255,255,.22); border-right: none; }
+        .hud-plus        { display: none; }
 
         /* ── MOBILE ── */
         @media (max-width: 900px) {
-            .hud-sm1, .hud-sm2, .hud-sidebar,
-            .hud-corner-tr, .hud-meta,
-            .hud-x-bl, .hud-x-br           { display: none; }
-            .hud-main {
-                left: 0; top: 0; right: 0; bottom: calc(7vh);
-                border-radius: 0; box-shadow: none;
-            }
+            .hud-pa, .hud-pb, .hud-pc, .hud-pd,
+            .hud-sidebar, .hud-corner-tr, .hud-meta,
+            .hud-x-bl, .hud-x-br            { display: none; }
+            .hud-main { left: 0; top: 0; right: 0; bottom: 7vh;
+                        border-radius: 0; border: none; box-shadow: none; }
             .hud-corner-tl { top: calc(var(--nav-h) + 8px); }
         }
         @media (max-width: 600px) {
@@ -834,12 +837,57 @@
             .hud-bar-seg { font-size: 7px; padding: 0 10px; letter-spacing: 1px; }
         }
 
-        /* ── HEADER OVER HERO (hero is white — stay normal) ──────── */
+        /* ── HEADER OVER DARK HERO ─────────────────────────────── */
         .header.hero-mode {
-            background: rgba(255,255,255,.96);
-            border-bottom-color: var(--g2);
-            box-shadow: none;
+            background: transparent !important;
+            border-bottom-color: transparent !important;
+            box-shadow: none !important;
         }
+        .header.hero-mode .logo img       { filter: brightness(0) invert(1); }
+        .header.hero-mode .nav-tab        { color: rgba(255,255,255,.55); }
+        .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.1); color: #fff; }
+        .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.18); color: #fff; }
+        .header.hero-mode .h-line         { background: #fff; }
+
+        /* ══════════════════════════════════════════════════════
+           DARK MODE — entire site
+        ══════════════════════════════════════════════════════ */
+        body             { background: #0a0a0a; color: #d0d0d0; }
+
+        .header          { background: #0a0a0a; border-bottom-color: #1c1c1c; }
+        .header.scrolled { background: rgba(8,8,8,.97); box-shadow: 0 1px 16px rgba(0,0,0,.6); border-bottom-color: transparent; }
+
+        .nav-tab          { color: #555; }
+        .nav-tab:hover    { background: #1a1a1a; color: #d0d0d0; }
+        .nav-tab.active   { background: #d0d0d0; color: #0a0a0a; }
+
+        .h-line           { background: #d0d0d0; }
+
+        .pin {
+            background: linear-gradient(90deg, #181818 25%, #212121 50%, #181818 75%);
+            background-size: 200% 100%;
+        }
+        .pin.loaded { background: none; animation: none; }
+
+        .coming-soon h1 { color: #d0d0d0; }
+        .coming-soon p  { color: #555; }
+        .cs-bar-wrap    { background: #1a1a1a; }
+        .cs-hint        { color: #333; }
+
+        .contact-wrap h2 { color: #d0d0d0; }
+        .form-field input, .form-field textarea { color: #d0d0d0; border-bottom-color: #2a2a2a; }
+        .form-field input:focus, .form-field textarea:focus { border-bottom-color: #555; }
+        .form-field input::placeholder, .form-field textarea::placeholder { color: #3a3a3a; }
+        .submit-btn       { background: #d0d0d0; color: #0a0a0a; }
+        .submit-btn:hover { background: var(--green); color: #000; }
+
+        .saved-empty h3   { color: #d0d0d0; }
+        .saved-empty p    { color: #555; }
+        .browse-link      { background: #d0d0d0; color: #0a0a0a; }
+        .browse-link:hover { background: var(--green); color: #000; }
+
+        .back-top         { background: #111; border-color: #222; color: #d0d0d0; }
+        .back-top:hover   { background: var(--green); color: #000; }
     </style>
 </head>
 <body>
@@ -915,29 +963,97 @@
     <!-- HOME -->
     <div id="home-page" class="page active">
 
-        <!-- HERO HUD -->
+        <!-- RAVISAUCE LAB — HERO -->
         <div class="hero" id="hero-section">
 
-            <!-- VIDEO PANELS -->
-            <div class="hud-panel hud-sm1">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-sm1">
+            <!-- ── PANEL PA — tall portrait left ── -->
+            <div class="hud-panel hud-pa">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-pa">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
-                <div class="hud-inner-tag">X:0266PX &nbsp;Y:0258PX</div>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="p-corner pc-tl"></div>
+                    <div class="p-corner pc-tr"></div>
+                    <div class="hud-spec">SPECIMEN_001</div>
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—A</span>
+                        <span class="pl-time">+00:00</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="hud-panel hud-sm2">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-sm2">
+            <!-- ── PANEL PB — square center-left ── -->
+            <div class="hud-panel hud-pb">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-pb">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
-                <div class="hud-inner-tag">X:0118PX &nbsp;Y:0487PX</div>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="p-corner pc-tl"></div>
+                    <div class="p-corner pc-tr"></div>
+                    <div class="hud-spec">SPECIMEN_002</div>
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—B</span>
+                        <span class="pl-time">+00:07</span>
+                    </div>
+                </div>
             </div>
 
+            <!-- ── PANEL PC — overlaps main ── -->
+            <div class="hud-panel hud-pc">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-pc">
+                    <source src="videos/animation-reel.mp4" type="video/mp4">
+                </video>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="p-corner pc-tl"></div>
+                    <div class="p-corner pc-tr"></div>
+                    <div class="hud-spec">SPECIMEN_003</div>
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—C</span>
+                        <span class="pl-time">+00:14</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL PD — wide bottom-left ── -->
+            <div class="hud-panel hud-pd">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-pd">
+                    <source src="videos/animation-reel.mp4" type="video/mp4">
+                </video>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="p-corner pc-tl"></div>
+                    <div class="p-corner pc-tr"></div>
+                    <div class="hud-spec">SPECIMEN_004</div>
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—D</span>
+                        <span class="pl-time">+00:21</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MAIN PANEL — primary cinematic view ── -->
             <div class="hud-panel hud-main">
                 <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
-                <div class="hud-inner-tag">X:6511PX &nbsp;Y:0230PX</div>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="p-corner pc-tl"></div>
+                    <div class="p-corner pc-tr"></div>
+                    <div class="hud-spec">SPECIMEN_005 / RAVISAUCE LAB</div>
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—MAIN / PRIMARY FEED</span>
+                        <span class="pl-time">+00:28</span>
+                    </div>
+                </div>
             </div>
 
             <!-- SCREEN CORNER COORDS -->
@@ -950,31 +1066,25 @@
                 <span>X:0916PX &nbsp;Y:0077PX</span>
             </div>
 
-            <!-- METADATA TEXT BLOCK -->
+            <!-- METADATA TEXT -->
             <div class="hud-meta">
-                VIDEO ID / RSL 2026 / ANIMATION REEL / PQK5 XFRK<br>
-                VIEWPORT / FRAMES 1920X1080 @ 30FPS / 0 DROPPED OF 1024<br>
-                OPTIMAL RES 1920X1080@30 / 3840X2160@25 VOLUME<br>
-                NORMALIZED 100% (CONTENT LOUDNESS -25.9DB)<br>
-                CODEC AVC1 / H264 / REEL DURATION 00:01:24
+                VIDEO ID / RSL 2026 / ANIMATION REEL / 5-CAM ARRAY<br>
+                FRAMES 1920×1080 @ 30FPS / DROPPED 0 OF 4096<br>
+                OPTIMAL RES 1920×1080@30 / 3840×2160@25<br>
+                NORMALIZED 100% / LOUDNESS -25.9DB / CODEC H264
             </div>
 
-            <!-- SIDEBAR (in gap between panels) -->
+            <!-- SIDEBAR -->
             <div class="hud-sidebar">
                 <div>DATE &nbsp;: [2026.02.24]</div>
                 <div>HOUR &nbsp;: [<span id="hud-clock">00:00:00</span>]</div>
-                <div>LOADING PROJECTS : [01/01]</div>
+                <div>FEEDS ACTIVE : [05/05]</div>
                 <div class="hud-sidebar-sep">— — —</div>
-                <div>DISPLAY &nbsp;: (1920X1080 @ 60HZ)</div>
-                <div>BROWSER &nbsp;: [NATIVE WEB]</div>
+                <div>DISPLAY &nbsp;: (1920×1080 @ 60HZ)</div>
                 <div>LANGUAGE : [ENGLISH]</div>
             </div>
 
-            <!-- PANEL JUNCTION MARKS -->
-            <div class="hud-plus" style="left:30.5%; top:12vh;">+</div>
-            <div class="hud-plus" style="left:30.5%; bottom:7vh;">+</div>
-
-            <!-- CORNER X DECORATIONS -->
+            <!-- CORNER X DECO -->
             <div class="hud-x-deco hud-x-bl">✕</div>
             <div class="hud-x-deco hud-x-br">✕</div>
 
@@ -985,7 +1095,7 @@
                 <div class="hud-bar-seg hud-bar-project">ANIMATION_REEL_2026</div>
                 <div class="hud-bar-seg hud-bar-tags">PHOTOGRAPHY, MOTION, DESIGN</div>
                 <div class="hud-bar-seg hud-bar-next">SCROLL &nbsp;↓</div>
-                <div class="hud-bar-seg hud-bar-count">001/001</div>
+                <div class="hud-bar-seg hud-bar-count">001/005</div>
             </div>
 
         </div>
@@ -1583,10 +1693,30 @@ document.addEventListener('keydown', e => {
     setInterval(tick, 1000);
 })();
 
-// ── Small panel video fade-in ─────────────────────────────────────
-document.querySelectorAll('.hud-vid-sm1, .hud-vid-sm2').forEach(v => {
-    v.addEventListener('playing', () => v.classList.add('playing'), { once: true });
-});
+// ── Panel videos: different start times so they look like 5 unique feeds ─
+(function () {
+    const timeMap = {
+        'hud-vid-pa': 7,   // +7s
+        'hud-vid-pb': 14,  // +14s
+        'hud-vid-pc': 21,  // +21s
+        'hud-vid-pd': 28,  // +28s
+        // hud-vid-main stays at 0s (controlled by loader)
+    };
+    document.querySelectorAll('.hud-vid').forEach(v => {
+        // Find offset for this panel
+        let offset = 0;
+        for (const [cls, t] of Object.entries(timeMap)) {
+            if (v.classList.contains(cls)) { offset = t; break; }
+        }
+        if (offset > 0) {
+            v.addEventListener('loadedmetadata', () => {
+                if (v.duration && v.duration > offset) v.currentTime = offset;
+            }, { once: true });
+        }
+        // Fade in when playing
+        v.addEventListener('playing', () => v.classList.add('playing'), { once: true });
+    });
+})();
 
 // ── Init ──────────────────────────────────────────────────────────
 renderHome();
