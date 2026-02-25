@@ -192,14 +192,14 @@
         /* ── MAIN ─────────────────────────────────────────────────── */
         .main {
             padding-top: calc(var(--nav-h) + 4px);
-            padding-left: 4px;
-            padding-right: 4px;
+            padding-left: 3%;
+            padding-right: 3%;
             padding-bottom: 40px;
             min-height: 100vh;
         }
 
         @media (max-width: 768px) {
-            .main { padding-left: 4px; padding-right: 4px; padding-top: calc(var(--nav-h) + 4px); }
+            .main { padding-left: 3%; padding-right: 3%; padding-top: calc(var(--nav-h) + 4px); }
         }
 
         .page { display: none; opacity: 0; transform: translateY(16px); }
@@ -212,7 +212,7 @@
         @keyframes pageIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── MASONRY ──────────────────────────────────────────────── */
-        .masonry-grid { column-count: 5; column-gap: 4px; }
+        .masonry-grid { column-count: 5; column-gap: 4px; padding-top: 8px; }
 
         @media (max-width: 1200px) { .masonry-grid { column-count: 4; } }
         @media (max-width: 900px)  { .masonry-grid { column-count: 3; } }
@@ -636,10 +636,10 @@
             height: 100vh;
             height: 100svh;
             margin-top: calc(-1 * (var(--nav-h) + 4px));
-            margin-left: -4px;
-            margin-right: -4px;
-            overflow: hidden;
-            background: #070707;
+            margin-left: -3%;
+            margin-right: -3%;
+            overflow: visible;          /* allow panels to cast shadow beyond edge */
+            background: #fff;
             font-family: 'Courier New', Courier, monospace;
         }
 
@@ -647,27 +647,36 @@
         .hud-panel {
             position: absolute;
             overflow: hidden;
-            background: #0e0e0e;
-            border: 1px solid rgba(255,255,255,.12);
+            background: #111;
+            border: 1px solid rgba(0,0,0,.06);
+            border-radius: var(--r);        /* same 16px as pin images */
+            box-shadow: 0 12px 40px rgba(0,0,0,.13);
         }
+        /* main panel — right side, bleeds to edge */
         .hud-main {
-            left: 31%;
-            top: 12vh;
-            right: 2.5%;
+            left: 24%;
+            top: 10vh;
+            right: 0;
             bottom: 7vh;
-            border-color: rgba(255,255,255,.16);
+            z-index: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
         }
+        /* sm1 — top-left, overlaps main */
         .hud-sm1 {
             left: 3%;
-            top: 12vh;
-            width: 26%;
-            height: 32vh;
+            top: 13vh;
+            width: 30%;
+            height: 34vh;
+            z-index: 3;
         }
+        /* sm2 — bottom-left, shifted right, overlaps main */
         .hud-sm2 {
-            left: 3%;
-            bottom: 7vh;
-            width: 26%;
+            left: 9%;
+            bottom: 8vh;
+            width: 28%;
             height: 32vh;
+            z-index: 2;
         }
 
         /* ── PANEL VIDEOS ── */
@@ -679,18 +688,18 @@
             opacity: 0;
             transition: opacity 1.4s ease;
         }
-        .hud-vid.playing        { opacity: 1; }
-        .hud-vid-main           { object-position: 50% 50%; }
-        .hud-vid-sm1            { object-position: 25% 20%; }
-        .hud-vid-sm2            { object-position: 70% 75%; }
+        .hud-vid.playing  { opacity: 1; }
+        .hud-vid-main     { object-position: 50% 50%; }
+        .hud-vid-sm1      { object-position: 25% 20%; }
+        .hud-vid-sm2      { object-position: 70% 75%; }
 
         /* ── INNER PANEL COORD TAGS ── */
         .hud-inner-tag {
             position: absolute;
-            top: 7px; left: 7px;
+            top: 9px; left: 9px;
             font-size: 7.5px;
             letter-spacing: 1.5px;
-            color: rgba(255,255,255,.5);
+            color: rgba(255,255,255,.55);
             pointer-events: none;
             z-index: 5;
             white-space: nowrap;
@@ -704,23 +713,23 @@
             gap: 7px;
             font-size: 8.5px;
             letter-spacing: 1.5px;
-            color: rgba(255,255,255,.38);
+            color: rgba(0,0,0,.3);
             pointer-events: none;
             z-index: 20;
             white-space: nowrap;
         }
         .hud-corner-tl { top: 2.5vh; left: 3%; }
-        .hud-corner-tr { top: 2.5vh; right: 2.5%; }
+        .hud-corner-tr { top: 2.5vh; right: 3%; }
 
         .hud-circle {
             width: 13px; height: 13px;
-            border: 1px solid rgba(255,255,255,.32);
+            border: 1px solid rgba(0,0,0,.25);
             border-radius: 50%;
             flex-shrink: 0;
         }
         .hud-xbox {
             width: 13px; height: 13px;
-            border: 1px solid rgba(255,255,255,.32);
+            border: 1px solid rgba(0,0,0,.25);
             position: relative;
             flex-shrink: 0;
         }
@@ -729,21 +738,21 @@
             position: absolute;
             top: 50%; left: 50%;
             width: 7px; height: 1px;
-            background: rgba(255,255,255,.38);
+            background: rgba(0,0,0,.3);
         }
         .hud-xbox::before { transform: translate(-50%,-50%) rotate(45deg); }
         .hud-xbox::after  { transform: translate(-50%,-50%) rotate(-45deg); }
 
-        /* ── METADATA TEXT (top, between corner coords) ── */
+        /* ── METADATA TEXT ── */
         .hud-meta {
             position: absolute;
             top: 1.5vh;
-            left: 31%;
+            left: 25%;
             right: 22%;
             font-size: 7.5px;
             letter-spacing: 1px;
             line-height: 1.85;
-            color: rgba(255,255,255,.26);
+            color: rgba(0,0,0,.2);
             pointer-events: none;
             z-index: 15;
         }
@@ -752,39 +761,32 @@
         .hud-sidebar {
             position: absolute;
             left: 3%;
-            top: calc(12vh + 32vh + 2vh);
+            top: calc(13vh + 34vh + 2.5vh);
             font-size: 7.5px;
             letter-spacing: 1.5px;
             line-height: 2.1;
-            color: rgba(255,255,255,.26);
+            color: rgba(0,0,0,.26);
             pointer-events: none;
             z-index: 15;
         }
-        .hud-sidebar-sep { opacity: .3; }
+        .hud-sidebar-sep { opacity: .25; }
 
         /* ── PANEL JUNCTION MARKS ── */
-        .hud-plus {
-            position: absolute;
-            font-size: 11px;
-            color: rgba(255,255,255,.22);
-            pointer-events: none;
-            z-index: 15;
-            transform: translate(-50%, -50%);
-        }
+        .hud-plus { display: none; }   /* hidden with overlapping layout */
 
         /* ── CORNER X DECORATIONS ── */
         .hud-x-deco {
             position: absolute;
             width: 18px; height: 18px;
-            border: 1px solid rgba(255,255,255,.18);
+            border: 1px solid rgba(0,0,0,.12);
             display: flex; align-items: center; justify-content: center;
             font-size: 8px;
-            color: rgba(255,255,255,.22);
+            color: rgba(0,0,0,.18);
             pointer-events: none;
             z-index: 15;
         }
-        .hud-x-bl { left: 3%;    bottom: calc(7vh + 3px); }
-        .hud-x-br { right: 2.5%; bottom: calc(7vh + 3px); }
+        .hud-x-bl { left: 3%;  bottom: calc(7vh + 3px); }
+        .hud-x-br { right: 3%; bottom: calc(7vh + 3px); }
 
         /* ── BOTTOM STATUS BAR ── */
         .hud-bar {
@@ -794,51 +796,50 @@
             max-height: 52px; min-height: 38px;
             display: flex;
             align-items: center;
-            border-top: 1px solid rgba(255,255,255,.1);
+            border-top: 1px solid rgba(0,0,0,.06);
             font-size: 8.5px;
             letter-spacing: 2px;
             overflow: hidden;
+            background: #fff;
         }
         .hud-bar-seg {
             height: 100%;
             display: flex;
             align-items: center;
             padding: 0 18px;
-            border-right: 1px solid rgba(255,255,255,.07);
+            border-right: 1px solid rgba(0,0,0,.05);
             white-space: nowrap;
-            color: rgba(255,255,255,.42);
+            color: rgba(0,0,0,.35);
         }
-        .hud-bar-path    { color: rgba(255,255,255,.35); }
-        .hud-bar-plus    { color: rgba(255,255,255,.2);  padding: 0 10px; }
-        .hud-bar-project { color: rgba(255,255,255,.72); flex: 1; letter-spacing: 2.5px; }
-        .hud-bar-tags    { color: rgba(255,255,255,.28); }
-        .hud-bar-next    { color: rgba(255,255,255,.42); }
-        .hud-bar-count   { color: rgba(255,255,255,.32); border-right: none; padding-right: 16px; }
+        .hud-bar-path    { color: rgba(0,0,0,.28); }
+        .hud-bar-plus    { color: rgba(0,0,0,.16); padding: 0 10px; }
+        .hud-bar-project { color: rgba(0,0,0,.62); flex: 1; letter-spacing: 2.5px; }
+        .hud-bar-tags    { color: rgba(0,0,0,.22); }
+        .hud-bar-next    { color: rgba(0,0,0,.35); }
+        .hud-bar-count   { color: rgba(0,0,0,.25); border-right: none; padding-right: 16px; }
 
         /* ── MOBILE ── */
         @media (max-width: 900px) {
             .hud-sm1, .hud-sm2, .hud-sidebar,
-            .hud-corner-tr, .hud-meta, .hud-plus,
-            .hud-x-bl, .hud-x-br              { display: none; }
-            .hud-main { left: 0; top: 0; right: 0; bottom: calc(7vh); border: none; }
+            .hud-corner-tr, .hud-meta,
+            .hud-x-bl, .hud-x-br           { display: none; }
+            .hud-main {
+                left: 0; top: 0; right: 0; bottom: calc(7vh);
+                border-radius: 0; box-shadow: none;
+            }
             .hud-corner-tl { top: calc(var(--nav-h) + 8px); }
         }
         @media (max-width: 600px) {
-            .hud-bar-tags, .hud-bar-count  { display: none; }
+            .hud-bar-tags, .hud-bar-count { display: none; }
             .hud-bar-seg { font-size: 7px; padding: 0 10px; letter-spacing: 1px; }
         }
 
-        /* ── HEADER OVER HERO ─────────────────────────────────────── */
+        /* ── HEADER OVER HERO (hero is white — stay normal) ──────── */
         .header.hero-mode {
-            background: transparent !important;
-            border-bottom-color: transparent !important;
-            box-shadow: none !important;
+            background: rgba(255,255,255,.96);
+            border-bottom-color: var(--g2);
+            box-shadow: none;
         }
-        .header.hero-mode .logo img       { filter: brightness(0) invert(1); }
-        .header.hero-mode .nav-tab        { color: rgba(255,255,255,.7); }
-        .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.1); color: #fff; }
-        .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.16); color: #fff; }
-        .header.hero-mode .h-line         { background: #fff; }
     </style>
 </head>
 <body>
