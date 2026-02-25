@@ -1062,7 +1062,8 @@
         .hud-vid-pb   { object-position: 70% 20%; }
         .hud-vid-pc   { object-position: 80% 65%; }
         .hud-vid-pd   { object-position: 35% 75%; }
-        .hud-vid-pg   { object-fit: contain; background: #000; }
+        .hud-pg       { aspect-ratio: 1244/1664; }
+        .hud-vid-pg   { object-fit: cover; }
 
         /* ── SCAN LINE (moves top → bottom, different timing per panel) ── */
         @keyframes scan {
@@ -1619,13 +1620,6 @@
                 </div>
             </div>
 
-            <!-- FILTER -->
-            <div class="shop-filter">
-                <button class="shop-filter-btn active" data-filter="all" onclick="filterShop('all')">All</button>
-                <button class="shop-filter-btn" data-filter="tee" onclick="filterShop('tee')">Tees</button>
-                <button class="shop-filter-btn" data-filter="acc" onclick="filterShop('acc')">Accessories</button>
-                <button class="shop-filter-btn" data-filter="obj" onclick="filterShop('obj')">Objects</button>
-            </div>
 
             <!-- GRID — populated by JS -->
             <div class="shop-grid" id="shop-grid"></div>
@@ -2672,7 +2666,10 @@ document.addEventListener('keydown', e => {
             panel.style.left   = left + 'px';
             panel.style.top    = top  + 'px';
             panel.style.width  = w    + 'px';
-            panel.style.height = h    + 'px';
+            // hud-pg: let CSS aspect-ratio handle height so no black bars
+            if (!panel.classList.contains('hud-pg')) {
+                panel.style.height = h + 'px';
+            }
             panel.style.right  = 'auto';
             panel.style.bottom = 'auto';
             panel.style.zIndex = Z_ORDER[i];
