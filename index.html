@@ -630,7 +630,7 @@
             text-transform: uppercase;
         }
 
-        /* ── HERO ─────────────────────────────────────────────────── */
+        /* ── HERO / HUD ──────────────────────────────────────────── */
         .hero {
             position: relative;
             height: 100vh;
@@ -639,86 +639,193 @@
             margin-left: -4px;
             margin-right: -4px;
             overflow: hidden;
-            background: #000;
+            background: #070707;
+            font-family: 'Courier New', Courier, monospace;
         }
-        .hero-video {
+
+        /* ── PANELS ── */
+        .hud-panel {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
+            overflow: hidden;
+            background: #0e0e0e;
+            border: 1px solid rgba(255,255,255,.12);
+        }
+        .hud-main {
+            left: 31%;
+            top: 12vh;
+            right: 2.5%;
+            bottom: 7vh;
+            border-color: rgba(255,255,255,.16);
+        }
+        .hud-sm1 {
+            left: 3%;
+            top: 12vh;
+            width: 26%;
+            height: 32vh;
+        }
+        .hud-sm2 {
+            left: 3%;
+            bottom: 7vh;
+            width: 26%;
+            height: 32vh;
+        }
+
+        /* ── PANEL VIDEOS ── */
+        .hud-vid {
+            position: absolute;
+            top: -5%; left: -5%;
+            width: 110%; height: 110%;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 1.2s ease;
+            transition: opacity 1.4s ease;
         }
-        .hero-video.playing { opacity: 1; }
+        .hud-vid.playing        { opacity: 1; }
+        .hud-vid-main           { object-position: 50% 50%; }
+        .hud-vid-sm1            { object-position: 25% 20%; }
+        .hud-vid-sm2            { object-position: 70% 75%; }
 
-        .hero-overlay {
+        /* ── INNER PANEL COORD TAGS ── */
+        .hud-inner-tag {
             position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(0,0,0,.3) 0%,
-                rgba(0,0,0,.1) 40%,
-                rgba(0,0,0,.55) 100%
-            );
-            z-index: 1;
-        }
-        .hero-content {
-            position: absolute;
-            bottom: 60px;
-            left: 40px;
-            z-index: 2;
-            color: #fff;
-        }
-        .hero-eyebrow {
-            font-size: 9px;
-            letter-spacing: 4px;
-            font-family: 'Courier New', monospace;
+            top: 7px; left: 7px;
+            font-size: 7.5px;
+            letter-spacing: 1.5px;
             color: rgba(255,255,255,.5);
-            margin-bottom: 14px;
-            text-transform: uppercase;
-        }
-        .hero-title {
-            font-size: clamp(48px, 7.5vw, 96px);
-            font-weight: 300;
-            letter-spacing: -2px;
-            line-height: .95;
-            color: #fff;
-            text-transform: uppercase;
-        }
-        .hero-meta {
-            position: absolute;
-            bottom: 60px;
-            right: 40px;
-            z-index: 2;
-            font-family: 'Courier New', monospace;
-            font-size: 8px;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,.3);
-            text-transform: uppercase;
-        }
-        .hero-scroll {
-            position: absolute;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            font-family: 'Courier New', monospace;
-            font-size: 8px;
-            letter-spacing: 3px;
-            color: rgba(255,255,255,.35);
-            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 5;
             white-space: nowrap;
-            animation: scrollBob 2.2s ease-in-out infinite;
         }
-        @keyframes scrollBob {
-            0%,100% { transform: translateX(-50%) translateY(0); }
-            50%      { transform: translateX(-50%) translateY(6px); }
+
+        /* ── SCREEN CORNER COORDS ── */
+        .hud-corner {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 8.5px;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,.38);
+            pointer-events: none;
+            z-index: 20;
+            white-space: nowrap;
         }
-        @media (max-width: 768px) {
-            .hero-content { left: 20px; bottom: 48px; }
-            .hero-meta    { right: 20px; bottom: 48px; }
-            .hero-title   { font-size: clamp(36px, 11vw, 64px); }
+        .hud-corner-tl { top: 2.5vh; left: 3%; }
+        .hud-corner-tr { top: 2.5vh; right: 2.5%; }
+
+        .hud-circle {
+            width: 13px; height: 13px;
+            border: 1px solid rgba(255,255,255,.32);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .hud-xbox {
+            width: 13px; height: 13px;
+            border: 1px solid rgba(255,255,255,.32);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .hud-xbox::before, .hud-xbox::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 7px; height: 1px;
+            background: rgba(255,255,255,.38);
+        }
+        .hud-xbox::before { transform: translate(-50%,-50%) rotate(45deg); }
+        .hud-xbox::after  { transform: translate(-50%,-50%) rotate(-45deg); }
+
+        /* ── METADATA TEXT (top, between corner coords) ── */
+        .hud-meta {
+            position: absolute;
+            top: 1.5vh;
+            left: 31%;
+            right: 22%;
+            font-size: 7.5px;
+            letter-spacing: 1px;
+            line-height: 1.85;
+            color: rgba(255,255,255,.26);
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* ── SIDEBAR (gap between small panels) ── */
+        .hud-sidebar {
+            position: absolute;
+            left: 3%;
+            top: calc(12vh + 32vh + 2vh);
+            font-size: 7.5px;
+            letter-spacing: 1.5px;
+            line-height: 2.1;
+            color: rgba(255,255,255,.26);
+            pointer-events: none;
+            z-index: 15;
+        }
+        .hud-sidebar-sep { opacity: .3; }
+
+        /* ── PANEL JUNCTION MARKS ── */
+        .hud-plus {
+            position: absolute;
+            font-size: 11px;
+            color: rgba(255,255,255,.22);
+            pointer-events: none;
+            z-index: 15;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ── CORNER X DECORATIONS ── */
+        .hud-x-deco {
+            position: absolute;
+            width: 18px; height: 18px;
+            border: 1px solid rgba(255,255,255,.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px;
+            color: rgba(255,255,255,.22);
+            pointer-events: none;
+            z-index: 15;
+        }
+        .hud-x-bl { left: 3%;    bottom: calc(7vh + 3px); }
+        .hud-x-br { right: 2.5%; bottom: calc(7vh + 3px); }
+
+        /* ── BOTTOM STATUS BAR ── */
+        .hud-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 7vh;
+            max-height: 52px; min-height: 38px;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,.1);
+            font-size: 8.5px;
+            letter-spacing: 2px;
+            overflow: hidden;
+        }
+        .hud-bar-seg {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            border-right: 1px solid rgba(255,255,255,.07);
+            white-space: nowrap;
+            color: rgba(255,255,255,.42);
+        }
+        .hud-bar-path    { color: rgba(255,255,255,.35); }
+        .hud-bar-plus    { color: rgba(255,255,255,.2);  padding: 0 10px; }
+        .hud-bar-project { color: rgba(255,255,255,.72); flex: 1; letter-spacing: 2.5px; }
+        .hud-bar-tags    { color: rgba(255,255,255,.28); }
+        .hud-bar-next    { color: rgba(255,255,255,.42); }
+        .hud-bar-count   { color: rgba(255,255,255,.32); border-right: none; padding-right: 16px; }
+
+        /* ── MOBILE ── */
+        @media (max-width: 900px) {
+            .hud-sm1, .hud-sm2, .hud-sidebar,
+            .hud-corner-tr, .hud-meta, .hud-plus,
+            .hud-x-bl, .hud-x-br              { display: none; }
+            .hud-main { left: 0; top: 0; right: 0; bottom: calc(7vh); border: none; }
+            .hud-corner-tl { top: calc(var(--nav-h) + 8px); }
+        }
+        @media (max-width: 600px) {
+            .hud-bar-tags, .hud-bar-count  { display: none; }
+            .hud-bar-seg { font-size: 7px; padding: 0 10px; letter-spacing: 1px; }
         }
 
         /* ── HEADER OVER HERO ─────────────────────────────────────── */
@@ -727,11 +834,11 @@
             border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
-        .header.hero-mode .logo img    { filter: brightness(0) invert(1); }
-        .header.hero-mode .nav-tab     { color: rgba(255,255,255,.7); }
-        .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.12); color: #fff; }
-        .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.18); color: #fff; }
-        .header.hero-mode .h-line      { background: #fff; }
+        .header.hero-mode .logo img       { filter: brightness(0) invert(1); }
+        .header.hero-mode .nav-tab        { color: rgba(255,255,255,.7); }
+        .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.1); color: #fff; }
+        .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.16); color: #fff; }
+        .header.hero-mode .h-line         { background: #fff; }
     </style>
 </head>
 <body>
@@ -739,7 +846,7 @@
 <!-- LOADER -->
 <div id="loader" class="loader">
     <div class="ldr-inner">
-        <div class="ldr-brand">Ravi Sauce Labs &nbsp;—&nbsp; Creative Studio</div>
+        <div class="ldr-brand">RaviSauce &nbsp;—&nbsp; Creative Studio</div>
         <div class="ldr-divider"></div>
         <div class="ldr-lines">
             <div class="ldr-line" id="ldr-l1"><span class="ldr-prompt">›</span><span>SYSTEM BOOT INITIATED</span></div>
@@ -807,18 +914,79 @@
     <!-- HOME -->
     <div id="home-page" class="page active">
 
-        <!-- HERO VIDEO -->
+        <!-- HERO HUD -->
         <div class="hero" id="hero-section">
-            <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto">
-                <source src="videos/animation-reel.mp4" type="video/mp4">
-            </video>
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <p class="hero-eyebrow">RS — 001</p>
-                <h1 class="hero-title">RAVI<br>SAUCE</h1>
+
+            <!-- VIDEO PANELS -->
+            <div class="hud-panel hud-sm1">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-sm1">
+                    <source src="videos/animation-reel.mp4" type="video/mp4">
+                </video>
+                <div class="hud-inner-tag">X:0266PX &nbsp;Y:0258PX</div>
             </div>
-            <div class="hero-meta">ANIMATION REEL — 2026</div>
-            <div class="hero-scroll">↓ &nbsp;SCROLL</div>
+
+            <div class="hud-panel hud-sm2">
+                <video autoplay muted loop playsinline class="hud-vid hud-vid-sm2">
+                    <source src="videos/animation-reel.mp4" type="video/mp4">
+                </video>
+                <div class="hud-inner-tag">X:0118PX &nbsp;Y:0487PX</div>
+            </div>
+
+            <div class="hud-panel hud-main">
+                <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
+                    <source src="videos/animation-reel.mp4" type="video/mp4">
+                </video>
+                <div class="hud-inner-tag">X:6511PX &nbsp;Y:0230PX</div>
+            </div>
+
+            <!-- SCREEN CORNER COORDS -->
+            <div class="hud-corner hud-corner-tl">
+                <span>X:0166PX &nbsp;Y:0079PX</span>
+                <div class="hud-circle"></div>
+            </div>
+            <div class="hud-corner hud-corner-tr">
+                <div class="hud-xbox"></div>
+                <span>X:0916PX &nbsp;Y:0077PX</span>
+            </div>
+
+            <!-- METADATA TEXT BLOCK -->
+            <div class="hud-meta">
+                VIDEO ID / RSL 2026 / ANIMATION REEL / PQK5 XFRK<br>
+                VIEWPORT / FRAMES 1920X1080 @ 30FPS / 0 DROPPED OF 1024<br>
+                OPTIMAL RES 1920X1080@30 / 3840X2160@25 VOLUME<br>
+                NORMALIZED 100% (CONTENT LOUDNESS -25.9DB)<br>
+                CODEC AVC1 / H264 / REEL DURATION 00:01:24
+            </div>
+
+            <!-- SIDEBAR (in gap between panels) -->
+            <div class="hud-sidebar">
+                <div>DATE &nbsp;: [2026.02.24]</div>
+                <div>HOUR &nbsp;: [<span id="hud-clock">00:00:00</span>]</div>
+                <div>LOADING PROJECTS : [01/01]</div>
+                <div class="hud-sidebar-sep">— — —</div>
+                <div>DISPLAY &nbsp;: (1920X1080 @ 60HZ)</div>
+                <div>BROWSER &nbsp;: [NATIVE WEB]</div>
+                <div>LANGUAGE : [ENGLISH]</div>
+            </div>
+
+            <!-- PANEL JUNCTION MARKS -->
+            <div class="hud-plus" style="left:30.5%; top:12vh;">+</div>
+            <div class="hud-plus" style="left:30.5%; bottom:7vh;">+</div>
+
+            <!-- CORNER X DECORATIONS -->
+            <div class="hud-x-deco hud-x-bl">✕</div>
+            <div class="hud-x-deco hud-x-br">✕</div>
+
+            <!-- BOTTOM STATUS BAR -->
+            <div class="hud-bar">
+                <div class="hud-bar-seg hud-bar-path">C:\RAVISAUCE \HOME</div>
+                <div class="hud-bar-seg hud-bar-plus">+</div>
+                <div class="hud-bar-seg hud-bar-project">ANIMATION_REEL_2026</div>
+                <div class="hud-bar-seg hud-bar-tags">PHOTOGRAPHY, MOTION, DESIGN</div>
+                <div class="hud-bar-seg hud-bar-next">SCROLL &nbsp;↓</div>
+                <div class="hud-bar-seg hud-bar-count">001/001</div>
+            </div>
+
         </div>
 
         <div class="masonry-grid" id="home-grid"></div>
@@ -1398,6 +1566,25 @@ document.addEventListener('keydown', e => {
         });
         if (++frames > 300) { clearInterval(id); c.remove(); }
     }, 50);
+});
+
+// ── HUD clock ─────────────────────────────────────────────────────
+(function () {
+    const el = document.getElementById('hud-clock');
+    if (!el) return;
+    function tick() {
+        const n = new Date();
+        el.textContent = String(n.getHours()).padStart(2,'0') + ':' +
+                         String(n.getMinutes()).padStart(2,'0') + ':' +
+                         String(n.getSeconds()).padStart(2,'0');
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+
+// ── Small panel video fade-in ─────────────────────────────────────
+document.querySelectorAll('.hud-vid-sm1, .hud-vid-sm2').forEach(v => {
+    v.addEventListener('playing', () => v.classList.add('playing'), { once: true });
 });
 
 // ── Init ──────────────────────────────────────────────────────────
