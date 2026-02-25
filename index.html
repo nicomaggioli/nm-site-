@@ -1085,6 +1085,7 @@
         .hud-pd   .scan-line { animation-delay: -5.1s;  }
         .hud-pe   .scan-line { animation-delay: -4.2s;  }
         .hud-pf   .scan-line { animation-delay: -6.3s;  }
+        .hud-pg   .scan-line { animation-delay: -2.7s;  }
         .hud-main .scan-line { animation-delay: -2.6s;  }
 
         /* ── PANEL UI LAYER (corners, label, specimen tag) ── */
@@ -1232,7 +1233,7 @@
         /* ── MOBILE ── */
         @media (max-width: 900px) {
             /* Hide desktop-only panels + text overlays */
-            .hud-pc, .hud-pd, .hud-pe, .hud-pf,
+            .hud-pc, .hud-pd, .hud-pe, .hud-pf, .hud-pg,
             .hud-sidebar, .hud-x-bl, .hud-x-br,
             .hud-ambient, .hud-story { display: none; }
 
@@ -1482,6 +1483,19 @@
             </div>
 
             <!-- ── PANEL MAIN ── -->
+            <div class="hud-panel hud-pg">
+                <video autoplay muted loop playsinline preload="auto">
+                    <source src="videos/ravi-new.mp4?feed=g" type="video/mp4">
+                </video>
+                <div class="scan-line"></div>
+                <div class="panel-ui">
+                    <div class="panel-label">
+                        <span class="pl-dot"></span>
+                        <span class="pl-id">CAM—G / FEED 07</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="hud-panel hud-main">
                 <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
@@ -2641,6 +2655,7 @@ document.addEventListener('keydown', e => {
         [0.14, 0.42, 0.09, 0.40, 12],  // pd — taller sliver below pc
         [0.75, 0.04, 0.13, 0.22, 18],  // pe — small floating top-right
         [0.76, 0.60, 0.21, 0.32, 16],  // pf — wider bottom-right
+        [0.77, 0.30, 0.13, 0.26, 14],  // pg — portrait, right-center gap
         [0.19, 0.03, 0.74, 0.90,  8],  // main — dominant center
     ];
     const MOBILE_L = [
@@ -2648,7 +2663,7 @@ document.addEventListener('keydown', e => {
         [0.52, 0.52, 0.42, 0.35, 10],  // pb — medium, lower-right
         [0.07, 0.10, 0.78, 0.65,  8],  // main — large, central
     ];
-    const DESKTOP_Z = [3, 3, 4, 4, 5, 5, 1];
+    const DESKTOP_Z = [3, 3, 4, 4, 5, 5, 5, 1];
     const MOBILE_Z  = [4, 4, 1];
 
     const LAYOUTS = isMob ? MOBILE_L  : DESKTOP_L;
