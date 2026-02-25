@@ -264,11 +264,7 @@
         .pin img.visible { opacity: 1; transform: translateY(0); }
         @media (max-width: 600px) { .pin img { border-radius: 8px; } }
 
-        /* ── PIN SIZE VARIANTS (randomly assigned each load) ── */
-        .sz-s  img { aspect-ratio: 4/3;  object-fit: cover; }
-        .sz-m  img { aspect-ratio: 2/3;  object-fit: cover; }
-        .sz-l  img { aspect-ratio: 1/1.6; object-fit: cover; }
-        .sz-xl img { aspect-ratio: 9/16; object-fit: cover; }
+        /* Images show at their natural proportions — no cropping */
 
         /* Hide save overlay on touch devices */
         @media (pointer: coarse) { .pin-overlay { display: none; } }
@@ -1594,41 +1590,34 @@ const images = [
     'images/g-003.png',
     'images/g-004.png',
     'images/g-005.jpg',
-    'images/g-006.jpg',
+    'images/g-006.jpg',  // g-040 is duplicate — removed
     'images/g-007.jpg',
     'images/g-008.png',
-    'images/g-009.png',
+    'images/g-009.png',  // g-015 is duplicate — removed
     'images/g-010.jpg',
-    'images/g-011.jpg',
-    'images/g-012.png',
+    'images/g-011.jpg',  // g-084 is duplicate — removed
     'images/g-013.jpg',
     'images/g-014.jpg',
-    'images/g-015.png',
     'images/g-016.png',
     'images/g-017.png',
-    'images/g-018.jpg',
+    'images/g-018.jpg',  // g-031 is duplicate — removed
     'images/g-019.jpg',
-    'images/g-020.png',
     'images/g-021.png',
     'images/g-022.jpg',
     'images/g-023.jpg',
     'images/g-024.jpg',
     'images/g-025.png',
-    'images/g-026.jpg',
-    'images/g-027.jpg',
-    'images/g-028.jpg',
+    'images/g-026.jpg',  // g-028 is duplicate — removed
+    'images/g-027.jpg',  // g-087 is duplicate — removed
     'images/g-029.jpg',
     'images/g-030.jpg',
-    'images/g-031.jpg',
     'images/g-032.png',
-    'images/g-033.png',
     'images/g-034.jpeg',
     'images/g-035.jpg',
     'images/g-036.jpg',
     'images/g-037.jpg',
     'images/g-038.jpg',
     'images/g-039.jpg',
-    'images/g-040.jpg',
     'images/g-041.jpeg',
     'images/g-042.jpeg',
     'images/g-043.jpeg',
@@ -1672,17 +1661,15 @@ const images = [
     'images/g-081.png',
     'images/g-082.jpeg',
     'images/g-083.jpeg',
-    'images/g-084.jpg',
     'images/g-085.jpeg',
     'images/g-086.jpeg',
-    'images/g-087.jpg',
     'images/g-088.png',
     'images/g-089.jpeg',
-    'images/ravi-art.png',
-    'images/ravi-avatar.png',
+    'images/ravi-art.png',    // g-012 is duplicate — removed
+    'images/ravi-avatar.png', // g-020 is duplicate — removed
     'images/ravi-float.png',
     'images/ravi-moon.png',
-    'images/ravi-print.png',
+    'images/ravi-print.png',  // g-033 is duplicate — removed
     'images/ravi-puffer.png',
     'images/rock4.png',
     'images/woodravi.png',
@@ -1698,20 +1685,13 @@ function shuffle(arr) {
     return a;
 }
 
-// Random size tier for varied pin heights
-const SIZE_TIERS = ['', '', 'sz-s', 'sz-m', 'sz-l', 'sz-xl'];
-function randomSize() {
-    return SIZE_TIERS[Math.floor(Math.random() * SIZE_TIERS.length)];
-}
-
 let shuffled = shuffle(images);
 let saved    = JSON.parse(localStorage.getItem('savedPins') || '[]');
 
 // ── Create a pin card ─────────────────────────────────────────────
 function makePin(src, showSave) {
     const div = document.createElement('div');
-    const sz  = randomSize();
-    div.className = sz ? `pin ${sz}` : 'pin';
+    div.className = 'pin';
     const isSaved = saved.includes(src);
     const safe    = src.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
