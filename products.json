@@ -1,21 +1,15 @@
 [
-    {
-        "id": "spx-001",
-        "spec": "SPX-001 / TEE",
-        "name": "Chill Ravi",
-        "price": 85,
-        "cat": "tee",
-        "imgs": [
-            "store/tee-chill-white.png",
-            "store/tee-chill-white-back.png"
-        ],
-        "desc": "The OG. Ravi in full relaxation mode. Heavyweight 100% cotton, oversized fit.",
-        "sizes": [
-            "XS",
-            "S",
-            "M",
-            "L",
-            "XL"
-        ]
-    }
+  {
+    "id": "spx-001",
+    "spec": "IVA-001 / 24",
+    "name": "Shallet",
+    "price": 85,
+    "cat": "acc",
+    "imgs": [
+      "store/"
+    ],
+    "desc": "The OG. Ravi in full relaxation mode. Heavyweight 100% cotton, oversized fit.",
+    "sizes": [],
+    "variantLabel": "Size"
+  }
 ]
