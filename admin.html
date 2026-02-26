@@ -120,11 +120,25 @@ input,textarea,select{font-family:var(--font)}
 .field textarea{resize:vertical;min-height:90px;line-height:1.5}
 .field select{appearance:none;cursor:pointer}
 
-/* image list */
+/* ── IMAGE LIST ── */
 .img-list{display:flex;flex-direction:column;gap:8px}
 .img-row{display:flex;align-items:center;gap:10px}
-.img-preview{width:52px;height:52px;border-radius:6px;background:#0d0d0d;object-fit:contain;padding:4px;flex-shrink:0}
+.img-preview{
+  width:52px;height:52px;border-radius:6px;background:#0d0d0d;
+  object-fit:contain;padding:4px;flex-shrink:0;
+  cursor:pointer;border:2px solid transparent;transition:border-color .15s;
+}
+.img-preview:hover{border-color:rgba(45,213,18,.4)}
+.img-preview.drag-over{border-color:var(--green);opacity:.75}
 .img-input{flex:1}
+.img-upload-btn{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.img-upload-btn:hover{border-color:var(--green);color:var(--green)}
+.img-uploading{opacity:.5;pointer-events:none}
 .img-del-btn{
   width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
   background:transparent;color:var(--muted);font-size:14px;
@@ -139,7 +153,7 @@ input,textarea,select{font-family:var(--font)}
 }
 .add-img-btn:hover{border-color:var(--green);color:var(--green)}
 
-/* sizes */
+/* ── VARIANTS ── */
 .sizes-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .size-tag{
   height:32px;padding:0 14px;border-radius:16px;
@@ -151,7 +165,7 @@ input,textarea,select{font-family:var(--font)}
   cursor:pointer;padding:0;line-height:1;transition:color .15s;
 }
 .size-remove:hover{color:var(--red)}
-.size-add-row{display:flex;gap:8px;margin-top:4px}
+.size-add-row{display:flex;gap:8px;margin-top:8px}
 .size-input{
   height:32px;padding:0 12px;border-radius:8px;
   border:1px solid var(--border);background:var(--surface);
@@ -164,12 +178,31 @@ input,textarea,select{font-family:var(--font)}
   transition:all .15s;
 }
 .size-add-btn:hover{background:rgba(45,213,18,.1);border-color:var(--green)}
+.add-variant-btn{
+  height:36px;padding:0 14px;border-radius:8px;
+  border:1px dashed var(--border);background:transparent;
+  color:var(--muted);font-size:12px;margin-top:24px;
+  transition:all .15s;width:100%;
+}
+.add-variant-btn:hover{border-color:var(--green);color:var(--green)}
 
-/* section labels */
+/* ── SECTION LABELS ── */
 .section-label{
   font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;
   color:var(--muted);text-transform:uppercase;margin:24px 0 12px;
 }
+.variant-section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:24px 0 12px;
+}
+.variant-section-head .section-label{margin:0}
+.remove-variants-btn{
+  height:22px;padding:0 10px;border-radius:11px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10px;cursor:pointer;
+  transition:all .15s;
+}
+.remove-variants-btn:hover{border-color:var(--red);color:var(--red)}
 
 /* ── SETTINGS PANEL ── */
 .settings-overlay{
@@ -216,6 +249,9 @@ input,textarea,select{font-family:var(--font)}
 </style>
 </head>
 <body>
+
+<!-- hidden file picker (reused for all image slots) -->
+<input type="file" id="file-picker" accept="image/*" style="display:none" onchange="onFilePicked(this)">
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -273,6 +309,7 @@ let products = [];
 let fileSha  = '';
 let activeIdx = null;
 let dirty    = false;
+let uploadTargetIndex = null;
 
 // ── API ───────────────────────────────────────────────────────────
 async function ghAPI(method, path, body) {
@@ -364,6 +401,9 @@ function renderEditor(p) {
   const form = document.getElementById('editor-form');
   form.style.display = 'block';
 
+  const hasSizes = p.sizes && p.sizes.length > 0;
+  const variantLabel = esc(p.variantLabel || 'Size');
+
   form.innerHTML = `
     <div class="form-title" id="form-title">${esc(p.name)}</div>
 
@@ -404,22 +444,61 @@ function renderEditor(p) {
     <div class="img-list" id="img-list"></div>
     <button class="add-img-btn" onclick="addImage()">+ Add Image</button>
 
-    <div class="field-row" style="margin-top:8px">
-      <div class="field">
-        <label>Variant Label</label>
-        <input id="f-variant-label" type="text" value="${esc(p.variantLabel||'Size')}" placeholder="Size, Color, Style…" oninput="markDirty()">
-      </div>
-    </div>
-    <div class="section-label" id="variant-section-label">${esc(p.variantLabel||'Size')} Options</div>
-    <div class="sizes-wrap" id="sizes-wrap"></div>
-    <div class="size-add-row">
-      <input class="size-input" id="size-input" type="text" placeholder="e.g. XL, Black…" onkeydown="if(event.key==='Enter')addSize()">
-      <button class="size-add-btn" onclick="addSize()">Add</button>
-    </div>
+    <div id="variant-section">${renderVariantHTML(p)}</div>
   `;
 
   renderImages(p.imgs);
+}
+
+function renderVariantHTML(p) {
+  const hasSizes = p.sizes && p.sizes.length > 0;
+  if (!hasSizes) {
+    return `<button class="add-variant-btn" onclick="showVariants()">+ Add size / variant options</button>`;
+  }
+  const variantLabel = esc(p.variantLabel || 'Size');
+  return `
+    <div class="variant-section-head">
+      <span class="section-label">${variantLabel} Options</span>
+      <button class="remove-variants-btn" onclick="clearVariants()">Remove variants</button>
+    </div>
+    <div class="field-row" style="margin-bottom:12px">
+      <div class="field">
+        <label>Variant Label</label>
+        <input id="f-variant-label" type="text" value="${variantLabel}"
+               placeholder="Size, Color, Style…" oninput="markDirty();updateVariantLabel()">
+      </div>
+    </div>
+    <div class="sizes-wrap" id="sizes-wrap"></div>
+    <div class="size-add-row">
+      <input class="size-input" id="size-input" type="text" placeholder="e.g. XL, Black…"
+             onkeydown="if(event.key==='Enter')addSize()">
+      <button class="size-add-btn" onclick="addSize()">Add</button>
+    </div>
+  `;
+}
+
+function showVariants() {
+  const p = products[activeIdx];
+  if (!p.sizes) p.sizes = [];
+  if (!p.variantLabel) p.variantLabel = 'Size';
+  document.getElementById('variant-section').innerHTML = renderVariantHTML(p);
   renderSizes(p.sizes);
+  const si = document.getElementById('size-input');
+  if (si) si.focus();
+  markDirty();
+}
+
+function clearVariants() {
+  const p = products[activeIdx];
+  p.sizes = [];
+  document.getElementById('variant-section').innerHTML = renderVariantHTML(p);
+  markDirty();
+}
+
+function updateVariantLabel() {
+  const input = document.getElementById('f-variant-label');
+  const head  = document.querySelector('.variant-section-head .section-label');
+  if (input && head) head.textContent = (input.value || 'Size') + ' Options';
 }
 
 function renderImages(imgs) {
@@ -429,17 +508,37 @@ function renderImages(imgs) {
     const row = document.createElement('div');
     row.className = 'img-row';
     row.innerHTML = `
-      <img class="img-preview" src="${esc(src)}" onerror="this.src=''" alt="">
+      <img class="img-preview" src="${esc(src)}" onerror="this.src=''" alt=""
+           title="Click or drop an image to upload" onclick="openFilePicker(${i})">
       <input class="field input img-input" type="text" value="${esc(src)}"
-             placeholder="store/filename.png"
+             placeholder="store/filename.webp"
              oninput="updateImgSrc(this,${i});markDirty()">
+      <button class="img-upload-btn" onclick="openFilePicker(${i})" title="Upload from file">&#128193;</button>
       <button class="img-del-btn" onclick="removeImage(${i})">&times;</button>`;
     list.appendChild(row);
+  });
+  attachDropZones();
+}
+
+function attachDropZones() {
+  document.querySelectorAll('.img-preview').forEach((preview, i) => {
+    preview.addEventListener('dragover', e => {
+      e.preventDefault();
+      preview.classList.add('drag-over');
+    });
+    preview.addEventListener('dragleave', () => preview.classList.remove('drag-over'));
+    preview.addEventListener('drop', e => {
+      e.preventDefault();
+      preview.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) uploadImageToGitHub(file, i);
+    });
   });
 }
 
 function renderSizes(sizes) {
   const wrap = document.getElementById('sizes-wrap');
+  if (!wrap) return;
   wrap.innerHTML = '';
   sizes.forEach((sz, i) => {
     const tag = document.createElement('div');
@@ -493,6 +592,64 @@ function updateTitle() {
   if (t) t.textContent = document.getElementById('f-name').value || 'New Product';
 }
 
+// ── IMAGE UPLOAD ──────────────────────────────────────────────────
+function openFilePicker(index) {
+  uploadTargetIndex = index;
+  const picker = document.getElementById('file-picker');
+  picker.value = '';
+  picker.click();
+}
+
+function onFilePicked(input) {
+  const file = input.files[0];
+  if (!file) return;
+  uploadImageToGitHub(file, uploadTargetIndex);
+}
+
+async function uploadImageToGitHub(file, imgIndex) {
+  if (!token) { openSettings(); return; }
+
+  const row = document.querySelectorAll('.img-row')[imgIndex];
+  if (row) row.classList.add('img-uploading');
+  setStatus('Uploading image...');
+
+  try {
+    // Read file as base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = e => resolve(e.target.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const path = `store/${file.name}`;
+
+    // Check if file already exists (need sha to update)
+    let sha;
+    try {
+      const existing = await ghAPI('GET', `contents/${path}`);
+      sha = existing.sha;
+    } catch(_) { /* new file */ }
+
+    const body = { message: `Upload ${file.name}`, content: base64 };
+    if (sha) body.sha = sha;
+
+    await ghAPI('PUT', `contents/${path}`, body);
+
+    // Update product data and UI
+    const p = products[activeIdx];
+    p.imgs[imgIndex] = path;
+    renderImages(p.imgs);
+    markDirty();
+    setStatus('Image uploaded ✓');
+    toast('Image uploaded!', 'success');
+  } catch(e) {
+    setStatus('Upload failed: ' + e.message);
+    toast('Upload failed: ' + e.message, 'error');
+    if (row) row.classList.remove('img-uploading');
+  }
+}
+
 // Read editor fields back into products array
 function commitEditorToProduct() {
   if (activeIdx === null) return;
@@ -503,12 +660,12 @@ function commitEditorToProduct() {
   const cat   = document.getElementById('f-cat');
   const desc  = document.getElementById('f-desc');
   if (!name) return;
+  p.name  = name.value;
+  p.price = parseFloat(price.value) || 0;
+  p.spec  = spec.value;
+  p.cat   = cat.value;
+  p.desc  = desc.value;
   const vl = document.getElementById('f-variant-label');
-  p.name         = name.value;
-  p.price        = parseFloat(price.value) || 0;
-  p.spec         = spec.value;
-  p.cat          = cat.value;
-  p.desc         = desc.value;
   if (vl) p.variantLabel = vl.value || 'Size';
   // imgs and sizes are updated live
   renderList();
@@ -520,9 +677,9 @@ function addProduct() {
   const num = products.length + 1;
   const id  = 'spx-' + String(num).padStart(3,'0');
   products.push({
-    id, spec: id.toUpperCase().replace('-','-') + ' / TEE',
+    id, spec: id.toUpperCase() + ' / TEE',
     name: 'New Product', price: 0, cat: 'tee',
-    imgs: ['store/'], desc: '', sizes: ['XS','S','M','L','XL'], variantLabel: 'Size',
+    imgs: ['store/'], desc: '', sizes: [],
   });
   activeIdx = products.length - 1;
   renderList();
