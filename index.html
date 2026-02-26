@@ -273,8 +273,8 @@
 
         /* Images show at their natural proportions — no cropping */
 
-        /* Hide save overlay on touch devices */
-        @media (pointer: coarse) { .pin-overlay { display: none; } }
+        /* Hide save overlay on touch devices / mobile */
+        @media (pointer: coarse), (max-width: 768px) { .pin-overlay { display: none; } }
 
         .pin-overlay {
             position: absolute; inset: 0;
@@ -614,7 +614,14 @@
             font-size: 8px; font-weight: 700;
         }
         @media (max-width: 768px) {
-            .cart-btn { right: 60px; }
+            .cart-btn { display: none; }
+        }
+        .mob-cart-badge {
+            display: none; align-items: center; justify-content: center;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--green); color: #000;
+            font-family: 'Courier New', monospace; font-size: 9px; font-weight: 700;
+            margin-left: auto;
         }
 
         /* ── CART DRAWER ─────────────────────────────────────────────── */
@@ -1017,11 +1024,10 @@
         .contact-wrap {
             max-width: 480px;
             margin: 0 auto;
-            padding: 40px 20px;
-            min-height: calc(100vh - var(--nav-h));
+            padding: 36px 20px 80px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
         }
         .contact-hd-tag {
             font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 3px;
@@ -1595,6 +1601,7 @@
         <button class="mob-item" data-page="saved"   onclick="mobileNav('saved')">  <span class="mob-num">02</span><span class="mob-label">SAVED</span></button>
         <button class="mob-item" data-page="shop"    onclick="mobileNav('shop')">   <span class="mob-num">03</span><span class="mob-label">SHOP</span></button>
         <button class="mob-item" data-page="contact" onclick="mobileNav('contact')"><span class="mob-num">04</span><span class="mob-label">CONTACT</span></button>
+        <button class="mob-item" onclick="closeMobileMenu(); openCart();" id="mob-cart-item"><span class="mob-num">05</span><span class="mob-label">CART</span><span class="mob-cart-badge" id="mob-cart-badge"></span></button>
     </div>
     <div class="mob-foot">
         <div class="mob-status"><span class="status-dot"></span><span>SYSTEM ONLINE</span></div>
@@ -1614,7 +1621,7 @@
 
             <!-- ── PANEL PA ── -->
             <div class="hud-panel hud-pa">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pa">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pa">
                     <source src="videos/flag-loop.mp4?feed=a" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1628,7 +1635,7 @@
 
             <!-- ── PANEL PB ── -->
             <div class="hud-panel hud-pb">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pb">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pb">
                     <source src="videos/rock-loop.mp4?feed=b" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1642,7 +1649,7 @@
 
             <!-- ── PANEL PC ── -->
             <div class="hud-panel hud-pc">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pc">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pc">
                     <source src="videos/astro-final.mp4?feed=c" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1656,7 +1663,7 @@
 
             <!-- ── PANEL PD ── -->
             <div class="hud-panel hud-pd">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pd">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pd">
                     <source src="videos/animation-reel.mp4?feed=d" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1670,7 +1677,7 @@
 
             <!-- ── PANEL PE ── -->
             <div class="hud-panel hud-pe">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pe">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pe">
                     <source src="videos/rock-loop.mp4?feed=e" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1684,7 +1691,7 @@
 
             <!-- ── PANEL PF ── -->
             <div class="hud-panel hud-pf">
-                <video autoplay muted loop playsinline class="hud-vid hud-vid-pf">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pf">
                     <source src="videos/astro-final.mp4?feed=f" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1698,7 +1705,7 @@
 
             <!-- ── PANEL MAIN ── -->
             <div class="hud-panel hud-pg">
-                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pg">
+                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pg">
                     <source src="videos/ravi-new.mp4?feed=g" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1711,8 +1718,7 @@
             </div>
 
             <div class="hud-panel hud-main">
-                <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto"
-                       onloadedmetadata="this.currentTime=4.5">
+                <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
                     <source src="videos/animation-reel.mp4" type="video/mp4">
                 </video>
                 <div class="scan-line"></div>
@@ -1808,6 +1814,12 @@
 
     <!-- SAVED -->
     <div id="saved-page" class="page">
+        <div class="shop-hd" style="padding-left:18px;padding-right:18px;">
+            <div class="shop-hd-left">
+                <span class="shop-hd-label">RVI // Saved</span>
+            </div>
+            <span class="shop-hd-count" id="saved-count"></span>
+        </div>
         <div class="braille-strip page-strip" style="margin-bottom:12px;">
             <span class="braille-strip-inner" id="braille-strip-saved"></span>
         </div>
@@ -1831,13 +1843,6 @@
                 <span class="shop-hd-count" id="shop-count">16 specimens</span>
             </div>
 
-            <!-- STATUS TICKER -->
-            <div class="shop-status">
-                <div class="shop-status-inner">
-                    SYS_OK &nbsp;// &nbsp;SPECIMEN_DB <em>v2.4</em> &nbsp;// &nbsp;CONTAINMENT: <em>STABLE</em> &nbsp;// &nbsp;TEMP: <em>22.4°C</em> &nbsp;// &nbsp;UNITS ACTIVE: <em>23</em> &nbsp;// &nbsp;CATALOGUE: <em>RSL-2026</em> &nbsp;// &nbsp;STATUS: <em>OPERATIONAL</em> &nbsp;// &nbsp;LAST SYNC: <em>02:14:07</em> &nbsp;// &nbsp;INTEGRITY: <em>100%</em> &nbsp;//&nbsp;&nbsp;&nbsp;SYS_OK &nbsp;// &nbsp;SPECIMEN_DB <em>v2.4</em> &nbsp;// &nbsp;CONTAINMENT: <em>STABLE</em> &nbsp;// &nbsp;TEMP: <em>22.4°C</em> &nbsp;// &nbsp;UNITS ACTIVE: <em>23</em> &nbsp;// &nbsp;CATALOGUE: <em>RSL-2026</em> &nbsp;// &nbsp;STATUS: <em>OPERATIONAL</em> &nbsp;// &nbsp;LAST SYNC: <em>02:14:07</em> &nbsp;// &nbsp;INTEGRITY: <em>100%</em> &nbsp;//&nbsp;
-                </div>
-            </div>
-
 
             <!-- BRAILLE STRIP -->
             <div class="braille-strip shop-strip">
@@ -1846,14 +1851,7 @@
 
             <!-- SOLO VIEW — focused single-item display -->
             <div class="solo-view" id="solo-view">
-                <div class="solo-nav-bar">
-                    <button class="solo-arrow" onclick="soloStep(-1)">←</button>
-                    <div class="solo-nav-center">
-                        <span class="solo-counter" id="solo-counter">01 / 01</span>
-                        <div class="solo-live"><span class="solo-live-dot"></span>LIVE CATALOG</div>
-                    </div>
-                    <button class="solo-arrow" onclick="soloStep(1)">→</button>
-                </div>
+
                 <div class="solo-dot-rail" id="solo-dot-rail"></div>
                 <div class="solo-body">
                     <div class="solo-img-col">
@@ -1890,12 +1888,16 @@
 
     <!-- CONTACT -->
     <div id="contact-page" class="page">
+        <div class="shop-hd" style="padding-left:18px;padding-right:18px;">
+            <div class="shop-hd-left">
+                <span class="shop-hd-label">RVI // Contact</span>
+            </div>
+        </div>
         <div class="braille-strip page-strip" style="margin-bottom:0;">
             <span class="braille-strip-inner" id="braille-strip-contact"></span>
         </div>
         <div class="contact-wrap">
             <div>
-                <span class="contact-hd-tag">// CONTACT</span>
                 <h2>Get in touch.</h2>
             </div>
             <form class="contact-form" onsubmit="handleContact(event)">
@@ -2092,112 +2094,104 @@
 <script>
 // ── Images ────────────────────────────────────────────────────────
 const images = [
-    'images/floatingravigrey.png',
-    'images/g-001.jpg',
-    'images/g-002.png',
-    'images/g-003.png',
-    'images/g-004.png',
-    'images/g-005.jpg',
-    'images/g-006.jpg',  // g-040 is duplicate — removed
-    'images/g-007.jpg',
-    'images/g-008.png',
-    'images/g-009.png',  // g-015 is duplicate — removed
-    'images/g-010.jpg',
-    'images/g-011.jpg',  // g-084 is duplicate — removed
-    'images/g-013.jpg',
-    'images/g-014.jpg',
-    'images/g-016.png',
-    'images/g-017.png',
-    'images/g-018.jpg',  // g-031 is duplicate — removed
-    'images/g-019.jpg',
-    'images/g-021.png',
-    'images/g-022.jpg',
-    'images/g-023.jpg',
-    'images/g-024.jpg',
-    'images/g-025.png',
-    'images/g-026.jpg',  // g-028 is duplicate — removed
-    'images/g-027.jpg',  // g-087 is duplicate — removed
-    'images/g-029.jpg',
-    'images/g-030.jpg',
-    'images/g-032.png',
-    'images/g-034.jpeg',
-    'images/g-035.jpg',
-    'images/g-036.jpg',
-    'images/g-037.jpg',
-    'images/g-038.jpg',
-    'images/g-039.jpg',
-    'images/g-041.jpeg',
-    'images/g-042.jpeg',
-    'images/g-043.jpeg',
-    'images/g-044.jpeg',
-    'images/g-045.jpeg',
-    'images/g-046.jpeg',
-    'images/g-047.jpg',
-    'images/g-048.jpg',
-    'images/g-049.jpg',
-    'images/g-050.jpg',
-    'images/g-051.jpg',
-    'images/g-052.jpg',
-    'images/g-053.jpg',
-    'images/g-054.jpg',
-    'images/g-055.jpg',
-    'images/g-056.jpg',
-    'images/g-057.jpg',
-    'images/g-058.jpg',
-    'images/g-059.jpeg',
-    'images/g-060.jpg',
-    'images/g-061.jpg',
-    'images/g-062.jpg',
-    'images/g-063.jpg',
-    'images/g-064.jpg',
-    'images/g-065.jpg',
+    'images/floatingravigrey.webp',
+    'images/g-001.webp',
+    'images/g-002.webp',
+    'images/g-003.webp',
+    'images/g-004.webp',
+    'images/g-005.webp',
+    'images/g-006.webp',
+    'images/g-007.webp',
+    'images/g-008.webp',
+    'images/g-009.webp',
+    'images/g-010.webp',
+    'images/g-011.webp',
+    'images/g-013.webp',
+    'images/g-014.webp',
+    'images/g-016.webp',
+    'images/g-017.webp',
+    'images/g-018.webp',
+    'images/g-019.webp',
+    'images/g-021.webp',
+    'images/g-022.webp',
+    'images/g-023.webp',
+    'images/g-024.webp',
+    'images/g-025.webp',
+    'images/g-026.webp',
+    'images/g-027.webp',
+    'images/g-029.webp',
+    'images/g-030.webp',
+    'images/g-032.webp',
+    'images/g-034.webp',
+    'images/g-035.webp',
+    'images/g-036.webp',
+    'images/g-037.webp',
+    'images/g-038.webp',
+    'images/g-039.webp',
+    'images/g-041.webp',
+    'images/g-042.webp',
+    'images/g-043.webp',
+    'images/g-044.webp',
+    'images/g-045.webp',
+    'images/g-046.webp',
+    'images/g-047.webp',
+    'images/g-048.webp',
+    'images/g-049.webp',
+    'images/g-050.webp',
+    'images/g-051.webp',
+    'images/g-052.webp',
+    'images/g-053.webp',
+    'images/g-054.webp',
+    'images/g-055.webp',
+    'images/g-056.webp',
+    'images/g-057.webp',
+    'images/g-058.webp',
+    'images/g-059.webp',
+    'images/g-060.webp',
+    'images/g-061.webp',
+    'images/g-062.webp',
+    'images/g-063.webp',
+    'images/g-064.webp',
+    'images/g-065.webp',
     'images/g-066.webp',
     'images/g-067.webp',
-    'images/g-068.jpg',
-    'images/g-069.jpg',
-    'images/g-070.jpg',
-    'images/g-071.jpg',
-    'images/g-072.jpg',
-    'images/g-073.jpg',
-    'images/g-074.jpg',
-    'images/g-075.png',
-    'images/g-076.jpg',
-    'images/g-077.jpg',
-    'images/g-078.jpg',
-    'images/g-079.png',
-    'images/g-080.png',
-    'images/g-081.png',
-    'images/g-082.jpeg',
-    'images/g-083.jpeg',
-    'images/g-085.jpeg',
-    'images/g-086.jpeg',
-    'images/g-088.png',
-    'images/g-089.jpeg',
-    'images/ravi-art.png',    // g-012 is duplicate — removed
-    'images/ravi-avatar.png', // g-020 is duplicate — removed
-    'images/ravi-float.png',
-    'images/ravi-moon.png',
-    'images/ravi-print.png',
-    'images/ravi-puffer.png',
-    'images/rock4.png',
-    'images/woodravi.png',
-    'images/g-012.png',
-    'images/g-015.png',
-    'images/g-020.png',
-    'images/g-028.jpg',
-    'images/g-031.jpg',
-    'images/g-033.png',
-    'images/g-040.jpg',
-    'images/g-084.jpg',
-    'images/g-087.jpg',
+    'images/g-068.webp',
+    'images/g-069.webp',
+    'images/g-070.webp',
+    'images/g-071.webp',
+    'images/g-072.webp',
+    'images/g-073.webp',
+    'images/g-074.webp',
+    'images/g-075.webp',
+    'images/g-076.webp',
+    'images/g-077.webp',
+    'images/g-078.webp',
+    'images/g-079.webp',
+    'images/g-080.webp',
+    'images/g-081.webp',
+    'images/g-082.webp',
+    'images/g-083.webp',
+    'images/g-085.webp',
+    'images/g-086.webp',
+    'images/g-088.webp',
+    'images/g-089.webp',
+    'images/ravi-art.webp',
+    'images/ravi-avatar.webp',
+    'images/ravi-float.webp',
+    'images/ravi-moon.webp',
+    'images/ravi-print.webp',
+    'images/ravi-puffer.webp',
+    'images/rock4.webp',
+    'images/woodravi.webp',
+    'images/g-033.webp',
     'videos/animation-reel.mp4',
     'videos/astro-final.mp4',
     'videos/flag-loop.mp4',
     'videos/rock-loop.mp4',
     'videos/ravi-new.mp4',
-    'images/v-clip-a.gif',
-    'images/v-clip-b.gif',
-    'images/v-clip-c.gif',
+    'images/v-clip-a.webp',
+    'images/v-clip-b.webp',
+    'images/v-clip-c.webp',
     'videos/v-new.mp4',
 ];
 
@@ -2281,7 +2275,10 @@ function renderHome() {
 function renderSaved() {
     const grid  = document.getElementById('saved-grid');
     const empty = document.getElementById('saved-empty');
+    const count = document.getElementById('saved-count');
     grid.innerHTML = '';
+
+    if (count) count.textContent = saved.length === 1 ? '1 item' : saved.length + ' items';
 
     if (saved.length === 0) {
         grid.style.display  = 'none';
@@ -2458,24 +2455,35 @@ function renderSoloShop() {
     if (!PRODUCTS || PRODUCTS.length === 0) return;
     const p     = PRODUCTS[soloIdx];
     const total = PRODUCTS.length;
-    soloSize = p.sizes.length === 1 ? p.sizes[0] : null;
+    const sizes = p.sizes || [];
+    soloSize = sizes.length === 1 ? sizes[0] : null;
 
-    const pad = n => String(n).padStart(2,'0');
-    document.getElementById('solo-counter').textContent = pad(soloIdx+1) + ' / ' + pad(total);
-    document.getElementById('shop-count').textContent   = pad(soloIdx+1) + ' / ' + pad(total) + ' specimens';
+    const pad    = n => String(n).padStart(2,'0');
+    const single = total === 1;
+
+    // Hide dot rail when only 1 product
+    const rail = document.getElementById('solo-dot-rail');
+    if (rail)   rail.style.display = single ? 'none' : '';
+    document.getElementById('shop-count').textContent   = single
+        ? '1 specimen'
+        : pad(soloIdx+1) + ' / ' + pad(total) + ' specimens';
     document.getElementById('solo-catalog-ref').textContent = 'SPECIMEN // ' + (p.id || '—').toUpperCase();
     document.getElementById('solo-spec').textContent   = p.spec;
     document.getElementById('solo-name').textContent   = p.name;
     document.getElementById('solo-price').textContent  = '$' + p.price;
     document.getElementById('solo-desc').textContent   = p.desc;
-    document.getElementById('solo-size-label').textContent = 'Select ' + (p.variantLabel || 'Size');
+
+    // Size label — hide if no variants
+    const sizeLabelEl = document.getElementById('solo-size-label');
+    sizeLabelEl.textContent = 'Select ' + (p.variantLabel || 'Size');
+    sizeLabelEl.style.display = sizes.length ? '' : 'none';
 
     // Data strip
     const strip = document.getElementById('solo-data-strip');
     strip.innerHTML = [
-        ['CAT',  p.cat  || '—'],
-        ['PRICE','$' + p.price],
-        ['UNITS', p.sizes.length + ' opts'],
+        ['CAT',   p.cat  || '—'],
+        ['PRICE', '$' + p.price],
+        ['UNITS', sizes.length ? sizes.length + ' opts' : '—'],
     ].map(([l,v]) => `<div class="solo-data-cell"><span class="solo-data-label">${l}</span><span class="solo-data-value">${v}</span></div>`).join('');
 
     // Image
@@ -2498,12 +2506,13 @@ function renderSoloShop() {
         });
     }
 
-    // Sizes
+    // Sizes — hide if no variants
     const sizesEl = document.getElementById('solo-sizes');
     sizesEl.innerHTML = '';
-    p.sizes.forEach(sz => {
+    sizesEl.style.display = sizes.length ? '' : 'none';
+    sizes.forEach(sz => {
         const btn = document.createElement('button');
-        btn.className = 'pdp-size-btn' + (p.sizes.length === 1 ? ' active' : '');
+        btn.className = 'pdp-size-btn' + (sizes.length === 1 ? ' active' : '');
         btn.textContent = sz;
         btn.onclick = () => {
             soloSize = sz;
@@ -2519,9 +2528,8 @@ function renderSoloShop() {
     bEl.title       = UNIVERSE_FACTS[soloIdx % UNIVERSE_FACTS.length];
     document.getElementById('solo-idx').textContent = circledPair(soloIdx);
 
-    // Dot rail
-    const rail = document.getElementById('solo-dot-rail');
-    if (rail) {
+    // Dot rail dots (only when multiple products)
+    if (!single && rail) {
         if (rail.children.length !== total) {
             rail.innerHTML = '';
             PRODUCTS.forEach((_, i) => {
@@ -2691,6 +2699,11 @@ function updateCartBadge() {
     const badge = document.getElementById('cart-badge');
     badge.textContent = total;
     badge.style.display = total > 0 ? 'flex' : 'none';
+    const mobBadge = document.getElementById('mob-cart-badge');
+    if (mobBadge) {
+        mobBadge.textContent = total;
+        mobBadge.style.display = total > 0 ? 'flex' : 'none';
+    }
 }
 
 function renderCartItems() {
