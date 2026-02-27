@@ -864,9 +864,14 @@
         }
         .proj-card-name {
             position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 24px 12px 12px;
-            background: linear-gradient(to top, rgba(0,0,0,.8), transparent);
-            font-size: 12px; font-weight: 600; color: #fff; letter-spacing: .5px;
+            padding: 28px 12px 12px;
+            background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+            font-size: 13px; font-weight: 600; color: #fff; letter-spacing: .5px;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .proj-card-cat {
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 2px; color: var(--green); text-transform: uppercase;
         }
         @media (max-width: 768px) {
             .proj-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -1870,10 +1875,7 @@
             <div class="braille-strip shop-strip">
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
-            <div class="proj-section-label">Main Projects</div>
             <div class="proj-grid" id="proj-main"></div>
-            <div class="proj-section-label" style="margin-top:40px;">Other Work</div>
-            <div class="proj-grid" id="proj-other"></div>
         </div>
     </div>
 
@@ -3302,40 +3304,33 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── Projects ──────────────────────────────────────────────────────
-const PROJECTS_DATA = {
-    main: [
-        { name: 'Boreal',     img: 'https://nicomaggioli.com/media/boreal/hero.png',                     url: 'https://nicomaggioli.com/boreal' },
-        { name: 'Nestquest',  img: 'https://nicomaggioli.com/media/nestquest/hero.png',                  url: 'https://nicomaggioli.com/nestquest' },
-        { name: 'Peak',       img: 'https://nicomaggioli.com/media/peak/hero.png',                       url: 'https://nicomaggioli.com/peak' },
-        { name: 'Cognis',     img: 'https://nicomaggioli.com/media/cognis/llk2v2ue8sghF49ztVTxIJM.png', url: 'https://nicomaggioli.com/cognis' },
-        { name: 'Pawlish',    img: 'https://nicomaggioli.com/media/pawlish/hero.png',                    url: 'https://nicomaggioli.com/pawlish' },
-        { name: 'Mirage',     img: 'https://nicomaggioli.com/media/mirage/1.png',                        url: 'https://nicomaggioli.com/mirage' },
-        { name: 'OXA',        img: 'https://nicomaggioli.com/media/oxa/hero.png',                        url: 'https://nicomaggioli.com/oxa' },
-    ],
-    other: [
-        { name: '3D Print',    img: 'https://nicomaggioli.com/media/3d-print/hero.jpg',    url: 'https://nicomaggioli.com/3d-print' },
-        { name: 'Blender',     img: 'https://nicomaggioli.com/media/blender/hero.png',     url: 'https://nicomaggioli.com/blender' },
-        { name: 'Fingerboard', img: 'https://nicomaggioli.com/media/fingerboard/hero.jpg', url: 'https://nicomaggioli.com/fingerboard' },
-        { name: 'Logos',       img: 'https://nicomaggioli.com/media/logos/hero.png',       url: 'https://nicomaggioli.com/logos' },
-        { name: 'Ravi',        img: 'https://nicomaggioli.com/media/ravi/hero.png',        url: 'https://nicomaggioli.com/ravi' },
-        { name: 'Screenprint', img: 'https://nicomaggioli.com/media/screenprint/hero.jpg', url: 'https://nicomaggioli.com/screenprint' },
-        { name: 'Zipped',      img: 'https://nicomaggioli.com/media/zipped/hero.png',      url: 'https://nicomaggioli.com/zipped' },
-    ]
-};
+const PROJECTS_DATA = [
+    { name: 'Boreal',    cat: 'Product Design',   img: 'https://framerusercontent.com/images/lotADLU8jC28TAbY9FRnyXqjkd0.png', url: 'https://nicomaggioli.framer.website/boreal' },
+    { name: 'Nestquest', cat: 'Branding',          img: 'https://framerusercontent.com/images/xaPoeMXPpheSUAoAjS69gbK01E.png',  url: 'https://nicomaggioli.framer.website/nestquest' },
+    { name: 'Peak',      cat: 'Packaging',         img: 'https://framerusercontent.com/images/i6VG3Eb6qmZPtQHNLXswh8h8i6c.png', url: 'https://nicomaggioli.framer.website/peak' },
+    { name: 'Cognis',    cat: 'AI Comic',          img: 'https://framerusercontent.com/images/S4jYYQGEoVPP6KV4NWIF6GzXqH8.png', url: 'https://nicomaggioli.framer.website/cognis' },
+    { name: 'Pawlish',   cat: 'Packaging & Ads',   img: 'https://framerusercontent.com/images/OqeXHVp7Yb81gOPFkAm025icyNI.png', url: 'https://nicomaggioli.framer.website/pawlish' },
+    { name: 'Voiage',    cat: 'Website',           img: 'https://framerusercontent.com/images/DrU28gWRIzTFGKwxOafPNh5a6CI.png', url: 'https://nicomaggioli.framer.website/voiage' },
+    { name: 'Mirage',    cat: 'Digital / Web',     img: 'https://framerusercontent.com/images/kCA9rY2brMrFEMbs707qg7KOwVM.png', url: 'https://nicomaggioli.framer.website/mirage' },
+    { name: 'Sessio',    cat: 'Advertising',       img: 'https://framerusercontent.com/images/JYSSxIvjBg8qG4uVVKhAYghrI.png',  url: 'https://nicomaggioli.framer.website/sessio' },
+];
 
 function renderProjects() {
-    ['main', 'other'].forEach(section => {
-        const grid = document.getElementById('proj-' + section);
-        if (!grid || grid.children.length) return;
-        PROJECTS_DATA[section].forEach(p => {
-            const a = document.createElement('a');
-            a.className = 'proj-card';
-            a.href = p.url;
-            a.target = '_blank';
-            a.rel = 'noopener';
-            a.innerHTML = `<img src="${p.img}" alt="${p.name}" loading="lazy"><div class="proj-card-name">${p.name}</div>`;
-            grid.appendChild(a);
-        });
+    const grid = document.getElementById('proj-main');
+    if (!grid || grid.children.length) return;
+    PROJECTS_DATA.forEach(p => {
+        const a = document.createElement('a');
+        a.className = 'proj-card';
+        a.href = p.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML = `
+            <img src="${p.img}" alt="${p.name}" loading="lazy">
+            <div class="proj-card-name">
+                <span class="proj-card-cat">${p.cat}</span>
+                ${p.name}
+            </div>`;
+        grid.appendChild(a);
     });
 }
 
