@@ -878,6 +878,55 @@
             .proj-wrap { padding: 0 10px 70px; }
         }
 
+        /* ── PROJECT DETAIL PAGE ───────────────────────────────────── */
+        .proj-detail-wrap {
+            padding: 0 18px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .proj-detail-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: rgba(255,255,255,.4); text-decoration: none;
+            background: none; border: none; cursor: pointer;
+            padding: 24px 0 20px; transition: color .2s;
+        }
+        .proj-detail-back:hover { color: var(--green); }
+        .proj-detail-cat {
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 3px; color: var(--green); text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .proj-detail-title {
+            font-size: clamp(28px, 6vw, 52px); font-weight: 700;
+            color: #f0f0f0; letter-spacing: -1px; line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .proj-detail-hero {
+            width: 100%; border-radius: 14px; overflow: hidden;
+            margin-bottom: 32px; aspect-ratio: 16/9;
+            background: #111; border: 1px solid #1e1e1e;
+        }
+        .proj-detail-hero img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .proj-detail-desc {
+            font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.55);
+            margin-bottom: 32px; max-width: 680px;
+        }
+        .proj-detail-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            height: 44px; padding: 0 24px; border-radius: 22px;
+            background: var(--green); color: #000; font-size: 13px;
+            font-weight: 700; text-decoration: none; transition: opacity .2s;
+        }
+        .proj-detail-link:hover { opacity: .85; }
+        @media (max-width: 768px) {
+            .proj-detail-wrap { padding: 0 14px 70px; }
+            .proj-detail-hero { aspect-ratio: 4/3; }
+        }
+
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
         .solo-view { display: flex; flex-direction: column; min-height: calc(100vh - var(--nav-h)); padding: 0 0 60px; }
 
@@ -1876,6 +1925,20 @@
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
             <div class="proj-grid" id="proj-main"></div>
+        </div>
+    </div>
+
+    <!-- PROJECT DETAIL -->
+    <div id="project-page" class="page">
+        <div class="proj-detail-wrap">
+            <button class="proj-detail-back" onclick="showPage('work')">← Back to Work</button>
+            <div class="proj-detail-cat" id="proj-detail-cat"></div>
+            <h1 class="proj-detail-title" id="proj-detail-title"></h1>
+            <div class="proj-detail-hero">
+                <img id="proj-detail-img" src="" alt="">
+            </div>
+            <p class="proj-detail-desc" id="proj-detail-desc"></p>
+            <a class="proj-detail-link" id="proj-detail-link" href="" target="_blank" rel="noopener">View Case Study →</a>
         </div>
     </div>
 
@@ -3305,32 +3368,42 @@ document.addEventListener('keydown', e => {
 
 // ── Projects ──────────────────────────────────────────────────────
 const PROJECTS_DATA = [
-    { name: 'Boreal',    cat: 'Product Design',   img: 'https://framerusercontent.com/images/lotADLU8jC28TAbY9FRnyXqjkd0.png', url: 'https://nicomaggioli.framer.website/boreal' },
-    { name: 'Nestquest', cat: 'Branding',          img: 'https://framerusercontent.com/images/xaPoeMXPpheSUAoAjS69gbK01E.png',  url: 'https://nicomaggioli.framer.website/nestquest' },
-    { name: 'Peak',      cat: 'Packaging',         img: 'https://framerusercontent.com/images/i6VG3Eb6qmZPtQHNLXswh8h8i6c.png', url: 'https://nicomaggioli.framer.website/peak' },
-    { name: 'Cognis',    cat: 'AI Comic',          img: 'https://framerusercontent.com/images/S4jYYQGEoVPP6KV4NWIF6GzXqH8.png', url: 'https://nicomaggioli.framer.website/cognis' },
-    { name: 'Pawlish',   cat: 'Packaging & Ads',   img: 'https://framerusercontent.com/images/OqeXHVp7Yb81gOPFkAm025icyNI.png', url: 'https://nicomaggioli.framer.website/pawlish' },
-    { name: 'Voiage',    cat: 'Website',           img: 'https://framerusercontent.com/images/DrU28gWRIzTFGKwxOafPNh5a6CI.png', url: 'https://nicomaggioli.framer.website/voiage' },
-    { name: 'Mirage',    cat: 'Digital / Web',     img: 'https://framerusercontent.com/images/kCA9rY2brMrFEMbs707qg7KOwVM.png', url: 'https://nicomaggioli.framer.website/mirage' },
-    { name: 'Sessio',    cat: 'Advertising',       img: 'https://framerusercontent.com/images/JYSSxIvjBg8qG4uVVKhAYghrI.png',  url: 'https://nicomaggioli.framer.website/sessio' },
+    { name: 'Boreal',    cat: 'Product Design',  img: 'https://framerusercontent.com/images/lotADLU8jC28TAbY9FRnyXqjkd0.png', url: 'https://nicomaggioli.framer.website/boreal',    desc: '' },
+    { name: 'Nestquest', cat: 'Branding',         img: 'https://framerusercontent.com/images/xaPoeMXPpheSUAoAjS69gbK01E.png',  url: 'https://nicomaggioli.framer.website/nestquest', desc: '' },
+    { name: 'Peak',      cat: 'Packaging',        img: 'https://framerusercontent.com/images/i6VG3Eb6qmZPtQHNLXswh8h8i6c.png', url: 'https://nicomaggioli.framer.website/peak',      desc: '' },
+    { name: 'Cognis',    cat: 'AI Comic',         img: 'https://framerusercontent.com/images/S4jYYQGEoVPP6KV4NWIF6GzXqH8.png', url: 'https://nicomaggioli.framer.website/cognis',    desc: '' },
+    { name: 'Pawlish',   cat: 'Packaging & Ads',  img: 'https://framerusercontent.com/images/OqeXHVp7Yb81gOPFkAm025icyNI.png', url: 'https://nicomaggioli.framer.website/pawlish',   desc: '' },
+    { name: 'Voiage',    cat: 'Website',          img: 'https://framerusercontent.com/images/DrU28gWRIzTFGKwxOafPNh5a6CI.png', url: 'https://nicomaggioli.framer.website/voiage',    desc: '' },
+    { name: 'Mirage',    cat: 'Digital / Web',    img: 'https://framerusercontent.com/images/kCA9rY2brMrFEMbs707qg7KOwVM.png', url: 'https://nicomaggioli.framer.website/mirage',    desc: '' },
+    { name: 'Sessio',    cat: 'Advertising',      img: 'https://framerusercontent.com/images/JYSSxIvjBg8qG4uVVKhAYghrI.png',  url: 'https://nicomaggioli.framer.website/sessio',    desc: '' },
 ];
+
+function openProject(idx) {
+    const p = PROJECTS_DATA[idx];
+    document.getElementById('proj-detail-cat').textContent   = p.cat;
+    document.getElementById('proj-detail-title').textContent = p.name;
+    document.getElementById('proj-detail-img').src           = p.img;
+    document.getElementById('proj-detail-img').alt           = p.name;
+    document.getElementById('proj-detail-desc').textContent  = p.desc || '';
+    document.getElementById('proj-detail-link').href         = p.url;
+    showPage('project');
+}
 
 function renderProjects() {
     const grid = document.getElementById('proj-main');
     if (!grid || grid.children.length) return;
-    PROJECTS_DATA.forEach(p => {
-        const a = document.createElement('a');
-        a.className = 'proj-card';
-        a.href = p.url;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        a.innerHTML = `
+    PROJECTS_DATA.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'proj-card';
+        card.style.cursor = 'pointer';
+        card.onclick = () => openProject(i);
+        card.innerHTML = `
             <img src="${p.img}" alt="${p.name}" loading="lazy">
             <div class="proj-card-name">
                 <span class="proj-card-cat">${p.cat}</span>
                 ${p.name}
             </div>`;
-        grid.appendChild(a);
+        grid.appendChild(card);
     });
 }
 
