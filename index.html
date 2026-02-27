@@ -827,28 +827,30 @@
             font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 2px; text-transform: uppercase;
             color: rgba(255,255,255,.35); background: none; border: none;
-            cursor: pointer; padding: 24px 0 20px; transition: color .2s;
+            cursor: pointer; padding: 28px 24px; transition: color .2s;
         }
         .proj-detail-back:hover { color: var(--green); }
+        .proj-detail-header {
+            padding: 0 24px 36px; border-bottom: 1px solid #1a1a1a;
+            max-width: 1100px; margin: 0 auto;
+        }
         .proj-detail-cat {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: var(--green); text-transform: uppercase;
-            margin-bottom: 10px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 12px;
         }
         .proj-detail-title {
-            font-size: clamp(30px, 6vw, 60px); font-weight: 700;
-            color: #f0f0f0; letter-spacing: -1.5px; line-height: 1.05;
-            margin-bottom: 24px;
+            font-size: clamp(36px, 7vw, 72px); font-weight: 800;
+            color: #f0f0f0; letter-spacing: -2px; line-height: 1.02;
+            margin-bottom: 28px;
         }
         .proj-detail-meta {
             display: flex; flex-wrap: wrap; gap: 0;
-            border-top: 1px solid #1f1f1f; border-bottom: 1px solid #1f1f1f;
-            margin-bottom: 36px;
         }
         .proj-detail-meta-item {
             display: flex; flex-direction: column; gap: 5px;
-            padding: 16px 28px 16px 0;
-            border-right: 1px solid #1a1a1a; margin-right: 28px;
+            padding: 0 32px 0 0; margin-right: 32px;
+            border-right: 1px solid #1a1a1a;
         }
         .proj-detail-meta-item:last-child { border-right: none; }
         .proj-detail-meta-label {
@@ -859,51 +861,51 @@
             font-size: 13px; font-weight: 500; color: rgba(255,255,255,.7);
         }
         .proj-detail-hero {
-            width: 100%; border-radius: 12px; overflow: hidden;
-            margin-bottom: 40px; aspect-ratio: 16/9;
-            background: #111; border: 1px solid #1e1e1e; position: relative;
+            width: 100%; overflow: hidden; aspect-ratio: 16/9;
+            background: #0d0d0d; position: relative;
         }
         .proj-detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .proj-detail-hero-scan {
-            position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.04) 2px, rgba(0,0,0,.04) 4px);
-            z-index: 2;
+        .proj-detail-body {
+            max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px;
         }
         .proj-detail-desc {
-            font-size: 17px; line-height: 1.85; color: rgba(255,255,255,.6);
-            margin-bottom: 48px; max-width: 700px;
+            font-size: 18px; line-height: 1.85; color: rgba(255,255,255,.6);
+            margin-bottom: 56px; max-width: 680px;
         }
-        .proj-detail-divider {
-            height: 1px; background: #1a1a1a; margin: 48px 0;
+        .proj-detail-sections { display: flex; flex-direction: column; }
+        .proj-detail-section {
+            display: grid; grid-template-columns: 220px 1fr; gap: 32px;
+            padding: 28px 0; border-top: 1px solid #1a1a1a;
         }
-        .proj-detail-section { margin-bottom: 44px; }
         .proj-detail-section-hd {
-            font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: var(--green); text-transform: uppercase;
-            margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
-        }
-        .proj-detail-section-hd::after {
-            content: ''; flex: 1; height: 1px; background: #1a1a1a;
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            padding-top: 3px;
         }
         .proj-detail-section-body {
             font-size: 15px; line-height: 1.85; color: rgba(255,255,255,.5);
-            max-width: 700px;
         }
         .proj-detail-gallery {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 10px; margin-top: 40px;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 8px; margin-top: 56px;
         }
         .proj-detail-gallery img {
-            width: 100%; border-radius: 8px; display: block;
+            width: 100%; border-radius: 4px; display: block;
             aspect-ratio: 4/3; object-fit: cover;
-            border: 1px solid #1e1e1e;
             transition: opacity .3s, transform .3s;
         }
-        .proj-detail-gallery img:hover { opacity: .88; transform: scale(1.01); cursor: zoom-in; }
+        .proj-detail-gallery img:hover { opacity: .85; transform: scale(1.01); cursor: zoom-in; }
         @media (max-width: 768px) {
+            .proj-detail-header { padding: 0 16px 28px; }
+            .proj-detail-back { padding: 24px 16px; }
             .proj-detail-hero { aspect-ratio: 4/3; }
-            .proj-detail-gallery { grid-template-columns: 1fr; gap: 8px; }
-            .proj-detail-meta-item { padding: 14px 20px 14px 0; margin-right: 20px; }
+            .proj-detail-body { padding: 32px 16px 60px; }
+            .proj-detail-section { grid-template-columns: 1fr; gap: 10px; }
+            .proj-detail-gallery { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .proj-detail-meta-item { padding: 0 20px 0 0; margin-right: 20px; }
+        }
+        @media (max-width: 480px) {
+            .proj-detail-gallery { grid-template-columns: 1fr; }
         }
 
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
@@ -1675,9 +1677,8 @@
             <!-- ── PANEL PA ── -->
             <div class="hud-panel hud-pa">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pa">
-                    <source src="videos/flag-loop.mp4?feed=a" type="video/mp4">
+                    <source src="videos/NEW/Clean%20Camera%20Movement.MP4?feed=a" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1689,9 +1690,8 @@
             <!-- ── PANEL PB ── -->
             <div class="hud-panel hud-pb">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pb">
-                    <source src="videos/rock-loop.mp4?feed=b" type="video/mp4">
+                    <source src="videos/NEW/Volcano%20Video.MP4?feed=b" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1703,9 +1703,8 @@
             <!-- ── PANEL PC ── -->
             <div class="hud-panel hud-pc">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pc">
-                    <source src="videos/astro-final.mp4?feed=c" type="video/mp4">
+                    <source src="videos/NEW/Sleek%20Animation.MP4?feed=c" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1717,9 +1716,8 @@
             <!-- ── PANEL PD ── -->
             <div class="hud-panel hud-pd">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pd">
-                    <source src="videos/Animation%20Reel.mp4?feed=d" type="video/mp4">
+                    <source src="videos/NEW/SOMA.MP4?feed=d" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1731,9 +1729,8 @@
             <!-- ── PANEL PE ── -->
             <div class="hud-panel hud-pe">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pe">
-                    <source src="videos/rock-loop.mp4?feed=e" type="video/mp4">
+                    <source src="videos/NEW/clash.MP4?feed=e" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1745,9 +1742,8 @@
             <!-- ── PANEL PF ── -->
             <div class="hud-panel hud-pf">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pf">
-                    <source src="videos/astro-final.mp4?feed=f" type="video/mp4">
+                    <source src="videos/NEW/Puffco%20ad.MP4?feed=f" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1756,25 +1752,23 @@
                 </div>
             </div>
 
-            <!-- ── PANEL MAIN ── -->
+            <!-- ── PANEL PG ── -->
             <div class="hud-panel hud-pg">
                 <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pg">
-                    <source src="videos/ravi-new.mp4?feed=g" type="video/mp4">
+                    <source src="videos/NEW/waves.MP4?feed=g" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
-                        <span class="pl-id">CAM—G / FEED 07</span>
+                        <span class="pl-id">CAM—G</span>
                     </div>
                 </div>
             </div>
 
             <div class="hud-panel hud-main">
                 <video class="hud-vid hud-vid-main" id="hero-video" autoplay muted loop playsinline preload="auto">
-                    <source src="videos/Animation%20Reel.mp4" type="video/mp4">
+                    <source src="videos/NEW/Animation%20Reel.mp4" type="video/mp4">
                 </video>
-                <div class="scan-line"></div>
                 <div class="panel-ui">
                     <div class="panel-label">
                         <span class="pl-dot"></span>
@@ -1954,8 +1948,6 @@
             <div class="shop-status" style="margin-top:12px;">
                 <span class="shop-status-inner" id="work-status-inner"></span>
             </div>
-            <!-- category filters -->
-            <div class="proj-filter" id="proj-filter"></div>
             <div class="braille-strip shop-strip">
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
@@ -3080,36 +3072,11 @@ document.addEventListener('keydown', e => {
 
 // ── Projects ──────────────────────────────────────────────────────
 let PROJECTS = [];
-let currentFilter = 'all';
-
-function buildFilterBtns() {
-    const filterEl = document.getElementById('proj-filter');
-    if (!filterEl) return;
-    const cats = ['All', ...new Set(PROJECTS.map(p => p.cat))];
-    filterEl.innerHTML = cats.map(c => {
-        const val = c === 'All' ? 'all' : c;
-        return `<button class="proj-filter-btn${val === 'all' ? ' active' : ''}" onclick="filterProjects('${val.replace(/'/g,"\\'")}'">${c}</button>`;
-    }).join('');
-}
-
-function filterProjects(cat) {
-    currentFilter = cat;
-    document.querySelectorAll('.proj-filter-btn').forEach(b => {
-        const isAll = b.textContent === 'All';
-        b.classList.toggle('active', (cat === 'all' && isAll) || b.textContent === cat);
-    });
-    document.querySelectorAll('.proj-card').forEach(card => {
-        card.hidden = cat !== 'all' && card.dataset.cat !== cat;
-    });
-    const visible = [...document.querySelectorAll('.proj-card')].filter(c => !c.hidden).length;
-    const countEl = document.getElementById('proj-count');
-    if (countEl) countEl.textContent = String(visible).padStart(2,'0') + ' / ' + String(PROJECTS.length).padStart(2,'0');
-}
 
 function openProject(idx) {
     const p = PROJECTS[idx];
     const galleryHTML = (p.gallery || []).map(src =>
-        `<img src="${src}" alt="${p.name}" loading="lazy">`
+        `<img src="${src}" referrerpolicy="no-referrer" alt="${p.name}" loading="lazy">`
     ).join('');
     const sectionsHTML = (p.sections || []).map(s =>
         `<div class="proj-detail-section">
@@ -3136,10 +3103,12 @@ function openProject(idx) {
                 </div>
             </div>
         </div>
-        <div class="proj-detail-hero"><img src="${p.img}" alt="${p.name}"></div>
-        <p class="proj-detail-desc">${p.desc}</p>
-        ${sectionsHTML}
-        <div class="proj-detail-gallery">${galleryHTML}</div>`;
+        <div class="proj-detail-hero"><img src="${p.img}" referrerpolicy="no-referrer" alt="${p.name}"></div>
+        <div class="proj-detail-body">
+            <p class="proj-detail-desc">${p.desc}</p>
+            <div class="proj-detail-sections">${sectionsHTML}</div>
+            <div class="proj-detail-gallery">${galleryHTML}</div>
+        </div>`;
     showPage('project');
     window.scrollTo(0, 0);
 }
@@ -3164,15 +3133,13 @@ function renderProjects() {
         const braille = toBraille(p.name);
         const card = document.createElement('div');
         card.className = 'proj-card';
-        card.dataset.cat = p.cat;
         card.onclick = () => openProject(i);
         card.innerHTML = `
             <div class="proj-card-img">
-                <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.parentElement.style.background='#1a1a1a'">
+                <img src="${p.img}" referrerpolicy="no-referrer" alt="${p.name}" loading="lazy" onerror="this.parentElement.style.background='#1a1a1a'">
                 <div class="proj-card-scan"></div>
             </div>
             <div class="proj-card-info">
-                <div class="proj-card-spec">${p.cat}</div>
                 <div class="proj-card-name">${p.name}</div>
                 <div class="proj-card-year">${p.year}</div>
                 <div class="proj-card-braille-row">
@@ -3182,8 +3149,6 @@ function renderProjects() {
             </div>`;
         grid.appendChild(card);
     });
-
-    buildFilterBtns();
 }
 
 // ── Init ──────────────────────────────────────────────────────────
