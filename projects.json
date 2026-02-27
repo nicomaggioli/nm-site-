@@ -1,0 +1,258 @@
+[
+    {
+        "id": "boreal",
+        "name": "Boreal",
+        "cat": "Product Design",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Animation",
+        "img": "https://nicomaggioli.com/media/boreal/hero.png",
+        "desc": "Boreal ski bindings is intentionally designed with a brutalist aesthetic, embodying safety, strength, and reliability. The angular, solid shape conveys a sense of protection and durability.",
+        "sections": [
+            { "hd": "Concept: Performance Meets Protection", "body": "The objective involved creating ski bindings with integrated GPS and sensor technology plus anti-theft security. The goal was to help skiers track progress while protecting equipment." },
+            { "hd": "Creative Strategy: For the Serious Skier", "body": "\"These bindings aren't for the average jerry.\" The strategy fused cutting-edge technology with performance-driven aesthetics, targeting competitive skiers wanting skill advancement." },
+            { "hd": "The App: Your Digital Companion", "body": "Real-time run feedback including speed, distance, and performance metrics. Anti-theft alerts and gamified competition features with daily achievement tracking." },
+            { "hd": "Process: Behind the Design", "body": "Documentation spanning sketches through final 3D renders with careful detail consideration." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/boreal/1.png",
+            "https://nicomaggioli.com/media/boreal/2.png",
+            "https://nicomaggioli.com/media/boreal/3.png",
+            "https://nicomaggioli.com/media/boreal/4.png",
+            "https://nicomaggioli.com/media/boreal/5.png",
+            "https://nicomaggioli.com/media/boreal/6.png",
+            "https://nicomaggioli.com/media/boreal/7.png",
+            "https://nicomaggioli.com/media/boreal/8.png",
+            "https://nicomaggioli.com/media/boreal/9.png",
+            "https://nicomaggioli.com/media/boreal/10.png",
+            "https://nicomaggioli.com/media/boreal/11.jpg"
+        ]
+    },
+    {
+        "id": "nestquest",
+        "name": "Nestquest",
+        "cat": "Branding & Product Design",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Product Design · App Design · Card Game Design · Branding",
+        "img": "https://nicomaggioli.com/media/nestquest/hero.png",
+        "desc": "Nestquest is all about using technology to pull kids away from endless screen time and into the great outdoors. Kids use advanced image recognition binoculars that instantly identify different bird species, making nature exploration fun, interactive, and educational.",
+        "sections": [
+            { "hd": "Concept: Technology for Outdoor Exploration", "body": "The creator observed that children spend excessive time on digital devices and sought to repurpose technology as an exploration instrument rather than a distraction tool." },
+            { "hd": "Creative Strategy: New Tech, Familiar Feel", "body": "The approach combines emerging technology with the nostalgic appeal of trading card collection, transforming birdwatching into a competitive, shareable game." },
+            { "hd": "The Card Game: Collect, Trade, Compete", "body": "Collection mechanics, trading systems, and friend-based sharing sustain user motivation and exploration incentives." },
+            { "hd": "Advertising Campaign", "body": "Vibrant, playful visuals designed to captivate young audiences, incorporating interactive components to stimulate curiosity and encourage exploration." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/nestquest/1.png",
+            "https://nicomaggioli.com/media/nestquest/2.png",
+            "https://nicomaggioli.com/media/nestquest/3.png",
+            "https://nicomaggioli.com/media/nestquest/4.png",
+            "https://nicomaggioli.com/media/nestquest/5.png",
+            "https://nicomaggioli.com/media/nestquest/6.png",
+            "https://nicomaggioli.com/media/nestquest/7.png",
+            "https://nicomaggioli.com/media/nestquest/8.png",
+            "https://nicomaggioli.com/media/nestquest/9.png",
+            "https://nicomaggioli.com/media/nestquest/10.png",
+            "https://nicomaggioli.com/media/nestquest/11.jpg",
+            "https://nicomaggioli.com/media/nestquest/12.jpg",
+            "https://nicomaggioli.com/media/nestquest/13.jpg",
+            "https://nicomaggioli.com/media/nestquest/14.jpg"
+        ]
+    },
+    {
+        "id": "peak",
+        "name": "Peak",
+        "cat": "Packaging & Branding",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Website Design",
+        "img": "https://nicomaggioli.com/media/peak/hero.png",
+        "desc": "Peak reimagines Lion's Mane consumption through a sublingual troche format. The product melts under your tongue, allowing it to be absorbed directly into your bloodstream, so you experience the benefits in hours instead of weeks.",
+        "sections": [
+            { "hd": "Rethinking Supplement Delivery", "body": "Peak addresses traditional supplement limitations by offering faster absorption than tablets or pills through digestive processes." },
+            { "hd": "Stand Out From the Crowd", "body": "The strategy targets entrepreneurs in fast-paced environments who prioritize efficiency, contrasting against generic, holistic supplement market aesthetics." },
+            { "hd": "Luxury That Signals Success", "body": "Design incorporates gold, dark green, maroon, and navy blue to convey wealth and luxury, differentiating from competitors." },
+            { "hd": "Campaign for the Hustlers", "body": "Campaign imagery includes lightbulbs symbolizing bright ideas and money depicting financial success, aimed at entrepreneurs seeking mental clarity and productivity enhancement." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/peak/1.png",
+            "https://nicomaggioli.com/media/peak/2.png",
+            "https://nicomaggioli.com/media/peak/3.png",
+            "https://nicomaggioli.com/media/peak/4.png",
+            "https://nicomaggioli.com/media/peak/5.png",
+            "https://nicomaggioli.com/media/peak/6.png",
+            "https://nicomaggioli.com/media/peak/7.png",
+            "https://nicomaggioli.com/media/peak/8.png",
+            "https://nicomaggioli.com/media/peak/9.png",
+            "https://nicomaggioli.com/media/peak/10.png",
+            "https://nicomaggioli.com/media/peak/11.png",
+            "https://nicomaggioli.com/media/peak/12.png",
+            "https://nicomaggioli.com/media/peak/13.png"
+        ]
+    },
+    {
+        "id": "cognis",
+        "name": "Cognis",
+        "cat": "AI Comic",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · AI Art · Storytelling · Print Design · Riso Printing",
+        "img": "https://nicomaggioli.com/media/cognis/llk2v2ue8sghF49ztVTxIJM.png",
+        "desc": "At the start of 2023, with tools like ChatGPT and Midjourney on the rise, I saw an opportunity to bring a long time dream to life: making a comic book.",
+        "sections": [
+            { "hd": "AI Meets Traditional Storytelling", "body": "I spent weeks generating thousands of images, combining them into a cohesive narrative, and used Photoshop to maintain character consistency throughout. The result was a fully realized AI-assisted visual story." },
+            { "hd": "Old Tech, New Stories", "body": "I chose to Riso print this comic as a playful contrast between old and new technology. Since Cognis explores the future and AI, it felt fitting to use a retro printing aesthetic like Riso." },
+            { "hd": "Crafting the Visual Narrative", "body": "From AI-generated concepts to careful editing and Riso printing, every step was designed to bridge the gap between emerging technology and traditional art forms." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/cognis/1.png",
+            "https://nicomaggioli.com/media/cognis/2.png",
+            "https://nicomaggioli.com/media/cognis/3.png",
+            "https://nicomaggioli.com/media/cognis/P7En9uM5opfvlaWzS9S5tyGB4.png"
+        ]
+    },
+    {
+        "id": "pawlish",
+        "name": "Pawlish",
+        "cat": "Packaging & Advertising",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Advertising",
+        "img": "https://nicomaggioli.com/media/pawlish/hero.png",
+        "desc": "A specially formulated nail polish with a rubbery finish that improves traction and prevents sliding on hard surfaces like wood floors, while also protecting floors from scratches.",
+        "sections": [
+            { "hd": "Concept: Safety Meets Style", "body": "A solution for dogs that slip and hurt themselves on hard surfaces — a specially formulated nail polish with a rubbery finish that improves traction and prevents sliding, while also protecting your floors from scratches." },
+            { "hd": "Packaging: What Customers Want", "body": "Research at major retailers revealed around 80% of customers gravitate toward packaging featuring a realistic dog. The packaging features a realistic dog leaning over a see-through panel highlighting painted nails." },
+            { "hd": "Color Strategy: Three Unique Shades", "body": "Jungle Glow (Green) — natural ingredients. Azure Dream (Blue) — peace of mind from slip prevention. Pinkalicious (Pink) — vibrant personality option for standout dogs." },
+            { "hd": "Advertising: Speaking to Pet Parents", "body": "Three key ads highlighted: durability (water resistance), grippy rubbery finish preventing slips, and stress-free application." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/pawlish/1.png",
+            "https://nicomaggioli.com/media/pawlish/2.png",
+            "https://nicomaggioli.com/media/pawlish/3.jpg",
+            "https://nicomaggioli.com/media/pawlish/4.png",
+            "https://nicomaggioli.com/media/pawlish/5.png",
+            "https://nicomaggioli.com/media/pawlish/6.png",
+            "https://nicomaggioli.com/media/pawlish/7.png",
+            "https://nicomaggioli.com/media/pawlish/8.png",
+            "https://nicomaggioli.com/media/pawlish/9.png",
+            "https://nicomaggioli.com/media/pawlish/10.png",
+            "https://nicomaggioli.com/media/pawlish/11.jpg"
+        ]
+    },
+    {
+        "id": "voiage",
+        "name": "Voiage",
+        "cat": "Website Design",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · UI/UX Design · Branding · Web Design",
+        "img": "https://nicomaggioli.com/media/voiage/1.png",
+        "desc": "A comprehensive travel platform designed to make trip planning effortless and enjoyable — using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.",
+        "sections": [
+            { "hd": "Transparency in Giving", "body": "Traditional charitable giving often lacks transparency, leaving donors unsure of where their money goes. Voiage changes this by using blockchain technology to create a fully trackable donation system." },
+            { "hd": "Trust Through Design", "body": "I focused on transparency over the technical details of blockchain. The website looks like any other charitable site at first, but once you make a donation, you get access to a dashboard that shows exactly where your money is going." },
+            { "hd": "Campaign", "body": "Each ad featured a see-through bus stop design, symbolizing how every donation is clearly recorded on a permanent ledger. This literal display emphasizes that nothing is hidden with Voiage." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/voiage/1.png",
+            "https://nicomaggioli.com/media/voiage/2.png",
+            "https://nicomaggioli.com/media/voiage/3.png",
+            "https://nicomaggioli.com/media/voiage/4.png",
+            "https://nicomaggioli.com/media/voiage/5.png",
+            "https://nicomaggioli.com/media/voiage/8.png",
+            "https://nicomaggioli.com/media/voiage/9.png",
+            "https://nicomaggioli.com/media/voiage/10.png",
+            "https://nicomaggioli.com/media/voiage/11.png"
+        ]
+    },
+    {
+        "id": "mirage",
+        "name": "Mirage",
+        "cat": "Digital / Web",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Branding · Art Direction · 3D Modeling · Animation · Advertising",
+        "img": "https://nicomaggioli.com/media/mirage/1.png",
+        "desc": "Mirage is a virtual tribute event designed to honor hip-hop artists whose lives were tragically cut short due to drug addiction. Drawing inspiration from virtual concerts like those in Fortnite — combining live hip-hop performance energy with charitable impact. All proceeds support addiction recovery organizations.",
+        "sections": [
+            { "hd": "Virtual Tribute, Real Impact", "body": "The project blends virtual reality concert experiences with meaningful charitable outcomes supporting addiction recovery." },
+            { "hd": "The Illusion of a Mirage", "body": "The strategy employs reflection, glare, and contrasting colors to evoke mirage imagery and prompt reflection on life, death, and the possibility of reincarnation while celebrating artist legacies." },
+            { "hd": "Campaign", "body": "Focused on demonstrating accessibility — that users can experience the Mirage festival from any location, including personal spaces." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/mirage/1.png",
+            "https://nicomaggioli.com/media/mirage/2.png",
+            "https://nicomaggioli.com/media/mirage/3.png",
+            "https://nicomaggioli.com/media/mirage/4.png",
+            "https://nicomaggioli.com/media/mirage/5.png",
+            "https://nicomaggioli.com/media/mirage/6.png",
+            "https://nicomaggioli.com/media/mirage/7.png",
+            "https://nicomaggioli.com/media/mirage/8.png",
+            "https://nicomaggioli.com/media/mirage/9.png",
+            "https://nicomaggioli.com/media/mirage/10.png",
+            "https://nicomaggioli.com/media/mirage/11.webp"
+        ]
+    },
+    {
+        "id": "oxa",
+        "name": "OXA",
+        "cat": "Industrial Design",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · Industrial Design · 3D Printing · Branding · Advertising",
+        "img": "https://nicomaggioli.com/media/oxa/hero.png",
+        "desc": "OXA is a 3D printed air detoxifier inspired by Favia coral, whose intricate, porous structure helps trap sediments and supports filter feeders. It blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.",
+        "sections": [
+            { "hd": "Reinventing Air Purification", "body": "Modern air purification devices are bulky, noisy, and require an energy source. OXA blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament." },
+            { "hd": "Inspired by Nature", "body": "Design inspiration derives from Favia coral structure, mimicking natural forms to create an elegant solution to air purification, symbolizing nature's innate ability to refresh and cleanse." },
+            { "hd": "Spreading Awareness", "body": "Campaign elements include bus stop advertisements featuring a real time meter that shows exactly how clean or dirty the air is, and demonstrations of the before and after difference when OXA is installed." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/oxa/1.png",
+            "https://nicomaggioli.com/media/oxa/2.png",
+            "https://nicomaggioli.com/media/oxa/3.png",
+            "https://nicomaggioli.com/media/oxa/4.png",
+            "https://nicomaggioli.com/media/oxa/5.png",
+            "https://nicomaggioli.com/media/oxa/6.png",
+            "https://nicomaggioli.com/media/oxa/7.png",
+            "https://nicomaggioli.com/media/oxa/8.png",
+            "https://nicomaggioli.com/media/oxa/9.png",
+            "https://nicomaggioli.com/media/oxa/10.png",
+            "https://nicomaggioli.com/media/oxa/11.png",
+            "https://nicomaggioli.com/media/oxa/12.png",
+            "https://nicomaggioli.com/media/oxa/13.png",
+            "https://nicomaggioli.com/media/oxa/14.png",
+            "https://nicomaggioli.com/media/oxa/15.png",
+            "https://nicomaggioli.com/media/oxa/16.png"
+        ]
+    },
+    {
+        "id": "sessio",
+        "name": "Sessio",
+        "cat": "Advertising & 3D",
+        "year": "2024",
+        "role": "Creative Director",
+        "services": "Concept · 3D Modeling · Character Design · Branding · Advertising",
+        "img": "https://nicomaggioli.com/media/sessio/1.png",
+        "desc": "I wanted to push the boundaries of skateboarding and make Sessio feel like a whole new world, kind of like Disney. I modeled a frog, named Sevvy, to be the mascot of Sessio. Sevvy represents that playful, rebellious spirit that skateboarding is all about.",
+        "sections": [
+            { "hd": "A Revolutionary Skatepark", "body": "The project redefines skateparks by drawing inspiration from world wonders and exclusive locations, addressing how traditional skateparks feel uninspiring to skateboarders who crave unexpected, risk-taking experiences." },
+            { "hd": "Meet Sevvy the Frog", "body": "Sevvy serves as the mascot embodying skateboarding's playful and rebellious character. The strategy blends wonder with forbidden elements, transforming skate sessions into adventures where rules are rewritten." },
+            { "hd": "Campaign", "body": "The campaign depicts Sevvy traveling globally, skating iconic off-limits locations styled like theme park attractions. Visuals emphasize vibrant, bold imagery transforming skateboarding into a world of adventure." }
+        ],
+        "gallery": [
+            "https://nicomaggioli.com/media/sessio/1.png",
+            "https://nicomaggioli.com/media/sessio/2.png",
+            "https://nicomaggioli.com/media/sessio/3.png",
+            "https://nicomaggioli.com/media/sessio/4.png",
+            "https://nicomaggioli.com/media/sessio/5.png",
+            "https://nicomaggioli.com/media/sessio/6.png",
+            "https://nicomaggioli.com/media/sessio/7.png",
+            "https://nicomaggioli.com/media/sessio/8.png",
+            "https://nicomaggioli.com/media/sessio/9.webp",
+            "https://nicomaggioli.com/media/sessio/10.webp"
+        ]
+    }
+]

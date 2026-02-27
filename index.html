@@ -595,95 +595,6 @@
         .braille-strip.page-strip { margin: 28px 0 0; }
         .shop-item-info { padding: 0 0 20px; }
 
-        /* ── CART BUTTON (nav) ───────────────────────────────────────── */
-        .cart-btn {
-            position: absolute; right: 24px;
-            display: flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px;
-            background: transparent; border: none;
-            border-radius: 50%;
-            color: var(--black); cursor: pointer;
-            padding: 0;
-            transition: background .15s, color .15s;
-        }
-        .cart-btn:hover { background: var(--g2); }
-        .cart-badge {
-            position: absolute; top: 2px; right: 2px;
-            display: none; align-items: center; justify-content: center;
-            width: 14px; height: 14px; border-radius: 50%;
-            background: var(--green); color: #000;
-            font-size: 8px; font-weight: 700;
-        }
-        @media (max-width: 768px) {
-            .cart-btn { display: none; }
-        }
-        .mob-cart-badge {
-            display: none; align-items: center; justify-content: center;
-            width: 18px; height: 18px; border-radius: 50%;
-            background: var(--green); color: #000;
-            font-family: 'Courier New', monospace; font-size: 9px; font-weight: 700;
-            margin-left: auto;
-        }
-
-        /* ── CART DRAWER ─────────────────────────────────────────────── */
-        .cart-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,.6);
-            z-index: 2999; opacity: 0; pointer-events: none; transition: opacity .3s;
-        }
-        .cart-backdrop.open { opacity: 1; pointer-events: all; }
-        .cart-drawer {
-            position: fixed; top: 0; right: -110%; width: 380px; max-width: 100vw;
-            height: 100vh; background: #0a0a0a;
-            border-left: 1px solid #1f1f1f;
-            z-index: 3000; transition: right .4s cubic-bezier(.34,1.56,.64,1);
-            display: flex; flex-direction: column;
-        }
-        .cart-drawer.open { right: 0; }
-        .cart-head {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 20px; border-bottom: 1px solid #1f1f1f;
-        }
-        .cart-head-title {
-            font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 3px;
-            color: var(--green); text-transform: uppercase;
-        }
-        .cart-close {
-            width: 32px; height: 32px; border-radius: 50%; border: 1px solid #333;
-            background: transparent; color: #888; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 18px; transition: all .2s;
-        }
-        .cart-close:hover { border-color: var(--green); color: var(--green); }
-        .cart-list { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
-        .cart-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,.3); font-size: 13px; }
-        .cart-item { display: flex; gap: 12px; align-items: center; }
-        .cart-item-img { width: 64px; height: 64px; object-fit: contain; border-radius: 8px; background: #111; padding: 6px; flex-shrink: 0; }
-        .cart-item-info { flex: 1; }
-        .cart-item-name { font-size: 13px; font-weight: 500; color: #e0e0e0; margin-bottom: 3px; }
-        .cart-item-meta { font-family: 'Courier New', monospace; font-size: 10px; color: rgba(255,255,255,.35); letter-spacing: 1px; margin-bottom: 4px; }
-        .cart-item-price { font-family: 'Courier New', monospace; font-size: 12px; color: var(--green); }
-        .cart-item-remove {
-            background: transparent; border: none; color: rgba(255,255,255,.3);
-            font-size: 20px; cursor: pointer; padding: 4px; line-height: 1;
-            transition: color .2s;
-        }
-        .cart-item-remove:hover { color: #ff4444; }
-        .cart-footer {
-            border-top: 1px solid #1f1f1f; padding: 20px;
-            display: flex; flex-direction: column; gap: 12px;
-        }
-        .cart-subtotal-row {
-            display: flex; justify-content: space-between;
-            font-family: 'Courier New', monospace; font-size: 11px;
-            color: rgba(255,255,255,.5); letter-spacing: 1px;
-        }
-        .cart-subtotal-row.total { color: #f0f0f0; font-size: 13px; }
-        .cart-checkout-btn {
-            height: 48px; border-radius: 24px; border: none;
-            background: var(--green); color: #000;
-            font-family: var(--font); font-size: 15px; font-weight: 700;
-            cursor: pointer; transition: opacity .2s;
-        }
-        .cart-checkout-btn:hover { opacity: .85; }
 
         /* ── PRODUCT DETAIL (PDP) ────────────────────────────────────── */
         .pdp-overlay {
@@ -744,219 +655,255 @@
         }
         .pdp-close:hover { border-color: var(--green); color: var(--green); }
 
-        /* ── CHECKOUT ────────────────────────────────────────────────── */
-        .checkout-overlay {
-            position: fixed; inset: 0; background: #0a0a0a;
-            z-index: 4000; overflow-y: auto;
-            opacity: 0; pointer-events: none; transition: opacity .3s;
-        }
-        .checkout-overlay.open { opacity: 1; pointer-events: all; }
-        .checkout-wrap {
-            max-width: 1000px; margin: 0 auto;
-            padding: 32px 20px 80px; display: grid;
-            grid-template-columns: 1fr 360px; gap: 40px; align-items: start;
-        }
-        @media (max-width: 768px) { .checkout-wrap { grid-template-columns: 1fr; } }
-        .checkout-back {
-            display: flex; align-items: center; gap: 8px;
-            background: transparent; border: none; color: rgba(255,255,255,.5);
-            font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 2px;
-            text-transform: uppercase; cursor: pointer; margin-bottom: 24px;
-            transition: color .2s; padding: 0;
-        }
-        .checkout-back:hover { color: #fff; }
-        .checkout-steps {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 32px;
-        }
-        .co-step-ind {
-            width: 28px; height: 28px; border-radius: 50%;
-            border: 1px solid #2a2a2a; background: transparent;
-            font-family: 'Courier New', monospace; font-size: 10px;
-            color: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center;
-            transition: all .3s;
-        }
-        .co-step-ind.active { border-color: var(--green); color: var(--green); background: rgba(255,102,0,.08); }
-        .co-step-ind.done { border-color: var(--green); background: var(--green); color: #000; }
-        .co-step-line { flex: 1; height: 1px; background: #1f1f1f; }
-        .checkout-title { font-size: 22px; font-weight: 700; color: #f0f0f0; margin-bottom: 24px; }
-        .co-step { display: none; }
-        .co-step.active { display: block; }
-        .co-field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .co-field-group.full { grid-template-columns: 1fr; }
-        .co-field { display: flex; flex-direction: column; gap: 6px; }
-        .co-field label { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,.4); text-transform: uppercase; }
-        .co-field input {
-            height: 44px; padding: 0 14px; border-radius: 8px;
-            border: 1px solid #222; background: #111; color: #e0e0e0;
-            font-family: var(--font); font-size: 14px;
-            transition: border-color .2s; outline: none;
-        }
-        .co-field input:focus { border-color: rgba(255,102,0,.5); }
-        .co-field input.error { border-color: #ff4444; }
-        .co-next-btn {
-            height: 52px; width: 100%; border-radius: 26px; border: none;
-            background: var(--green); color: #000;
-            font-family: var(--font); font-size: 15px; font-weight: 700;
-            cursor: pointer; margin-top: 20px; transition: opacity .2s;
-        }
-        .co-next-btn:hover { opacity: .85; }
-        /* card icons */
-        .co-card-row { position: relative; }
-        .co-card-icons { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; pointer-events: none; }
-        .co-card-icon { width: 28px; height: 18px; border-radius: 3px; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(255,255,255,.4); }
-        /* order summary sidebar */
-        .co-summary {
-            background: #111; border-radius: 16px;
-            border: 1px solid #1f1f1f; padding: 24px;
-            position: sticky; top: 32px;
-        }
-        .co-summary-title { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 3px; color: rgba(255,255,255,.4); text-transform: uppercase; margin-bottom: 20px; }
-        .co-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .co-item span:first-child { font-size: 13px; color: rgba(255,255,255,.7); }
-        .co-item span:last-child { font-family: 'Courier New', monospace; font-size: 12px; color: #e0e0e0; }
-        .co-divider { height: 1px; background: #1f1f1f; margin: 16px 0; }
-        .co-totals .co-item span { font-size: 12px; color: rgba(255,255,255,.4); font-family: 'Courier New', monospace; }
-        .co-totals .co-item.grand span { font-size: 15px; color: var(--green); font-weight: 700; }
-        /* confirmation */
-        .co-confirm {
-            text-align: center; padding: 60px 20px;
-            display: flex; flex-direction: column; align-items: center; gap: 16px;
-        }
-        .co-confirm-icon { font-size: 48px; }
-        .co-confirm h2 { font-size: 28px; font-weight: 700; color: var(--green); }
-        .co-confirm p { font-size: 15px; color: rgba(255,255,255,.5); max-width: 400px; line-height: 1.6; }
-        .co-confirm-num { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 3px; color: rgba(255,102,0,.5); }
-        .co-continue-btn {
-            height: 48px; padding: 0 32px; border-radius: 24px; border: 1px solid #333;
-            background: transparent; color: rgba(255,255,255,.7);
-            font-family: var(--font); font-size: 14px; cursor: pointer;
-            margin-top: 8px; transition: all .2s;
-        }
-        .co-continue-btn:hover { border-color: var(--green); color: var(--green); }
 
-        /* ── PROJECTS / WORK ──────────────────────────────────────── */
-        /* shop-wrap already provides padding: 0 18px 80px and dark bg */
-        .proj-wrap { padding-left: 0; padding-right: 0; }
-        .proj-section-label {
-            font-family: 'Courier New', monospace;
-            font-size: 8px; letter-spacing: 3px;
-            color: rgba(255,255,255,.3); text-transform: uppercase;
-            margin: 28px 0 14px;
+        /* ── ABOUT PAGE ───────────────────────────────────────────── */
+        .about-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 18px 80px;
         }
+        .about-hd-row {
+            display: flex; align-items: baseline; justify-content: space-between;
+            border-bottom: 1px solid #1f1f1f; padding-bottom: 12px; margin-bottom: 32px;
+        }
+        .about-hd-label {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+        }
+        .about-hd-year {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            color: rgba(255,255,255,.2); letter-spacing: 2px;
+        }
+        .about-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px; align-items: start; margin-bottom: 64px;
+        }
+        @media (max-width: 700px) { .about-hero { grid-template-columns: 1fr; gap: 32px; } }
+        .about-name {
+            font-size: clamp(32px, 6vw, 56px); font-weight: 800;
+            color: #f0f0f0; letter-spacing: -1px; line-height: 1.05;
+            margin-bottom: 12px;
+        }
+        .about-role {
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 3px; color: rgba(255,102,0,.8); text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .about-bio {
+            font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.6);
+        }
+        .about-img-col {
+            position: sticky; top: calc(var(--nav-h) + 20px);
+        }
+        .about-img-frame {
+            aspect-ratio: 3/4; background: #111; border: 1px solid #1f1f1f;
+            border-radius: 12px; overflow: hidden; position: relative;
+        }
+        .about-img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .about-img-frame-tag {
+            position: absolute; bottom: 12px; left: 12px;
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 2px; color: rgba(255,102,0,.7); background: rgba(0,0,0,.6);
+            padding: 4px 8px; border: 1px solid rgba(255,102,0,.2);
+        }
+        .about-section-title {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #1f1f1f;
+        }
+        .about-skills {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 8px; margin-bottom: 48px;
+        }
+        @media (max-width: 600px) { .about-skills { grid-template-columns: repeat(2, 1fr); } }
+        .about-skill {
+            padding: 10px 14px;
+            background: #111; border: 1px solid #1a1a1a;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            color: rgba(255,255,255,.5); letter-spacing: 1px;
+            transition: border-color .2s, color .2s;
+        }
+        .about-skill:hover { border-color: rgba(255,102,0,.3); color: rgba(255,255,255,.8); }
+        .about-cta {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px;
+        }
+        .about-cta-btn {
+            height: 44px; padding: 0 24px; border-radius: 22px;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; transition: all .2s; border: 1px solid #333;
+            background: transparent; color: rgba(255,255,255,.6);
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .about-cta-btn:hover { border-color: rgba(255,102,0,.5); color: #fff; }
+        .about-cta-btn.primary { background: var(--green); color: #000; border-color: var(--green); }
+        .about-cta-btn.primary:hover { opacity: .85; }
+
+        /* ── PROJECTS / WORK ───────────────────────────────────────── */
+        .proj-wrap { padding-left: 0; padding-right: 0; }
+
+        /* filter tabs */
+        .proj-filter {
+            display: flex; gap: 4px; padding: 20px 0 0; flex-wrap: wrap;
+        }
+        .proj-filter-btn {
+            height: 36px; padding: 0 16px; border-radius: 18px; border: none;
+            background: transparent; font-family: var(--font);
+            font-size: 13px; font-weight: 500;
+            color: rgba(255,255,255,.35); cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+        .proj-filter-btn:hover  { background: #1a1a1a; color: #fff; }
+        .proj-filter-btn.active { background: #fff; color: #000; }
+
+        /* grid */
         .proj-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
             padding-top: 20px;
         }
         .proj-card {
-            position: relative;
-            aspect-ratio: 4/3; border-radius: 14px;
-            overflow: hidden; border: 1px solid #1e1e1e;
-            background: #111; cursor: pointer;
-            transition: border-color .2s, transform .15s;
+            position: relative; cursor: pointer;
+            background: #111; border: 1px solid #1c1c1c;
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .25s, box-shadow .25s;
         }
-        .proj-card:hover { border-color: var(--green); transform: scale(1.01); }
-        .proj-card img {
+        .proj-card[hidden] { display: none; }
+        .proj-card:hover {
+            border-color: #333;
+            box-shadow: 0 8px 32px rgba(0,0,0,.5);
+        }
+        .proj-card-img {
+            position: relative; aspect-ratio: 4/3; overflow: hidden;
+        }
+        .proj-card-img img {
             width: 100%; height: 100%; object-fit: cover;
-            display: block; transition: transform .4s ease;
+            display: block; transition: transform .55s ease;
         }
-        .proj-card:hover img { transform: scale(1.04); }
+        .proj-card:hover .proj-card-img img { transform: scale(1.05); }
+        .proj-card-scan {
+            position: absolute; left: 0; right: 0; top: -35%; height: 35%;
+            background: linear-gradient(to bottom, transparent, rgba(255,102,0,.07), transparent);
+            z-index: 3; pointer-events: none;
+        }
+        .proj-card:hover .proj-card-scan { animation: scan-sweep .85s ease-in-out forwards; }
+        .proj-card-info { padding: 10px 12px 14px; }
+        .proj-card-spec {
+            font-family: 'Courier New', monospace; font-size: 7px; letter-spacing: 2px;
+            color: rgba(255,102,0,.6); text-transform: uppercase; margin-bottom: 4px;
+        }
         .proj-card-name {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 40px 18px 18px;
-            background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.5) 60%, transparent 100%);
-            font-size: 15px; font-weight: 600; color: #fff; letter-spacing: .3px;
-            display: flex; flex-direction: column; gap: 4px;
+            font-size: 14px; font-weight: 600; color: rgba(255,255,255,.88);
+            margin-bottom: 2px; letter-spacing: .1px;
         }
-        .proj-card-cat {
+        .proj-card-year {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 2px; color: var(--green); text-transform: uppercase;
+            color: rgba(255,255,255,.25); letter-spacing: 1px;
         }
-        @media (max-width: 768px) {
-            .proj-grid { grid-template-columns: 1fr; gap: 12px; padding-top: 14px; }
+        .proj-card-braille-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid #1a1a1a;
         }
+        .proj-card-braille {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            color: rgba(255,255,255,.08); letter-spacing: 1px;
+            overflow: hidden; white-space: nowrap; max-width: 76%;
+            transition: color .4s;
+        }
+        .proj-card:hover .proj-card-braille { color: rgba(255,102,0,.25); }
+        .proj-card-idx {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            color: rgba(255,255,255,.15); flex-shrink: 0;
+        }
+        @media (max-width: 900px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .proj-grid { grid-template-columns: 1fr; gap: 10px; } }
 
         /* ── PROJECT DETAIL PAGE ───────────────────────────────────── */
-        /* shop-wrap provides padding and dark bg; override left/right to 0 */
         .proj-detail-wrap { padding-left: 0; padding-right: 0; }
         .proj-detail-back {
-            display: inline-flex; align-items: center; gap: 6px;
+            display: inline-flex; align-items: center; gap: 8px;
             font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 2px; text-transform: uppercase;
-            color: rgba(255,255,255,.4); text-decoration: none;
-            background: none; border: none; cursor: pointer;
-            padding: 24px 0 20px; transition: color .2s;
+            color: rgba(255,255,255,.35); background: none; border: none;
+            cursor: pointer; padding: 24px 0 20px; transition: color .2s;
         }
         .proj-detail-back:hover { color: var(--green); }
-        .proj-detail-header {
-            margin-bottom: 28px;
-        }
         .proj-detail-cat {
             font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 3px; color: var(--green); text-transform: uppercase;
             margin-bottom: 10px;
         }
         .proj-detail-title {
-            font-size: clamp(28px, 6vw, 56px); font-weight: 700;
+            font-size: clamp(30px, 6vw, 60px); font-weight: 700;
             color: #f0f0f0; letter-spacing: -1.5px; line-height: 1.05;
             margin-bottom: 24px;
         }
         .proj-detail-meta {
-            display: flex; flex-wrap: wrap; gap: 24px;
-            padding: 20px 0; border-top: 1px solid #1f1f1f; border-bottom: 1px solid #1f1f1f;
-            margin-bottom: 32px;
+            display: flex; flex-wrap: wrap; gap: 0;
+            border-top: 1px solid #1f1f1f; border-bottom: 1px solid #1f1f1f;
+            margin-bottom: 36px;
         }
-        .proj-detail-meta-item { display: flex; flex-direction: column; gap: 5px; }
+        .proj-detail-meta-item {
+            display: flex; flex-direction: column; gap: 5px;
+            padding: 16px 28px 16px 0;
+            border-right: 1px solid #1a1a1a; margin-right: 28px;
+        }
+        .proj-detail-meta-item:last-child { border-right: none; }
         .proj-detail-meta-label {
-            font-family: 'Courier New', monospace; font-size: 8px;
-            letter-spacing: 2px; color: rgba(255,255,255,.3); text-transform: uppercase;
+            font-family: 'Courier New', monospace; font-size: 7px;
+            letter-spacing: 3px; color: rgba(255,102,0,.55); text-transform: uppercase;
         }
         .proj-detail-meta-value {
-            font-size: 13px; font-weight: 500; color: rgba(255,255,255,.75);
+            font-size: 13px; font-weight: 500; color: rgba(255,255,255,.7);
         }
         .proj-detail-hero {
-            width: 100%; border-radius: 16px; overflow: hidden;
+            width: 100%; border-radius: 12px; overflow: hidden;
             margin-bottom: 40px; aspect-ratio: 16/9;
-            background: #111; border: 1px solid #1e1e1e;
+            background: #111; border: 1px solid #1e1e1e; position: relative;
         }
-        .proj-detail-hero img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
+        .proj-detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .proj-detail-hero-scan {
+            position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.04) 2px, rgba(0,0,0,.04) 4px);
+            z-index: 2;
         }
         .proj-detail-desc {
-            font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.65);
-            margin-bottom: 48px; max-width: 720px;
+            font-size: 17px; line-height: 1.85; color: rgba(255,255,255,.6);
+            margin-bottom: 48px; max-width: 700px;
         }
-        .proj-detail-section {
-            margin-bottom: 48px;
+        .proj-detail-divider {
+            height: 1px; background: #1a1a1a; margin: 48px 0;
         }
+        .proj-detail-section { margin-bottom: 44px; }
         .proj-detail-section-hd {
-            font-family: 'Courier New', monospace; font-size: 10px;
+            font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 3px; color: var(--green); text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+        }
+        .proj-detail-section-hd::after {
+            content: ''; flex: 1; height: 1px; background: #1a1a1a;
         }
         .proj-detail-section-body {
-            font-size: 15px; line-height: 1.8; color: rgba(255,255,255,.55);
-            max-width: 720px;
+            font-size: 15px; line-height: 1.85; color: rgba(255,255,255,.5);
+            max-width: 700px;
         }
         .proj-detail-gallery {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 40px;
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 10px; margin-top: 40px;
         }
         .proj-detail-gallery img {
-            width: 100%; border-radius: 12px;
-            display: block; aspect-ratio: 4/3; object-fit: cover;
+            width: 100%; border-radius: 8px; display: block;
+            aspect-ratio: 4/3; object-fit: cover;
             border: 1px solid #1e1e1e;
             transition: opacity .3s, transform .3s;
         }
-        .proj-detail-gallery img:hover { opacity: .9; transform: scale(1.01); cursor: zoom-in; }
-        .proj-detail-gallery img.tall { aspect-ratio: 3/4; }
+        .proj-detail-gallery img:hover { opacity: .88; transform: scale(1.01); cursor: zoom-in; }
         @media (max-width: 768px) {
-            .proj-detail-wrap { padding: 0 8px 70px; }
             .proj-detail-hero { aspect-ratio: 4/3; }
-            .proj-detail-gallery { grid-template-columns: 1fr; gap: 10px; }
+            .proj-detail-gallery { grid-template-columns: 1fr; gap: 8px; }
+            .proj-detail-meta-item { padding: 14px 20px 14px 0; margin-right: 20px; }
         }
 
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
@@ -1595,8 +1542,6 @@
         .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.1); color: #fff; }
         .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.18); color: #fff; }
         .header.hero-mode .h-line         { background: #fff; }
-        .header.hero-mode .cart-btn       { color: rgba(255,255,255,.75); }
-        .header.hero-mode .cart-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
 
         /* ── SCROLLED: logo turns orange ──────────────────────── */
         .header.scrolled .logo img {
@@ -1614,8 +1559,6 @@
         .nav-tab          { color: #888; }
         .nav-tab:hover    { background: #1a1a1a; color: #d0d0d0; }
         .nav-tab.active   { background: #d0d0d0; color: #0a0a0a; }
-        .cart-btn         { color: #888; }
-        .cart-btn:hover   { background: #1a1a1a; color: #d0d0d0; }
 
         .h-line           { background: #d0d0d0; }
 
@@ -1677,21 +1620,17 @@
 <header class="header" id="header">
     <div class="logo-wrap">
         <button class="logo" onclick="showPage('home')" aria-label="Home">
-            <img src="favicon.png" alt="Ravi Sauce">
+            <img src="favicon.png" alt="Nico Maggioli">
         </button>
     </div>
 
     <nav class="nav-tabs">
         <button class="nav-tab active" data-page="home"    onclick="showPage('home')">Home</button>
+        <button class="nav-tab"        data-page="about"   onclick="showPage('about')">About</button>
         <button class="nav-tab"        data-page="saved"   onclick="showPage('saved')">Saved</button>
         <button class="nav-tab"        data-page="work"    onclick="showPage('work')">Work</button>
         <button class="nav-tab"        data-page="contact" onclick="showPage('contact')">Contact</button>
     </nav>
-
-    <button class="cart-btn" id="cart-btn" onclick="openCart()" aria-label="Cart">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        <span class="cart-badge" id="cart-badge"></span>
-    </button>
 
     <button class="mobile-toggle" id="mob-toggle" onclick="openMobileMenu()" aria-label="Menu">
         <span class="h-line"></span>
@@ -1703,7 +1642,7 @@
 <!-- MOBILE MENU -->
 <div class="mob-menu" id="mob-menu">
     <div class="mob-head">
-        <span class="mob-id">RAV — ACCESS</span>
+        <span class="mob-id">NM — ACCESS</span>
         <button class="mob-close" onclick="closeMobileMenu()" aria-label="Close">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -1712,10 +1651,10 @@
     </div>
     <div class="mob-items">
         <button class="mob-item" data-page="home"    onclick="mobileNav('home')">   <span class="mob-num">01</span><span class="mob-label">HOME</span></button>
-        <button class="mob-item" data-page="saved"   onclick="mobileNav('saved')">  <span class="mob-num">02</span><span class="mob-label">SAVED</span></button>
-        <button class="mob-item" data-page="work"    onclick="mobileNav('work')">   <span class="mob-num">03</span><span class="mob-label">WORK</span></button>
-        <button class="mob-item" data-page="contact" onclick="mobileNav('contact')"><span class="mob-num">04</span><span class="mob-label">CONTACT</span></button>
-        <button class="mob-item" onclick="closeMobileMenu(); openCart();" id="mob-cart-item"><span class="mob-num">05</span><span class="mob-label">CART</span><span class="mob-cart-badge" id="mob-cart-badge"></span></button>
+        <button class="mob-item" data-page="about"   onclick="mobileNav('about')">  <span class="mob-num">02</span><span class="mob-label">ABOUT</span></button>
+        <button class="mob-item" data-page="saved"   onclick="mobileNav('saved')">  <span class="mob-num">03</span><span class="mob-label">SAVED</span></button>
+        <button class="mob-item" data-page="work"    onclick="mobileNav('work')">   <span class="mob-num">04</span><span class="mob-label">WORK</span></button>
+        <button class="mob-item" data-page="contact" onclick="mobileNav('contact')"><span class="mob-num">05</span><span class="mob-label">CONTACT</span></button>
     </div>
     <div class="mob-foot">
         <div class="mob-status"><span class="status-dot"></span><span>SYSTEM ONLINE</span></div>
@@ -1851,7 +1790,7 @@
 
             <!-- Top-left: identity -->
             <div class="hud-ambient hud-amb-tl">
-                RAVISAUCE LABORATORIES<br>
+                NICO MAGGIOLI STUDIO<br>
                 <span class="hud-amb-sep">───────────────────</span>
                 CURIOSITY &nbsp;: [INFINITE]<br>
                 SIGNAL &nbsp;&nbsp;&nbsp;&nbsp;: NATURE + ART<br>
@@ -1910,7 +1849,7 @@
 
             <!-- BOTTOM STATUS BAR -->
             <div class="hud-bar">
-                <div class="hud-bar-seg hud-bar-path">C:\RAVISAUCE \HOME</div>
+                <div class="hud-bar-seg hud-bar-path">C:\NICOMAGGIOL\HOME</div>
                 <div class="hud-bar-seg hud-bar-plus">+</div>
                 <div class="hud-bar-seg hud-bar-project">ANIMATION_REEL_2026</div>
                 <div class="hud-bar-seg hud-bar-tags">PHOTOGRAPHY, MOTION, DESIGN</div>
@@ -1928,9 +1867,9 @@
 
     <!-- SAVED -->
     <div id="saved-page" class="page">
-        <div class="shop-hd" style="padding-left:18px;padding-right:18px;">
+        <div class="shop-hd" style="padding-left:18px;padding-right:18px;padding-top:16px;">
             <div class="shop-hd-left">
-                <span class="shop-hd-label">RVI // Saved</span>
+                <span class="shop-hd-label">NM // Saved</span>
             </div>
             <span class="shop-hd-count" id="saved-count"></span>
         </div>
@@ -1945,6 +1884,62 @@
         </div>
     </div>
 
+    <!-- ABOUT -->
+    <div id="about-page" class="page">
+        <div class="shop-wrap">
+            <div class="about-wrap">
+                <div class="about-hd-row">
+                    <span class="about-hd-label">NM // About</span>
+                    <span class="about-hd-year">EST. 2020</span>
+                </div>
+                <div class="about-hero">
+                    <div>
+                        <div class="about-name">Nico<br>Maggioli</div>
+                        <div class="about-role">Creative Director · Designer</div>
+                        <p class="about-bio">
+                            I'm a creative director and designer focused on branding, product design, and motion. I work across disciplines — from concept to execution — building brands and experiences that feel distinct and intentional.
+                            <br><br>
+                            My work spans packaging, identity systems, 3D modeling, advertising campaigns, and web design. I believe in design that has a point of view — work that doesn't blend in.
+                        </p>
+                        <div class="about-cta">
+                            <button class="about-cta-btn primary" onclick="showPage('work')">View Work</button>
+                            <button class="about-cta-btn" onclick="showPage('contact')">Get in Touch</button>
+                        </div>
+                    </div>
+                    <div class="about-img-col">
+                        <div class="about-img-frame">
+                            <img src="images/webp/hero.webp" alt="Nico Maggioli" onerror="this.style.display='none'">
+                            <span class="about-img-frame-tag">NM — 2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section-title">Disciplines</div>
+                <div class="about-skills">
+                    <div class="about-skill">Branding</div>
+                    <div class="about-skill">Product Design</div>
+                    <div class="about-skill">Packaging</div>
+                    <div class="about-skill">3D Modeling</div>
+                    <div class="about-skill">Motion Design</div>
+                    <div class="about-skill">UI / UX</div>
+                    <div class="about-skill">Art Direction</div>
+                    <div class="about-skill">Advertising</div>
+                    <div class="about-skill">Web Design</div>
+                </div>
+
+                <div class="about-section-title">Tools</div>
+                <div class="about-skills">
+                    <div class="about-skill">Adobe Illustrator</div>
+                    <div class="about-skill">Photoshop</div>
+                    <div class="about-skill">After Effects</div>
+                    <div class="about-skill">Cinema 4D</div>
+                    <div class="about-skill">Blender</div>
+                    <div class="about-skill">Figma</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- WORK / PROJECTS -->
     <div id="work-page" class="page">
         <div class="shop-wrap proj-wrap">
@@ -1953,7 +1948,14 @@
                     <span class="shop-hd-label">NM // Work</span>
                     <span class="shop-hd-title">Selected Work</span>
                 </div>
+                <span class="shop-hd-count" id="proj-count">— / —</span>
             </div>
+            <!-- scrolling status strip -->
+            <div class="shop-status" style="margin-top:12px;">
+                <span class="shop-status-inner" id="work-status-inner"></span>
+            </div>
+            <!-- category filters -->
+            <div class="proj-filter" id="proj-filter"></div>
             <div class="braille-strip shop-strip">
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
@@ -1964,7 +1966,7 @@
     <!-- PROJECT DETAIL -->
     <div id="project-page" class="page">
         <div class="shop-wrap proj-detail-wrap">
-            <button class="proj-detail-back" onclick="showPage('work')">← Back to Work</button>
+            <button class="proj-detail-back" onclick="showPage('work')">← WORK</button>
             <div id="proj-detail-content"></div>
         </div>
     </div>
@@ -1973,7 +1975,7 @@
     <div id="contact-page" class="page">
         <div class="shop-hd" style="padding-left:18px;padding-right:18px;">
             <div class="shop-hd-left">
-                <span class="shop-hd-label">RVI // Contact</span>
+                <span class="shop-hd-label">NM // Contact</span>
             </div>
         </div>
         <div class="braille-strip page-strip" style="margin-bottom:0;">
@@ -2018,116 +2020,11 @@
             <p class="pdp-desc" id="pdp-desc"></p>
             <div class="pdp-size-label" id="pdp-size-label">Select Size</div>
             <div class="pdp-sizes" id="pdp-sizes"></div>
-            <button class="pdp-add-btn" onclick="addToCart()">Add to Cart</button>
         </div>
     </div>
 </div>
 
-<!-- CART DRAWER -->
-<div class="cart-backdrop" id="cart-backdrop" onclick="closeCart()"></div>
-<div class="cart-drawer" id="cart-drawer">
-    <div class="cart-head">
-        <span class="cart-head-title">Cart // RSL</span>
-        <button class="cart-close" onclick="closeCart()">×</button>
-    </div>
-    <div class="cart-list" id="cart-list">
-        <div class="cart-empty" id="cart-empty">No specimens selected.</div>
-    </div>
-    <div class="cart-footer" id="cart-footer" style="display:none">
-        <div class="cart-subtotal-row"><span>SUBTOTAL</span><span id="cart-subtotal">$0</span></div>
-        <div class="cart-subtotal-row"><span>SHIPPING</span><span>$12</span></div>
-        <div class="cart-subtotal-row total"><span>TOTAL</span><span id="cart-total">$0</span></div>
-        <button class="cart-checkout-btn" onclick="openCheckout()">Checkout</button>
-    </div>
-</div>
 
-<!-- CHECKOUT -->
-<div class="checkout-overlay" id="checkout-overlay">
-    <div class="checkout-wrap">
-        <div>
-            <button class="checkout-back" onclick="closeCheckout()">← Back to cart</button>
-            <div class="checkout-steps">
-                <div class="co-step-ind active" id="co-ind-1">1</div>
-                <div class="co-step-line"></div>
-                <div class="co-step-ind" id="co-ind-2">2</div>
-                <div class="co-step-line"></div>
-                <div class="co-step-ind" id="co-ind-3">✓</div>
-            </div>
-
-            <!-- Step 1: Shipping -->
-            <div class="co-step active" id="co-step-1">
-                <div class="checkout-title">Shipping</div>
-                <div class="co-field-group">
-                    <div class="co-field"><label>First Name</label><input id="co-fname" type="text" placeholder="Ravi"></div>
-                    <div class="co-field"><label>Last Name</label><input id="co-lname" type="text" placeholder="Sauce"></div>
-                </div>
-                <div class="co-field-group full">
-                    <div class="co-field"><label>Email</label><input id="co-email" type="email" placeholder="ravi@ravisauce.com"></div>
-                </div>
-                <div class="co-field-group full">
-                    <div class="co-field"><label>Address</label><input id="co-address" type="text" placeholder="123 Lab Street"></div>
-                </div>
-                <div class="co-field-group">
-                    <div class="co-field"><label>City</label><input id="co-city" type="text" placeholder="Los Angeles"></div>
-                    <div class="co-field"><label>State</label><input id="co-state" type="text" placeholder="CA"></div>
-                </div>
-                <div class="co-field-group">
-                    <div class="co-field"><label>ZIP</label><input id="co-zip" type="text" placeholder="90001"></div>
-                    <div class="co-field"><label>Country</label><input id="co-country" type="text" value="United States"></div>
-                </div>
-                <button class="co-next-btn" onclick="nextCheckoutStep()">Continue to Payment</button>
-            </div>
-
-            <!-- Step 2: Payment -->
-            <div class="co-step" id="co-step-2">
-                <div class="checkout-title">Payment</div>
-                <div class="co-field-group full">
-                    <div class="co-field">
-                        <label>Card Number</label>
-                        <div class="co-card-row">
-                            <input id="co-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19">
-                            <div class="co-card-icons">
-                                <div class="co-card-icon">VISA</div>
-                                <div class="co-card-icon">MC</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="co-field-group">
-                    <div class="co-field"><label>Expiry</label><input id="co-expiry" type="text" placeholder="MM/YY" maxlength="5"></div>
-                    <div class="co-field"><label>CVV</label><input id="co-cvv" type="text" placeholder="123" maxlength="4"></div>
-                </div>
-                <div class="co-field-group full">
-                    <div class="co-field"><label>Name on Card</label><input id="co-card-name" type="text" placeholder="Ravi Sauce"></div>
-                </div>
-                <button class="co-next-btn" onclick="nextCheckoutStep()">Place Order</button>
-            </div>
-
-            <!-- Step 3: Confirmation -->
-            <div class="co-step" id="co-step-3">
-                <div class="co-confirm">
-                    <div class="co-confirm-icon">✦</div>
-                    <h2>Order Received</h2>
-                    <div class="co-confirm-num" id="co-order-num"></div>
-                    <p>Your specimens are being prepared in the lab. You'll receive a confirmation&nbsp;email&nbsp;shortly.</p>
-                    <button class="co-continue-btn" onclick="closeCheckout(); showPage('home')">Continue Exploring</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Order Summary -->
-        <div class="co-summary">
-            <div class="co-summary-title">Order Summary</div>
-            <div id="co-items"></div>
-            <div class="co-divider"></div>
-            <div class="co-totals">
-                <div class="co-item"><span>Subtotal</span><span id="co-subtotal">$0</span></div>
-                <div class="co-item"><span>Shipping</span><span>$12</span></div>
-                <div class="co-item grand"><span>Total</span><span id="co-total-val">$0</span></div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="handleLbClick(event)">
@@ -2721,191 +2618,6 @@ function closePDP() {
     document.body.style.overflow = '';
 }
 
-// ── CART ──────────────────────────────────────────────────────────
-let cart = JSON.parse(localStorage.getItem('rsl-cart') || '[]');
-
-function addToCart() {
-    if (!selectedSize) {
-        const el = document.getElementById('pdp-sizes');
-        el.classList.remove('shake');
-        void el.offsetWidth;
-        el.classList.add('shake');
-        return;
-    }
-    const ex = cart.find(i => i.id === currentPDP.id && i.size === selectedSize);
-    if (ex) { ex.qty++; } else { cart.push({ id: currentPDP.id, size: selectedSize, qty: 1 }); }
-    saveCart();
-    updateCartBadge();
-    closePDP();
-    toast('Added to cart', '✓');
-}
-
-function removeFromCart(id, size) {
-    cart = cart.filter(i => !(i.id === id && i.size === size));
-    saveCart();
-    updateCartBadge();
-    renderCartItems();
-}
-
-function saveCart() { localStorage.setItem('rsl-cart', JSON.stringify(cart)); }
-
-function updateCartBadge() {
-    const total = cart.reduce((s, i) => s + i.qty, 0);
-    const badge = document.getElementById('cart-badge');
-    badge.textContent = total;
-    badge.style.display = total > 0 ? 'flex' : 'none';
-    const mobBadge = document.getElementById('mob-cart-badge');
-    if (mobBadge) {
-        mobBadge.textContent = total;
-        mobBadge.style.display = total > 0 ? 'flex' : 'none';
-    }
-}
-
-function renderCartItems() {
-    const list   = document.getElementById('cart-list');
-    const empty  = document.getElementById('cart-empty');
-    const footer = document.getElementById('cart-footer');
-    if (cart.length === 0) {
-        list.innerHTML = '';
-        list.appendChild(empty);
-        empty.style.display = 'block';
-        footer.style.display = 'none';
-        return;
-    }
-    empty.style.display = 'none';
-    footer.style.display = 'flex';
-    list.innerHTML = '';
-    let sub = 0;
-    cart.forEach(item => {
-        const p = PRODUCTS.find(x => x.id === item.id);
-        if (!p) return;
-        sub += p.price * item.qty;
-        const row = document.createElement('div');
-        row.className = 'cart-item';
-        row.innerHTML = `
-            <img class="cart-item-img" src="${p.imgs[0]}" alt="${p.name}">
-            <div class="cart-item-info">
-                <div class="cart-item-name">${p.name}</div>
-                <div class="cart-item-meta">${item.size} &nbsp;·&nbsp; Qty ${item.qty}</div>
-                <div class="cart-item-price">$${p.price * item.qty}</div>
-            </div>
-            <button class="cart-item-remove" onclick="removeFromCart('${item.id}','${item.size}')">×</button>`;
-        list.appendChild(row);
-    });
-    document.getElementById('cart-subtotal').textContent = '$' + sub;
-    document.getElementById('cart-total').textContent    = '$' + (sub + 12);
-}
-
-function openCart() {
-    renderCartItems();
-    document.getElementById('cart-drawer').classList.add('open');
-    document.getElementById('cart-backdrop').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeCart() {
-    document.getElementById('cart-drawer').classList.remove('open');
-    document.getElementById('cart-backdrop').classList.remove('open');
-    document.body.style.overflow = '';
-}
-
-// ── CHECKOUT ──────────────────────────────────────────────────────
-let coStep = 1;
-
-function openCheckout() {
-    closeCart();
-    coStep = 1;
-    showCoStep(1);
-    renderCoSummary();
-    document.getElementById('checkout-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeCheckout() {
-    document.getElementById('checkout-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-}
-
-function showCoStep(n) {
-    coStep = n;
-    [1,2,3].forEach(i => {
-        const step = document.getElementById('co-step-' + i);
-        const ind  = document.getElementById('co-ind-' + i);
-        if (step) step.classList.toggle('active', i === n);
-        if (ind) {
-            ind.classList.toggle('active', i === n);
-            ind.classList.toggle('done', i < n);
-        }
-    });
-}
-
-function renderCoSummary() {
-    const list = document.getElementById('co-items');
-    list.innerHTML = '';
-    let sub = 0;
-    cart.forEach(item => {
-        const p = PRODUCTS.find(x => x.id === item.id);
-        if (!p) return;
-        const line = p.price * item.qty;
-        sub += line;
-        list.innerHTML += `<div class="co-item"><span>${p.name} × ${item.qty}</span><span>$${line}</span></div>`;
-    });
-    document.getElementById('co-subtotal').textContent  = '$' + sub;
-    document.getElementById('co-total-val').textContent = '$' + (sub + 12);
-}
-
-function nextCheckoutStep() {
-    if (coStep === 1) {
-        const ids = ['co-fname','co-email','co-address','co-city','co-zip'];
-        let ok = true;
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            const valid = el && el.value.trim();
-            if (el) el.classList.toggle('error', !valid);
-            if (!valid) ok = false;
-        });
-        if (!ok) return;
-        showCoStep(2);
-    } else if (coStep === 2) {
-        const ids = ['co-card','co-expiry','co-cvv','co-card-name'];
-        let ok = true;
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            const valid = el && el.value.trim();
-            if (el) el.classList.toggle('error', !valid);
-            if (!valid) ok = false;
-        });
-        if (!ok) return;
-        // generate order number and complete
-        const orderNum = 'RSL-' + Date.now().toString(36).toUpperCase().slice(-6);
-        document.getElementById('co-order-num').textContent = orderNum;
-        cart = []; saveCart(); updateCartBadge();
-        showCoStep(3);
-    }
-}
-
-// Load products then boot shop
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const res = await fetch('products.json?v=' + Date.now());
-        PRODUCTS = await res.json();
-    } catch(e) { console.warn('products.json not found, shop empty'); }
-    renderSoloShop();
-    updateCartBadge();
-
-    document.getElementById('co-card')?.addEventListener('input', e => {
-        let v = e.target.value.replace(/\D/g,'').slice(0,16);
-        e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
-    });
-    document.getElementById('co-expiry')?.addEventListener('input', e => {
-        let v = e.target.value.replace(/\D/g,'').slice(0,4);
-        if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
-        e.target.value = v;
-    });
-    document.getElementById('co-cvv')?.addEventListener('input', e => {
-        e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
-    });
-});
 
 // ── Keyboard nav for solo shop ─────────────────────────────────────
 document.addEventListener('keydown', e => {
@@ -3044,12 +2756,16 @@ window.addEventListener('load', () => {
     // Video ready signal
     if (hv) {
         hv.addEventListener('canplaythrough', () => { videoReady = true; finishLoader(); }, { once: true });
+        hv.addEventListener('canplay', () => { hv.classList.add('playing'); videoReady = true; finishLoader(); }, { once: true });
         hv.addEventListener('playing', () => hv.classList.add('playing'), { once: true });
     } else {
         videoReady = true;
     }
-    // Hard fallback — never trap user more than 10s
-    setTimeout(() => { if (!videoReady) { videoReady = true; finishLoader(); } }, 10000);
+    // Hard fallback — never trap user more than 5s
+    setTimeout(() => {
+        if (!videoReady) { videoReady = true; finishLoader(); }
+        if (hv) hv.classList.add('playing');
+    }, 5000);
 
     // Counting animation — fast start, slows near 99
     const countTimer = setInterval(() => {
@@ -3066,7 +2782,7 @@ window.addEventListener('load', () => {
 })();
 
 // ── Easter eggs ───────────────────────────────────────────────────
-console.log('%c🔬 Ravi Sauce Labs', 'font-size:18px;color:#FF6600;font-weight:bold;');
+console.log('%c◈ Nico Maggioli Studio', 'font-size:18px;color:#FF6600;font-weight:bold;');
 console.log('%cType unlock() for a surprise.', 'color:#888;font-style:italic;');
 
 window.unlock = () => {
@@ -3087,7 +2803,7 @@ document.addEventListener('keydown', e => {
     document.body.appendChild(c);
     c.width = innerWidth; c.height = innerHeight;
     const ctx  = c.getContext('2d');
-    const chars = 'RAVISAUCE';
+    const chars = 'NICOMAGGIOLISUDIO';
     const cols  = Math.floor(c.width / 14);
     const drops = Array(cols).fill(1);
     let frames  = 0;
@@ -3135,9 +2851,10 @@ document.addEventListener('keydown', e => {
         // Primary: set on loadedmetadata
         v.addEventListener('loadedmetadata', seekRandom, { once: true });
 
-        // Fallback: if canplay fires before seek stuck, reapply
+        // Fallback: if canplay fires before seek stuck, reapply + make visible
         v.addEventListener('canplay', () => {
             if (!isMain && v.currentTime < 0.3 && v.duration > 2) seekRandom();
+            v.classList.add('playing');
         }, { once: true });
 
         v.addEventListener('playing', () => v.classList.add('playing'), { once: true });
@@ -3362,128 +3079,39 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── Projects ──────────────────────────────────────────────────────
-const BASE = 'https://nicomaggioli.com/media';
-const PROJECTS_DATA = [
-    {
-        name: 'Boreal', cat: 'Product Design', year: '2024', role: 'Creative Director',
-        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Animation',
-        img: BASE + '/boreal/hero.png',
-        desc: 'Boreal ski bindings is intentionally designed with a brutalist aesthetic, embodying safety, strength, and reliability. The angular, solid shape conveys a sense of protection and durability.',
-        sections: [
-            { hd: 'Concept: Performance Meets Protection', body: 'The objective involved creating ski bindings with integrated GPS and sensor technology plus anti-theft security. The goal was to help skiers track progress while protecting equipment.' },
-            { hd: 'Creative Strategy: For the Serious Skier', body: '"These bindings aren\'t for the average jerry." The strategy fused cutting-edge technology with performance-driven aesthetics, targeting competitive skiers wanting skill advancement.' },
-            { hd: 'The App: Your Digital Companion', body: 'Real-time run feedback including speed, distance, and performance metrics. Anti-theft alerts and gamified competition features with daily achievement tracking.' },
-            { hd: 'Process: Behind the Design', body: 'Documentation spanning sketches through final 3D renders with careful detail consideration.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg'].map(f => BASE+'/boreal/'+f),
-    },
-    {
-        name: 'Nestquest', cat: 'Branding & Product Design', year: '2024', role: 'Creative Director',
-        services: 'Concept · Product Design · App Design · Card Game Design · Branding',
-        img: BASE + '/nestquest/hero.png',
-        desc: 'Nestquest is all about using technology to pull kids away from endless screen time and into the great outdoors. Kids use advanced image recognition binoculars that instantly identify different bird species, making nature exploration fun, interactive, and educational.',
-        sections: [
-            { hd: 'Concept: Technology for Outdoor Exploration', body: 'The creator observed that children spend excessive time on digital devices and sought to repurpose technology as an exploration instrument rather than a distraction tool.' },
-            { hd: 'Creative Strategy: New Tech, Familiar Feel', body: 'The approach combines emerging technology with the nostalgic appeal of trading card collection, transforming birdwatching into a competitive, shareable game.' },
-            { hd: 'The Card Game: Collect, Trade, Compete', body: 'A card game component was added to increase engagement. Collection mechanics, trading systems, and friend-based sharing sustain user motivation and exploration incentives.' },
-            { hd: 'Advertising Campaign', body: 'Vibrant, playful visuals designed to captivate young audiences, incorporating interactive components to stimulate curiosity and encourage exploration.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg','12.jpg','13.jpg','14.jpg'].map(f => BASE+'/nestquest/'+f),
-    },
-    {
-        name: 'Peak', cat: 'Packaging & Branding', year: '2024', role: 'Creative Director',
-        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Website Design',
-        img: BASE + '/peak/hero.png',
-        desc: 'Peak reimagines Lion\'s Mane consumption through a sublingual troche format. The product melts under your tongue, allowing it to be absorbed directly into your bloodstream, so you experience the benefits in hours instead of weeks.',
-        sections: [
-            { hd: 'Rethinking Supplement Delivery', body: 'Peak addresses traditional supplement limitations by offering faster absorption than tablets or pills through digestive processes.' },
-            { hd: 'Stand Out From the Crowd', body: 'The strategy targets entrepreneurs in fast-paced environments who prioritize efficiency, contrasting against generic, holistic supplement market aesthetics.' },
-            { hd: 'Luxury That Signals Success', body: 'Design incorporates gold, dark green, maroon, and navy blue to convey wealth and luxury, differentiating from competitors.' },
-            { hd: 'Campaign for the Hustlers', body: 'Campaign imagery includes lightbulbs symbolizing bright ideas and money depicting financial success, aimed at entrepreneurs seeking mental clarity and productivity enhancement.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.png','12.png','13.png'].map(f => BASE+'/peak/'+f),
-    },
-    {
-        name: 'Cognis', cat: 'AI Comic', year: '2024', role: 'Creative Director',
-        services: 'Concept · AI Art · Storytelling · Print Design · Riso Printing',
-        img: BASE + '/cognis/llk2v2ue8sghF49ztVTxIJM.png',
-        desc: 'At the start of 2023, with tools like ChatGPT and Midjourney on the rise, I saw an opportunity to bring a long time dream to life: making a comic book.',
-        sections: [
-            { hd: 'AI Meets Traditional Storytelling', body: 'I spent weeks generating thousands of images, combining them into a cohesive narrative, and used Photoshop to maintain character consistency throughout. The result was a fully realized AI-assisted visual story, blending traditional storytelling with cutting-edge technology.' },
-            { hd: 'Old Tech, New Stories', body: 'I chose to Riso print this comic as a playful contrast between old and new technology. Since Cognis explores the future and AI, it felt fitting to use a retro printing aesthetic like Riso, emphasizing the blend of classic craftsmanship with futuristic themes.' },
-            { hd: 'Crafting the Visual Narrative', body: 'From AI-generated concepts to careful editing and Riso printing, every step was designed to bridge the gap between emerging technology and traditional art forms.' },
-        ],
-        gallery: ['1.png','2.png','3.png','P7En9uM5opfvlaWzS9S5tyGB4.png'].map(f => BASE+'/cognis/'+f),
-    },
-    {
-        name: 'Pawlish', cat: 'Packaging & Advertising', year: '2024', role: 'Creative Director',
-        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Advertising',
-        img: BASE + '/pawlish/hero.png',
-        desc: 'A specially formulated nail polish with a rubbery finish that improves traction and prevents sliding on hard surfaces like wood floors, while also protecting floors from scratches.',
-        sections: [
-            { hd: 'Concept: Safety Meets Style', body: 'A solution for dogs that slip and hurt themselves on hard surfaces — a specially formulated nail polish with a rubbery finish that improves traction and prevents sliding, while also protecting your floors from scratches.' },
-            { hd: 'Packaging: What Customers Want', body: 'Research at major retailers revealed around 80% of customers gravitate toward packaging featuring a realistic dog. The packaging design features a realistic dog leaning over a see-through panel highlighting painted nails.' },
-            { hd: 'Color Strategy: Three Unique Shades', body: 'Jungle Glow (Green) — natural ingredients. Azure Dream (Blue) — peace of mind from slip prevention. Pinkalicious (Pink) — vibrant personality option for standout dogs.' },
-            { hd: 'Advertising: Speaking to Pet Parents', body: 'Three key ads highlighted: durability (water resistance), grippy rubbery finish preventing slips, and stress-free application.' },
-        ],
-        gallery: ['1.png','2.png','3.jpg','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg'].map(f => BASE+'/pawlish/'+f),
-    },
-    {
-        name: 'Voiage', cat: 'Website Design', year: '2024', role: 'Creative Director',
-        services: 'Concept · UI/UX Design · Branding · Web Design',
-        img: BASE + '/voiage/1.png',
-        desc: 'A comprehensive travel platform designed to make trip planning effortless and enjoyable — using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.',
-        sections: [
-            { hd: 'Transparency in Giving', body: 'Traditional charitable giving often lacks transparency, leaving donors unsure of where their money goes. Voiage changes this by using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.' },
-            { hd: 'Trust Through Design', body: 'I focused on transparency over the technical details of blockchain. The website looks like any other charitable site at first, but once you make a donation, you get access to a dashboard that shows exactly where your money is going.' },
-            { hd: 'Campaign', body: 'Each ad featured a see-through bus stop design, symbolizing how every donation is clearly recorded on a permanent ledger. This literal display emphasizes that nothing is hidden with Voiage.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','8.png','9.png','10.png','11.png'].map(f => BASE+'/voiage/'+f),
-    },
-    {
-        name: 'Mirage', cat: 'Digital / Web', year: '2024', role: 'Creative Director',
-        services: 'Concept · Branding · Art Direction · 3D Modeling · Animation · Advertising',
-        img: BASE + '/mirage/1.png',
-        desc: 'Mirage is a virtual tribute event designed to honor hip-hop artists whose lives were tragically cut short due to drug addiction. Drawing inspiration from virtual concerts like those in Fortnite — combining live hip-hop performance energy with charitable impact. All proceeds support addiction recovery organizations.',
-        sections: [
-            { hd: 'Virtual Tribute, Real Impact', body: 'The project blends virtual reality concert experiences with meaningful charitable outcomes supporting addiction recovery.' },
-            { hd: 'The Illusion of a Mirage', body: 'The strategy employs reflection, glare, and contrasting colors to evoke mirage imagery and prompt reflection on life, death, and the possibility of reincarnation while celebrating artist legacies.' },
-            { hd: 'Campaign', body: 'Focused on demonstrating accessibility — that users can experience the Mirage festival from any location, including personal spaces.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.webp'].map(f => BASE+'/mirage/'+f),
-    },
-    {
-        name: 'OXA', cat: 'Industrial Design', year: '2024', role: 'Creative Director',
-        services: 'Concept · Industrial Design · 3D Printing · Branding · Advertising',
-        img: BASE + '/oxa/hero.png',
-        desc: 'OXA is a 3D printed air detoxifier inspired by Favia coral, whose intricate, porous structure helps trap sediments and supports filter feeders. It blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.',
-        sections: [
-            { hd: 'Reinventing Air Purification', body: 'Modern air purification devices are bulky, noisy, and require an energy source. OXA blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.' },
-            { hd: 'Inspired by Nature', body: 'Design inspiration derives from Favia coral structure, mimicking natural forms to create an elegant solution to air purification, symbolizing nature\'s innate ability to refresh and cleanse.' },
-            { hd: 'Spreading Awareness', body: 'Campaign elements include bus stop advertisements featuring a real time meter that shows exactly how clean or dirty the air is, and demonstrations of the before and after difference when OXA is installed.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.png','12.png','13.png','14.png','15.png','16.png'].map(f => BASE+'/oxa/'+f),
-    },
-    {
-        name: 'Sessio', cat: 'Advertising & 3D', year: '2024', role: 'Creative Director',
-        services: 'Concept · 3D Modeling · Character Design · Branding · Advertising',
-        img: BASE + '/sessio/1.png',
-        desc: 'I wanted to push the boundaries of skateboarding and make Sessio feel like a whole new world, kind of like Disney. I modeled a frog, named Sevvy, to be the mascot of Sessio. Sevvy represents that playful, rebellious spirit that skateboarding is all about.',
-        sections: [
-            { hd: 'A Revolutionary Skatepark', body: 'The project redefines skateparks by drawing inspiration from world wonders and exclusive locations, addressing how traditional skateparks feel uninspiring to skateboarders who crave unexpected, risk-taking experiences.' },
-            { hd: 'Meet Sevvy the Frog', body: 'Sevvy serves as the mascot embodying skateboarding\'s playful and rebellious character. The strategy blends wonder with forbidden elements, transforming skate sessions into adventures where rules are rewritten.' },
-            { hd: 'Campaign', body: 'The campaign depicts Sevvy traveling globally, skating iconic off-limits locations styled like theme park attractions. Visuals emphasize vibrant, bold imagery transforming skateboarding into a world of adventure.' },
-        ],
-        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.webp','10.webp'].map(f => BASE+'/sessio/'+f),
-    },
-];
+let PROJECTS = [];
+let currentFilter = 'all';
+
+function buildFilterBtns() {
+    const filterEl = document.getElementById('proj-filter');
+    if (!filterEl) return;
+    const cats = ['All', ...new Set(PROJECTS.map(p => p.cat))];
+    filterEl.innerHTML = cats.map(c => {
+        const val = c === 'All' ? 'all' : c;
+        return `<button class="proj-filter-btn${val === 'all' ? ' active' : ''}" onclick="filterProjects('${val.replace(/'/g,"\\'")}'">${c}</button>`;
+    }).join('');
+}
+
+function filterProjects(cat) {
+    currentFilter = cat;
+    document.querySelectorAll('.proj-filter-btn').forEach(b => {
+        const isAll = b.textContent === 'All';
+        b.classList.toggle('active', (cat === 'all' && isAll) || b.textContent === cat);
+    });
+    document.querySelectorAll('.proj-card').forEach(card => {
+        card.hidden = cat !== 'all' && card.dataset.cat !== cat;
+    });
+    const visible = [...document.querySelectorAll('.proj-card')].filter(c => !c.hidden).length;
+    const countEl = document.getElementById('proj-count');
+    if (countEl) countEl.textContent = String(visible).padStart(2,'0') + ' / ' + String(PROJECTS.length).padStart(2,'0');
+}
 
 function openProject(idx) {
-    const p = PROJECTS_DATA[idx];
-    const galleryHTML = p.gallery.map(src =>
+    const p = PROJECTS[idx];
+    const galleryHTML = (p.gallery || []).map(src =>
         `<img src="${src}" alt="${p.name}" loading="lazy">`
     ).join('');
-    const sectionsHTML = p.sections.map(s =>
+    const sectionsHTML = (p.sections || []).map(s =>
         `<div class="proj-detail-section">
             <div class="proj-detail-section-hd">${s.hd}</div>
             <p class="proj-detail-section-body">${s.body}</p>
@@ -3518,25 +3146,60 @@ function openProject(idx) {
 
 function renderProjects() {
     const grid = document.getElementById('proj-main');
-    if (!grid || grid.children.length) return;
-    PROJECTS_DATA.forEach((p, i) => {
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    // Scrolling status strip
+    const statusInner = document.getElementById('work-status-inner');
+    if (statusInner) {
+        const names = PROJECTS.map(p => p.name).join('  ·  ');
+        statusInner.textContent = names + '  ·  ' + names + '  ·  ';
+    }
+
+    // Project count
+    const countEl = document.getElementById('proj-count');
+    if (countEl) countEl.textContent = String(PROJECTS.length).padStart(2,'0') + ' / ' + String(PROJECTS.length).padStart(2,'0');
+
+    PROJECTS.forEach((p, i) => {
+        const braille = toBraille(p.name);
         const card = document.createElement('div');
         card.className = 'proj-card';
+        card.dataset.cat = p.cat;
         card.onclick = () => openProject(i);
         card.innerHTML = `
-            <img src="${p.img}" alt="${p.name}" loading="lazy">
-            <div class="proj-card-name">
-                <span class="proj-card-cat">${p.cat}</span>
-                ${p.name}
+            <div class="proj-card-img">
+                <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.parentElement.style.background='#1a1a1a'">
+                <div class="proj-card-scan"></div>
+            </div>
+            <div class="proj-card-info">
+                <div class="proj-card-spec">${p.cat}</div>
+                <div class="proj-card-name">${p.name}</div>
+                <div class="proj-card-year">${p.year}</div>
+                <div class="proj-card-braille-row">
+                    <span class="proj-card-braille">${braille}</span>
+                    <span class="proj-card-idx">${String(i+1).padStart(3,'0')}</span>
+                </div>
             </div>`;
         grid.appendChild(card);
     });
+
+    buildFilterBtns();
 }
 
 // ── Init ──────────────────────────────────────────────────────────
 renderHome();
 renderSaved();
-renderProjects();
+
+// Load projects async
+(async function loadProjects() {
+    try {
+        const res = await fetch('projects.json?v=' + Date.now());
+        PROJECTS = await res.json();
+        renderProjects();
+    } catch(e) {
+        console.warn('projects.json not found');
+    }
+})();
 </script>
 </body>
 </html>
