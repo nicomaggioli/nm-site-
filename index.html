@@ -833,16 +833,44 @@
         }
         .co-continue-btn:hover { border-color: var(--green); color: var(--green); }
 
-        /* Mobile */
-        @media (max-width: 900px) {
-            .shop-wrap { padding: 0 8px 60px; }
-            .shop-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .shop-hd { padding: 24px 0 10px; }
+        /* ── PROJECTS / WORK ──────────────────────────────────────── */
+        .proj-wrap {
+            padding: 0 18px 80px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        @media (max-width: 600px) {
-            .shop-wrap { padding: 0 6px 60px; }
-            .shop-grid { gap: 8px; }
-            .shop-filter-btn { height: 36px; padding: 0 14px; font-size: 14px; }
+        .proj-section-label {
+            font-family: 'Courier New', monospace;
+            font-size: 8px; letter-spacing: 3px;
+            color: rgba(255,255,255,.3); text-transform: uppercase;
+            margin: 28px 0 14px;
+        }
+        .proj-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .proj-card {
+            display: block; position: relative;
+            aspect-ratio: 1; border-radius: 10px;
+            overflow: hidden; border: 1px solid #1e1e1e;
+            background: #111; text-decoration: none;
+            transition: border-color .2s, transform .2s;
+        }
+        .proj-card:hover { border-color: var(--green); transform: scale(1.02); }
+        .proj-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            display: block; transition: opacity .25s;
+        }
+        .proj-card-name {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 24px 12px 12px;
+            background: linear-gradient(to top, rgba(0,0,0,.8), transparent);
+            font-size: 12px; font-weight: 600; color: #fff; letter-spacing: .5px;
+        }
+        @media (max-width: 768px) {
+            .proj-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .proj-wrap { padding: 0 10px 70px; }
         }
 
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
@@ -1486,7 +1514,7 @@
 
         /* ── SCROLLED: logo turns orange ──────────────────────── */
         .header.scrolled .logo img {
-            filter: invert(50%) sepia(100%) saturate(800%) hue-rotate(0deg) brightness(105%);
+            filter: brightness(0) saturate(100%) invert(46%) sepia(97%) saturate(700%) hue-rotate(5deg) brightness(108%);
         }
 
         /* ══════════════════════════════════════════════════════
@@ -1570,7 +1598,7 @@
     <nav class="nav-tabs">
         <button class="nav-tab active" data-page="home"    onclick="showPage('home')">Home</button>
         <button class="nav-tab"        data-page="saved"   onclick="showPage('saved')">Saved</button>
-        <button class="nav-tab"        data-page="shop"    onclick="showPage('shop')">Shop</button>
+        <button class="nav-tab"        data-page="work"    onclick="showPage('work')">Work</button>
         <button class="nav-tab"        data-page="contact" onclick="showPage('contact')">Contact</button>
     </nav>
 
@@ -1599,7 +1627,7 @@
     <div class="mob-items">
         <button class="mob-item" data-page="home"    onclick="mobileNav('home')">   <span class="mob-num">01</span><span class="mob-label">HOME</span></button>
         <button class="mob-item" data-page="saved"   onclick="mobileNav('saved')">  <span class="mob-num">02</span><span class="mob-label">SAVED</span></button>
-        <button class="mob-item" data-page="shop"    onclick="mobileNav('shop')">   <span class="mob-num">03</span><span class="mob-label">SHOP</span></button>
+        <button class="mob-item" data-page="work"    onclick="mobileNav('work')">   <span class="mob-num">03</span><span class="mob-label">WORK</span></button>
         <button class="mob-item" data-page="contact" onclick="mobileNav('contact')"><span class="mob-num">04</span><span class="mob-label">CONTACT</span></button>
         <button class="mob-item" onclick="closeMobileMenu(); openCart();" id="mob-cart-item"><span class="mob-num">05</span><span class="mob-label">CART</span><span class="mob-cart-badge" id="mob-cart-badge"></span></button>
     </div>
@@ -1831,59 +1859,22 @@
         </div>
     </div>
 
-    <!-- SHOP -->
-    <div id="shop-page" class="page">
-        <div class="shop-wrap">
-
-            <!-- HEADER -->
-            <div class="shop-hd">
+    <!-- WORK / PROJECTS -->
+    <div id="work-page" class="page">
+        <div class="proj-wrap">
+            <div class="shop-hd" style="padding:24px 0 0;">
                 <div class="shop-hd-left">
-                    <span class="shop-hd-label">RVI // Shop</span>
+                    <span class="shop-hd-label">NM // Work</span>
                 </div>
-                <span class="shop-hd-count" id="shop-count">16 specimens</span>
             </div>
-
-
-            <!-- BRAILLE STRIP -->
             <div class="braille-strip shop-strip">
                 <span class="braille-strip-inner" id="braille-strip-inner"></span>
             </div>
-
-            <!-- SOLO VIEW — focused single-item display -->
-            <div class="solo-view" id="solo-view">
-
-                <div class="solo-dot-rail" id="solo-dot-rail"></div>
-                <div class="solo-body">
-                    <div class="solo-img-col">
-                        <div class="solo-img-wrap" id="solo-img-wrap">
-                            <img id="solo-img" src="" alt="">
-                            <div class="shop-scan"></div>
-                        </div>
-                        <div class="solo-thumbs" id="solo-thumbs"></div>
-                    </div>
-                    <div class="solo-info-col" id="solo-info-col">
-                        <div class="solo-catalog-ref" id="solo-catalog-ref">SPECIMEN // —</div>
-                        <span class="solo-spec" id="solo-spec"></span>
-                        <h2 class="solo-name" id="solo-name"></h2>
-                        <div class="solo-price" id="solo-price"></div>
-                        <p class="solo-desc" id="solo-desc"></p>
-                        <div class="solo-data-strip" id="solo-data-strip"></div>
-                        <div class="solo-size-label" id="solo-size-label">Select Size</div>
-                        <div class="solo-sizes" id="solo-sizes"></div>
-                        <button class="solo-add-btn" onclick="soloAddToCart()">Add to Cart</button>
-                        <div class="solo-braille-row">
-                            <span class="solo-braille" id="solo-braille"></span>
-                            <span class="solo-idx" id="solo-idx"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- GRID VIEW (preserved for future use)
-            <div class="shop-grid" id="shop-grid"></div>
-            -->
-
-        </div><!-- /shop-wrap -->
+            <div class="proj-section-label">Main Projects</div>
+            <div class="proj-grid" id="proj-main"></div>
+            <div class="proj-section-label" style="margin-top:40px;">Other Work</div>
+            <div class="proj-grid" id="proj-other"></div>
+        </div>
     </div>
 
     <!-- CONTACT -->
@@ -2858,10 +2849,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Keyboard nav for solo shop ─────────────────────────────────────
 document.addEventListener('keydown', e => {
-    const shopActive = document.getElementById('shop-page')?.classList.contains('active');
-    if (!shopActive || document.body.style.overflow === 'hidden') return;
-    if (e.key === 'ArrowLeft')  soloStep(-1);
-    if (e.key === 'ArrowRight') soloStep(1);
+    if (document.body.style.overflow === 'hidden') return;
 });
 
 // ── Contact ───────────────────────────────────────────────────────
@@ -2950,7 +2938,7 @@ window.addEventListener('scroll', updateHeaderMode, { passive: true });
 // ── Hash routing ──────────────────────────────────────────────────
 window.addEventListener('load', () => {
     const hash = window.location.hash.replace('#', '');
-    if (['home','saved','shop','contact'].includes(hash)) showPage(hash);
+    if (['home','saved','work','contact'].includes(hash)) showPage(hash);
 });
 
 // ── Loader ────────────────────────────────────────────────────────
@@ -3313,9 +3301,48 @@ document.addEventListener('keydown', e => {
     });
 })();
 
+// ── Projects ──────────────────────────────────────────────────────
+const PROJECTS_DATA = {
+    main: [
+        { name: 'Boreal',     img: 'https://nicomaggioli.com/media/boreal/hero.png',                     url: 'https://nicomaggioli.com/boreal' },
+        { name: 'Nestquest',  img: 'https://nicomaggioli.com/media/nestquest/hero.png',                  url: 'https://nicomaggioli.com/nestquest' },
+        { name: 'Peak',       img: 'https://nicomaggioli.com/media/peak/hero.png',                       url: 'https://nicomaggioli.com/peak' },
+        { name: 'Cognis',     img: 'https://nicomaggioli.com/media/cognis/llk2v2ue8sghF49ztVTxIJM.png', url: 'https://nicomaggioli.com/cognis' },
+        { name: 'Pawlish',    img: 'https://nicomaggioli.com/media/pawlish/hero.png',                    url: 'https://nicomaggioli.com/pawlish' },
+        { name: 'Mirage',     img: 'https://nicomaggioli.com/media/mirage/1.png',                        url: 'https://nicomaggioli.com/mirage' },
+        { name: 'OXA',        img: 'https://nicomaggioli.com/media/oxa/hero.png',                        url: 'https://nicomaggioli.com/oxa' },
+    ],
+    other: [
+        { name: '3D Print',    img: 'https://nicomaggioli.com/media/3d-print/hero.jpg',    url: 'https://nicomaggioli.com/3d-print' },
+        { name: 'Blender',     img: 'https://nicomaggioli.com/media/blender/hero.png',     url: 'https://nicomaggioli.com/blender' },
+        { name: 'Fingerboard', img: 'https://nicomaggioli.com/media/fingerboard/hero.jpg', url: 'https://nicomaggioli.com/fingerboard' },
+        { name: 'Logos',       img: 'https://nicomaggioli.com/media/logos/hero.png',       url: 'https://nicomaggioli.com/logos' },
+        { name: 'Ravi',        img: 'https://nicomaggioli.com/media/ravi/hero.png',        url: 'https://nicomaggioli.com/ravi' },
+        { name: 'Screenprint', img: 'https://nicomaggioli.com/media/screenprint/hero.jpg', url: 'https://nicomaggioli.com/screenprint' },
+        { name: 'Zipped',      img: 'https://nicomaggioli.com/media/zipped/hero.png',      url: 'https://nicomaggioli.com/zipped' },
+    ]
+};
+
+function renderProjects() {
+    ['main', 'other'].forEach(section => {
+        const grid = document.getElementById('proj-' + section);
+        if (!grid || grid.children.length) return;
+        PROJECTS_DATA[section].forEach(p => {
+            const a = document.createElement('a');
+            a.className = 'proj-card';
+            a.href = p.url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.innerHTML = `<img src="${p.img}" alt="${p.name}" loading="lazy"><div class="proj-card-name">${p.name}</div>`;
+            grid.appendChild(a);
+        });
+    });
+}
+
 // ── Init ──────────────────────────────────────────────────────────
 renderHome();
 renderSaved();
+renderProjects();
 </script>
 </body>
 </html>
