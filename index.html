@@ -657,88 +657,136 @@
 
 
         /* ── ABOUT PAGE ───────────────────────────────────────────── */
-        .about-wrap {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 18px 80px;
+        .about-wrap { max-width: 1100px; margin: 0 auto; padding: 0 0 80px; }
+        /* Channel header */
+        .about-ch-head {
+            padding: 36px 24px 32px; border-bottom: 1px solid #1a1a1a;
         }
-        .about-hd-row {
-            display: flex; align-items: baseline; justify-content: space-between;
-            border-bottom: 1px solid #1f1f1f; padding-bottom: 12px; margin-bottom: 32px;
-        }
-        .about-hd-label {
+        .about-ch-kicker {
             font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 14px;
         }
-        .about-hd-year {
-            font-family: 'Courier New', monospace; font-size: 9px;
-            color: rgba(255,255,255,.2); letter-spacing: 2px;
+        .about-ch-title {
+            font-size: clamp(17px, 3vw, 26px); font-weight: 700;
+            color: #f0f0f0; letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 14px;
         }
-        .about-hero {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 48px; align-items: start; margin-bottom: 64px;
+        .about-ch-sub {
+            font-size: 14px; line-height: 1.75; color: rgba(255,255,255,.5); max-width: 580px;
         }
-        @media (max-width: 700px) { .about-hero { grid-template-columns: 1fr; gap: 32px; } }
-        .about-name {
-            font-size: clamp(32px, 6vw, 56px); font-weight: 800;
-            color: #f0f0f0; letter-spacing: -1px; line-height: 1.05;
-            margin-bottom: 12px;
-        }
-        .about-role {
-            font-family: 'Courier New', monospace; font-size: 10px;
-            letter-spacing: 3px; color: rgba(255,102,0,.8); text-transform: uppercase;
-            margin-bottom: 20px;
-        }
-        .about-bio {
-            font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.6);
-        }
-        .about-img-col {
-            position: sticky; top: calc(var(--nav-h) + 20px);
-        }
-        .about-img-frame {
-            aspect-ratio: 3/4; background: #111; border: 1px solid #1f1f1f;
-            border-radius: 12px; overflow: hidden; position: relative;
-        }
-        .about-img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .about-img-frame-tag {
-            position: absolute; bottom: 12px; left: 12px;
-            font-family: 'Courier New', monospace; font-size: 8px;
-            letter-spacing: 2px; color: rgba(255,102,0,.7); background: rgba(0,0,0,.6);
-            padding: 4px 8px; border: 1px solid rgba(255,102,0,.2);
-        }
-        .about-section-title {
-            font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
-            margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #1f1f1f;
-        }
-        .about-skills {
+        /* Cards row */
+        .about-cards {
             display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 8px; margin-bottom: 48px;
+            border-bottom: 1px solid #1a1a1a;
         }
-        @media (max-width: 600px) { .about-skills { grid-template-columns: repeat(2, 1fr); } }
-        .about-skill {
-            padding: 10px 14px;
-            background: #111; border: 1px solid #1a1a1a;
-            font-family: 'Courier New', monospace; font-size: 10px;
-            color: rgba(255,255,255,.5); letter-spacing: 1px;
-            transition: border-color .2s, color .2s;
+        .about-card {
+            padding: 28px 24px; border-right: 1px solid #1a1a1a;
         }
-        .about-skill:hover { border-color: rgba(255,102,0,.3); color: rgba(255,255,255,.8); }
-        .about-cta {
-            display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px;
+        .about-card:last-child { border-right: none; }
+        .about-card-label {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 18px;
         }
-        .about-cta-btn {
-            height: 44px; padding: 0 24px; border-radius: 22px;
-            font-family: 'Courier New', monospace; font-size: 10px;
-            letter-spacing: 2px; text-transform: uppercase;
-            cursor: pointer; transition: all .2s; border: 1px solid #333;
-            background: transparent; color: rgba(255,255,255,.6);
-            text-decoration: none; display: flex; align-items: center;
+        .about-card-body {
+            font-size: 14px; line-height: 1.8; color: rgba(255,255,255,.55); margin-bottom: 24px;
         }
-        .about-cta-btn:hover { border-color: rgba(255,102,0,.5); color: #fff; }
-        .about-cta-btn.primary { background: var(--green); color: #000; border-color: var(--green); }
-        .about-cta-btn.primary:hover { opacity: .85; }
+        /* Pills */
+        .about-pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .about-pill {
+            padding: 5px 12px; border: 1px solid #222;
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 1px; color: rgba(255,255,255,.4); text-transform: uppercase;
+        }
+        /* Accordion */
+        .about-expand-list { display: flex; flex-direction: column; }
+        .about-expand-item { border-top: 1px solid #1a1a1a; padding: 12px 0; }
+        .about-expand-item:first-child { border-top: none; padding-top: 0; }
+        .about-expand-item summary {
+            font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1px;
+            color: rgba(255,255,255,.6); text-transform: uppercase; cursor: pointer;
+            list-style: none; display: flex; justify-content: space-between; align-items: center;
+            gap: 12px;
+        }
+        .about-expand-item summary::-webkit-details-marker { display: none; }
+        .about-expand-item summary::after {
+            content: '+'; color: rgba(255,102,0,.6); font-size: 14px;
+            font-family: monospace; flex-shrink: 0;
+        }
+        .about-expand-item[open] summary::after { content: '−'; }
+        .about-expand-item p {
+            font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.4);
+            margin-top: 10px; padding-right: 16px;
+        }
+        /* Resume panel */
+        .about-resume {
+            margin: 32px 24px 0; border: 1px solid #1a1a1a;
+        }
+        .about-resume-head {
+            padding: 28px; border-bottom: 1px solid #1a1a1a;
+        }
+        .about-resume-kicker {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .about-resume-title {
+            font-size: clamp(17px, 2.5vw, 22px); font-weight: 700;
+            color: #f0f0f0; letter-spacing: -0.5px; margin-bottom: 8px;
+        }
+        .about-resume-note {
+            font-size: 13px; line-height: 1.7; color: rgba(255,255,255,.4); max-width: 520px;
+        }
+        .about-resume-cols { display: grid; grid-template-columns: 1fr 1fr; }
+        .about-resume-col { padding: 28px; }
+        .about-resume-col + .about-resume-col { border-left: 1px solid #1a1a1a; }
+        .about-resume-section-label {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a;
+        }
+        .about-resume-entry { margin-bottom: 28px; }
+        .about-resume-entry:last-child { margin-bottom: 0; }
+        .about-resume-org {
+            font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); margin-bottom: 4px;
+        }
+        .about-resume-role {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 2px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .about-resume-facts {
+            display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px;
+            font-family: 'Courier New', monospace; font-size: 9px;
+            color: rgba(255,255,255,.35); letter-spacing: 1px;
+        }
+        .about-resume-fact-lbl { color: rgba(255,102,0,.5); margin-right: 4px; }
+        .about-resume-entry p { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.45); }
+        .about-resume-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
+        .about-resume-skills-label {
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 2px; color: rgba(255,255,255,.35); text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .about-resume-skills ul { list-style: none; padding: 0; margin: 0; }
+        .about-resume-skills li {
+            font-size: 13px; color: rgba(255,255,255,.55);
+            padding: 7px 0; border-bottom: 1px solid #1a1a1a;
+        }
+        .about-resume-list { list-style: none; padding: 0; margin: 0 0 8px; }
+        .about-resume-list li {
+            font-size: 13px; color: rgba(255,255,255,.45);
+            padding: 10px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.6;
+        }
+        @media (max-width: 860px) {
+            .about-cards { grid-template-columns: 1fr; }
+            .about-card { border-right: none; border-bottom: 1px solid #1a1a1a; }
+            .about-card:last-child { border-bottom: none; }
+            .about-resume-cols { grid-template-columns: 1fr; }
+            .about-resume-col + .about-resume-col { border-left: none; border-top: 1px solid #1a1a1a; }
+            .about-resume { margin: 24px 16px 0; }
+            .about-ch-head { padding: 28px 16px 24px; }
+        }
 
         /* ── PROJECTS / WORK ───────────────────────────────────────── */
         .proj-wrap { padding-left: 0; padding-right: 0; }
@@ -1882,54 +1930,190 @@
     <div id="about-page" class="page">
         <div class="shop-wrap">
             <div class="about-wrap">
-                <div class="about-hd-row">
-                    <span class="about-hd-label">NM // About</span>
-                    <span class="about-hd-year">EST. 2020</span>
+
+                <!-- Channel header -->
+                <div class="about-ch-head">
+                    <div class="about-ch-kicker">NM // About</div>
+                    <h1 class="about-ch-title">Nico Maggioli / About / Creative Systems Designer</h1>
+                    <p class="about-ch-sub">Designer focused on creative strategy and 3D visualization for brands, products, and digital campaigns.</p>
                 </div>
-                <div class="about-hero">
-                    <div>
-                        <div class="about-name">Nico<br>Maggioli</div>
-                        <div class="about-role">Creative Director · Designer</div>
-                        <p class="about-bio">
-                            I'm a creative director and designer focused on branding, product design, and motion. I work across disciplines — from concept to execution — building brands and experiences that feel distinct and intentional.
-                            <br><br>
-                            My work spans packaging, identity systems, 3D modeling, advertising campaigns, and web design. I believe in design that has a point of view — work that doesn't blend in.
-                        </p>
-                        <div class="about-cta">
-                            <button class="about-cta-btn primary" onclick="showPage('work')">View Work</button>
-                            <button class="about-cta-btn" onclick="showPage('contact')">Get in Touch</button>
+
+                <!-- Cards -->
+                <div class="about-cards">
+                    <div class="about-card about-card-profile">
+                        <div class="about-card-label">Profile</div>
+                        <p class="about-card-body">I build visual systems that connect strategy with execution — logos, packaging, websites, and immersive renders shaped into one coherent brand language.</p>
+                        <div class="about-pill-row">
+                            <span class="about-pill">Strategy + Design</span>
+                            <span class="about-pill">3D Visualization</span>
+                            <span class="about-pill">AI Workflow</span>
                         </div>
                     </div>
-                    <div class="about-img-col">
-                        <div class="about-img-frame">
-                            <img src="images/webp/hero.webp" alt="Nico Maggioli" onerror="this.style.display='none'">
-                            <span class="about-img-frame-tag">NM — 2026</span>
+
+                    <div class="about-card">
+                        <div class="about-card-label">Capabilities</div>
+                        <div class="about-expand-list">
+                            <details class="about-expand-item">
+                                <summary>Creative strategy and brand direction</summary>
+                                <p>I define positioning, audience priorities, and the message stack before visual production starts.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>Visual identity systems</summary>
+                                <p>I build flexible logo, type, and color systems that scale across digital and physical touchpoints.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>Web and campaign design</summary>
+                                <p>I translate the brand system into launch-ready pages and campaign assets with clear conversion structure.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>3D and image-based production</summary>
+                                <p>I use 3D visualization and compositing to create polished, high-impact visual content for products and stories.</p>
+                            </details>
+                        </div>
+                    </div>
+
+                    <div class="about-card">
+                        <div class="about-card-label">Workflow</div>
+                        <div class="about-expand-list">
+                            <details class="about-expand-item">
+                                <summary>01 / Research and framing</summary>
+                                <p>Kickoff, context review, and alignment on goals, audience, constraints, and expected outcomes.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>02 / Prototype and test</summary>
+                                <p>Rapid concept rounds to test direction early and choose the strongest visual strategy.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>03 / Refine visual system</summary>
+                                <p>Selected direction is expanded into a complete, consistent design system with production-ready details.</p>
+                            </details>
+                            <details class="about-expand-item">
+                                <summary>04 / Deliver final assets</summary>
+                                <p>Final files, implementation guidance, and handoff support so execution stays on-brand.</p>
+                            </details>
                         </div>
                     </div>
                 </div>
 
-                <div class="about-section-title">Disciplines</div>
-                <div class="about-skills">
-                    <div class="about-skill">Branding</div>
-                    <div class="about-skill">Product Design</div>
-                    <div class="about-skill">Packaging</div>
-                    <div class="about-skill">3D Modeling</div>
-                    <div class="about-skill">Motion Design</div>
-                    <div class="about-skill">UI / UX</div>
-                    <div class="about-skill">Art Direction</div>
-                    <div class="about-skill">Advertising</div>
-                    <div class="about-skill">Web Design</div>
+                <!-- Resume -->
+                <div class="about-resume">
+                    <div class="about-resume-head">
+                        <div class="about-resume-kicker">Career Lab / Record</div>
+                        <h2 class="about-resume-title">Experience and capability archive</h2>
+                        <p class="about-resume-note">Structured profile readout with role history, tools, leadership tracks, and recognitions.</p>
+                    </div>
+                    <div class="about-resume-cols">
+                        <!-- Left: Experience + Education -->
+                        <div class="about-resume-col">
+                            <div class="about-resume-section-label">Experience</div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Sprout Studios</div>
+                                <div class="about-resume-role">Visual Designer</div>
+                                <div class="about-resume-facts">
+                                    <span><span class="about-resume-fact-lbl">LOC</span>Boston, MA</span>
+                                    <span><span class="about-resume-fact-lbl">TERM</span>June 2025 – Present</span>
+                                </div>
+                                <p>Pushing the boundaries of visual storytelling for brands like Staples, Kohler, and Whirlpool by creating meaningful graphics and experimenting with innovative AI-driven workflows.</p>
+                            </div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Nicom</div>
+                                <div class="about-resume-role">Freelancer</div>
+                                <div class="about-resume-facts">
+                                    <span><span class="about-resume-fact-lbl">LOC</span>Boston, MA</span>
+                                    <span><span class="about-resume-fact-lbl">TERM</span>May 2022 – Present</span>
+                                </div>
+                                <p>Extensive experience collaborating with 50+ clients across industries, focused on 3D animation, packaging, and brand development with fast, reliable delivery.</p>
+                            </div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Ravisauce</div>
+                                <div class="about-resume-role">Founder &amp; Lead Designer</div>
+                                <div class="about-resume-facts">
+                                    <span><span class="about-resume-fact-lbl">LOC</span>Boston, MA</span>
+                                    <span><span class="about-resume-fact-lbl">TERM</span>April 2015 – Present</span>
+                                </div>
+                                <p>Built and scaled a fingerboard/skatewear brand with customers in 17 countries, expanding distribution to retail and online channels.</p>
+                            </div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Zipped Magazine</div>
+                                <div class="about-resume-role">Art Director</div>
+                                <div class="about-resume-facts">
+                                    <span><span class="about-resume-fact-lbl">LOC</span>Syracuse, NY</span>
+                                    <span><span class="about-resume-fact-lbl">TERM</span>Aug 2023 – May 2024</span>
+                                </div>
+                                <p>Led a team of four in weekly editorial production, directing social, poster, and design assets for a culture-focused semester publication.</p>
+                            </div>
+
+                            <div class="about-resume-section-label" style="margin-top:32px;">Education</div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Syracuse University</div>
+                                <div class="about-resume-role">College of Visual and Performing Arts</div>
+                                <p>BFA, Communications Design · Magna Cum Laude · May 2024</p>
+                            </div>
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Boston College High School</div>
+                                <p>May 2020</p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Expertise + Leadership + Honors -->
+                        <div class="about-resume-col">
+                            <div class="about-resume-section-label">Expertise</div>
+                            <div class="about-resume-skills">
+                                <div>
+                                    <div class="about-resume-skills-label">Creative</div>
+                                    <ul>
+                                        <li>Strategy</li>
+                                        <li>Branding</li>
+                                        <li>Packaging</li>
+                                        <li>Editorial</li>
+                                        <li>UI/UX</li>
+                                        <li>Advertising</li>
+                                        <li>3D Design</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="about-resume-skills-label">Technical</div>
+                                    <ul>
+                                        <li>Photoshop</li>
+                                        <li>Illustrator</li>
+                                        <li>InDesign</li>
+                                        <li>Figma</li>
+                                        <li>Framer</li>
+                                        <li>Blender</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="about-resume-section-label" style="margin-top:32px;">Leadership</div>
+                            <ul class="about-resume-list">
+                                <li>Syracuse University Summer College Ambassador (2019)</li>
+                                <li>Young Leaders Conference, Sheffield, England (2019)</li>
+                                <li>YMCA Camp Counselor (CIT), Camp Coniston, Croydon NH (2011–2016)</li>
+                            </ul>
+
+                            <div class="about-resume-section-label" style="margin-top:32px;">Honors &amp; Awards</div>
+
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Paul Leibovitz Award</div>
+                                <p>Syracuse University (2024) — Presented to a senior demonstrating cutting-edge interactive design and emerging technology use.</p>
+                            </div>
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Impact Award</div>
+                                <p>Babson College (2018) — Recognized for brand networking leadership and building community engagement around Ravisauce.</p>
+                            </div>
+                            <div class="about-resume-entry">
+                                <div class="about-resume-org">Craftsmanship Recognition</div>
+                                <p>Fingerboard TV (2017) — Featured internationally for craftsmanship in handmade fingerboard design.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="about-section-title">Tools</div>
-                <div class="about-skills">
-                    <div class="about-skill">Adobe Illustrator</div>
-                    <div class="about-skill">Photoshop</div>
-                    <div class="about-skill">After Effects</div>
-                    <div class="about-skill">Cinema 4D</div>
-                    <div class="about-skill">Blender</div>
-                    <div class="about-skill">Figma</div>
-                </div>
             </div>
         </div>
     </div>
