@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAVISAUCE</title>
+    <title>Nico Maggioli</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- No social preview image -->
-    <meta property="og:title" content="RAVISAUCE">
+    <meta property="og:title" content="Nico Maggioli">
     <meta property="og:type" content="website">
     <meta name="robots" content="noimageindex">
     <style>
@@ -76,6 +76,7 @@
         .logo img {
             width: 100%; height: 100%; object-fit: contain;
             animation: logoSpin3d 7s linear infinite;
+            filter: brightness(0) saturate(100%) invert(46%) sepia(97%) saturate(700%) hue-rotate(5deg) brightness(108%);
         }
         @keyframes logoSpin3d {
             0%   { transform: rotateY(0deg); }
@@ -834,11 +835,8 @@
         .co-continue-btn:hover { border-color: var(--green); color: var(--green); }
 
         /* ── PROJECTS / WORK ──────────────────────────────────────── */
-        .proj-wrap {
-            padding: 0 18px 80px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        /* shop-wrap already provides padding: 0 18px 80px and dark bg */
+        .proj-wrap { padding-left: 0; padding-right: 0; }
         .proj-section-label {
             font-family: 'Courier New', monospace;
             font-size: 8px; letter-spacing: 3px;
@@ -847,43 +845,41 @@
         }
         .proj-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding-top: 20px;
         }
         .proj-card {
-            display: block; position: relative;
-            aspect-ratio: 1; border-radius: 10px;
+            position: relative;
+            aspect-ratio: 4/3; border-radius: 14px;
             overflow: hidden; border: 1px solid #1e1e1e;
-            background: #111; text-decoration: none;
-            transition: border-color .2s, transform .2s;
+            background: #111; cursor: pointer;
+            transition: border-color .2s, transform .15s;
         }
-        .proj-card:hover { border-color: var(--green); transform: scale(1.02); }
+        .proj-card:hover { border-color: var(--green); transform: scale(1.01); }
         .proj-card img {
             width: 100%; height: 100%; object-fit: cover;
-            display: block; transition: opacity .25s;
+            display: block; transition: transform .4s ease;
         }
+        .proj-card:hover img { transform: scale(1.04); }
         .proj-card-name {
             position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 28px 12px 12px;
-            background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
-            font-size: 13px; font-weight: 600; color: #fff; letter-spacing: .5px;
-            display: flex; flex-direction: column; gap: 2px;
+            padding: 40px 18px 18px;
+            background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.5) 60%, transparent 100%);
+            font-size: 15px; font-weight: 600; color: #fff; letter-spacing: .3px;
+            display: flex; flex-direction: column; gap: 4px;
         }
         .proj-card-cat {
-            font-family: 'Courier New', monospace; font-size: 8px;
+            font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 2px; color: var(--green); text-transform: uppercase;
         }
         @media (max-width: 768px) {
-            .proj-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .proj-wrap { padding: 0 10px 70px; }
+            .proj-grid { grid-template-columns: 1fr; gap: 12px; padding-top: 14px; }
         }
 
         /* ── PROJECT DETAIL PAGE ───────────────────────────────────── */
-        .proj-detail-wrap {
-            padding: 0 18px 80px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        /* shop-wrap provides padding and dark bg; override left/right to 0 */
+        .proj-detail-wrap { padding-left: 0; padding-right: 0; }
         .proj-detail-back {
             display: inline-flex; align-items: center; gap: 6px;
             font-family: 'Courier New', monospace; font-size: 9px;
@@ -893,38 +889,74 @@
             padding: 24px 0 20px; transition: color .2s;
         }
         .proj-detail-back:hover { color: var(--green); }
+        .proj-detail-header {
+            margin-bottom: 28px;
+        }
         .proj-detail-cat {
-            font-family: 'Courier New', monospace; font-size: 8px;
+            font-family: 'Courier New', monospace; font-size: 9px;
             letter-spacing: 3px; color: var(--green); text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .proj-detail-title {
-            font-size: clamp(28px, 6vw, 52px); font-weight: 700;
-            color: #f0f0f0; letter-spacing: -1px; line-height: 1.1;
-            margin-bottom: 20px;
+            font-size: clamp(28px, 6vw, 56px); font-weight: 700;
+            color: #f0f0f0; letter-spacing: -1.5px; line-height: 1.05;
+            margin-bottom: 24px;
+        }
+        .proj-detail-meta {
+            display: flex; flex-wrap: wrap; gap: 24px;
+            padding: 20px 0; border-top: 1px solid #1f1f1f; border-bottom: 1px solid #1f1f1f;
+            margin-bottom: 32px;
+        }
+        .proj-detail-meta-item { display: flex; flex-direction: column; gap: 5px; }
+        .proj-detail-meta-label {
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 2px; color: rgba(255,255,255,.3); text-transform: uppercase;
+        }
+        .proj-detail-meta-value {
+            font-size: 13px; font-weight: 500; color: rgba(255,255,255,.75);
         }
         .proj-detail-hero {
-            width: 100%; border-radius: 14px; overflow: hidden;
-            margin-bottom: 32px; aspect-ratio: 16/9;
+            width: 100%; border-radius: 16px; overflow: hidden;
+            margin-bottom: 40px; aspect-ratio: 16/9;
             background: #111; border: 1px solid #1e1e1e;
         }
         .proj-detail-hero img {
             width: 100%; height: 100%; object-fit: cover; display: block;
         }
         .proj-detail-desc {
-            font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.55);
-            margin-bottom: 32px; max-width: 680px;
+            font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.65);
+            margin-bottom: 48px; max-width: 720px;
         }
-        .proj-detail-link {
-            display: inline-flex; align-items: center; gap: 8px;
-            height: 44px; padding: 0 24px; border-radius: 22px;
-            background: var(--green); color: #000; font-size: 13px;
-            font-weight: 700; text-decoration: none; transition: opacity .2s;
+        .proj-detail-section {
+            margin-bottom: 48px;
         }
-        .proj-detail-link:hover { opacity: .85; }
+        .proj-detail-section-hd {
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 3px; color: var(--green); text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .proj-detail-section-body {
+            font-size: 15px; line-height: 1.8; color: rgba(255,255,255,.55);
+            max-width: 720px;
+        }
+        .proj-detail-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 40px;
+        }
+        .proj-detail-gallery img {
+            width: 100%; border-radius: 12px;
+            display: block; aspect-ratio: 4/3; object-fit: cover;
+            border: 1px solid #1e1e1e;
+            transition: opacity .3s, transform .3s;
+        }
+        .proj-detail-gallery img:hover { opacity: .9; transform: scale(1.01); cursor: zoom-in; }
+        .proj-detail-gallery img.tall { aspect-ratio: 3/4; }
         @media (max-width: 768px) {
-            .proj-detail-wrap { padding: 0 14px 70px; }
+            .proj-detail-wrap { padding: 0 8px 70px; }
             .proj-detail-hero { aspect-ratio: 4/3; }
+            .proj-detail-gallery { grid-template-columns: 1fr; gap: 10px; }
         }
 
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
@@ -1558,7 +1590,7 @@
             border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
-        .header.hero-mode .logo img       { filter: brightness(0) invert(1); }
+        .header.hero-mode .logo img       { filter: brightness(0) invert(1) !important; }
         .header.hero-mode .nav-tab        { color: rgba(255,255,255,.55); }
         .header.hero-mode .nav-tab:hover  { background: rgba(255,255,255,.1); color: #fff; }
         .header.hero-mode .nav-tab.active { background: rgba(255,255,255,.18); color: #fff; }
@@ -1915,10 +1947,11 @@
 
     <!-- WORK / PROJECTS -->
     <div id="work-page" class="page">
-        <div class="proj-wrap">
-            <div class="shop-hd" style="padding:24px 0 0;">
+        <div class="shop-wrap proj-wrap">
+            <div class="shop-hd" style="padding-top:32px; padding-bottom:0;">
                 <div class="shop-hd-left">
                     <span class="shop-hd-label">NM // Work</span>
+                    <span class="shop-hd-title">Selected Work</span>
                 </div>
             </div>
             <div class="braille-strip shop-strip">
@@ -1930,15 +1963,9 @@
 
     <!-- PROJECT DETAIL -->
     <div id="project-page" class="page">
-        <div class="proj-detail-wrap">
+        <div class="shop-wrap proj-detail-wrap">
             <button class="proj-detail-back" onclick="showPage('work')">← Back to Work</button>
-            <div class="proj-detail-cat" id="proj-detail-cat"></div>
-            <h1 class="proj-detail-title" id="proj-detail-title"></h1>
-            <div class="proj-detail-hero">
-                <img id="proj-detail-img" src="" alt="">
-            </div>
-            <p class="proj-detail-desc" id="proj-detail-desc"></p>
-            <a class="proj-detail-link" id="proj-detail-link" href="" target="_blank" rel="noopener">View Case Study →</a>
+            <div id="proj-detail-content"></div>
         </div>
     </div>
 
@@ -3367,26 +3394,158 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── Projects ──────────────────────────────────────────────────────
+const BASE = 'https://nicomaggioli.com/media';
 const PROJECTS_DATA = [
-    { name: 'Boreal',    cat: 'Product Design',  img: 'https://framerusercontent.com/images/lotADLU8jC28TAbY9FRnyXqjkd0.png', url: 'https://nicomaggioli.framer.website/boreal',    desc: '' },
-    { name: 'Nestquest', cat: 'Branding',         img: 'https://framerusercontent.com/images/xaPoeMXPpheSUAoAjS69gbK01E.png',  url: 'https://nicomaggioli.framer.website/nestquest', desc: '' },
-    { name: 'Peak',      cat: 'Packaging',        img: 'https://framerusercontent.com/images/i6VG3Eb6qmZPtQHNLXswh8h8i6c.png', url: 'https://nicomaggioli.framer.website/peak',      desc: '' },
-    { name: 'Cognis',    cat: 'AI Comic',         img: 'https://framerusercontent.com/images/S4jYYQGEoVPP6KV4NWIF6GzXqH8.png', url: 'https://nicomaggioli.framer.website/cognis',    desc: '' },
-    { name: 'Pawlish',   cat: 'Packaging & Ads',  img: 'https://framerusercontent.com/images/OqeXHVp7Yb81gOPFkAm025icyNI.png', url: 'https://nicomaggioli.framer.website/pawlish',   desc: '' },
-    { name: 'Voiage',    cat: 'Website',          img: 'https://framerusercontent.com/images/DrU28gWRIzTFGKwxOafPNh5a6CI.png', url: 'https://nicomaggioli.framer.website/voiage',    desc: '' },
-    { name: 'Mirage',    cat: 'Digital / Web',    img: 'https://framerusercontent.com/images/kCA9rY2brMrFEMbs707qg7KOwVM.png', url: 'https://nicomaggioli.framer.website/mirage',    desc: '' },
-    { name: 'Sessio',    cat: 'Advertising',      img: 'https://framerusercontent.com/images/JYSSxIvjBg8qG4uVVKhAYghrI.png',  url: 'https://nicomaggioli.framer.website/sessio',    desc: '' },
+    {
+        name: 'Boreal', cat: 'Product Design', year: '2024', role: 'Creative Director',
+        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Animation',
+        img: BASE + '/boreal/hero.png',
+        desc: 'Boreal ski bindings is intentionally designed with a brutalist aesthetic, embodying safety, strength, and reliability. The angular, solid shape conveys a sense of protection and durability.',
+        sections: [
+            { hd: 'Concept: Performance Meets Protection', body: 'The objective involved creating ski bindings with integrated GPS and sensor technology plus anti-theft security. The goal was to help skiers track progress while protecting equipment.' },
+            { hd: 'Creative Strategy: For the Serious Skier', body: '"These bindings aren\'t for the average jerry." The strategy fused cutting-edge technology with performance-driven aesthetics, targeting competitive skiers wanting skill advancement.' },
+            { hd: 'The App: Your Digital Companion', body: 'Real-time run feedback including speed, distance, and performance metrics. Anti-theft alerts and gamified competition features with daily achievement tracking.' },
+            { hd: 'Process: Behind the Design', body: 'Documentation spanning sketches through final 3D renders with careful detail consideration.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg'].map(f => BASE+'/boreal/'+f),
+    },
+    {
+        name: 'Nestquest', cat: 'Branding & Product Design', year: '2024', role: 'Creative Director',
+        services: 'Concept · Product Design · App Design · Card Game Design · Branding',
+        img: BASE + '/nestquest/hero.png',
+        desc: 'Nestquest is all about using technology to pull kids away from endless screen time and into the great outdoors. Kids use advanced image recognition binoculars that instantly identify different bird species, making nature exploration fun, interactive, and educational.',
+        sections: [
+            { hd: 'Concept: Technology for Outdoor Exploration', body: 'The creator observed that children spend excessive time on digital devices and sought to repurpose technology as an exploration instrument rather than a distraction tool.' },
+            { hd: 'Creative Strategy: New Tech, Familiar Feel', body: 'The approach combines emerging technology with the nostalgic appeal of trading card collection, transforming birdwatching into a competitive, shareable game.' },
+            { hd: 'The Card Game: Collect, Trade, Compete', body: 'A card game component was added to increase engagement. Collection mechanics, trading systems, and friend-based sharing sustain user motivation and exploration incentives.' },
+            { hd: 'Advertising Campaign', body: 'Vibrant, playful visuals designed to captivate young audiences, incorporating interactive components to stimulate curiosity and encourage exploration.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg','12.jpg','13.jpg','14.jpg'].map(f => BASE+'/nestquest/'+f),
+    },
+    {
+        name: 'Peak', cat: 'Packaging & Branding', year: '2024', role: 'Creative Director',
+        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Website Design',
+        img: BASE + '/peak/hero.png',
+        desc: 'Peak reimagines Lion\'s Mane consumption through a sublingual troche format. The product melts under your tongue, allowing it to be absorbed directly into your bloodstream, so you experience the benefits in hours instead of weeks.',
+        sections: [
+            { hd: 'Rethinking Supplement Delivery', body: 'Peak addresses traditional supplement limitations by offering faster absorption than tablets or pills through digestive processes.' },
+            { hd: 'Stand Out From the Crowd', body: 'The strategy targets entrepreneurs in fast-paced environments who prioritize efficiency, contrasting against generic, holistic supplement market aesthetics.' },
+            { hd: 'Luxury That Signals Success', body: 'Design incorporates gold, dark green, maroon, and navy blue to convey wealth and luxury, differentiating from competitors.' },
+            { hd: 'Campaign for the Hustlers', body: 'Campaign imagery includes lightbulbs symbolizing bright ideas and money depicting financial success, aimed at entrepreneurs seeking mental clarity and productivity enhancement.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.png','12.png','13.png'].map(f => BASE+'/peak/'+f),
+    },
+    {
+        name: 'Cognis', cat: 'AI Comic', year: '2024', role: 'Creative Director',
+        services: 'Concept · AI Art · Storytelling · Print Design · Riso Printing',
+        img: BASE + '/cognis/llk2v2ue8sghF49ztVTxIJM.png',
+        desc: 'At the start of 2023, with tools like ChatGPT and Midjourney on the rise, I saw an opportunity to bring a long time dream to life: making a comic book.',
+        sections: [
+            { hd: 'AI Meets Traditional Storytelling', body: 'I spent weeks generating thousands of images, combining them into a cohesive narrative, and used Photoshop to maintain character consistency throughout. The result was a fully realized AI-assisted visual story, blending traditional storytelling with cutting-edge technology.' },
+            { hd: 'Old Tech, New Stories', body: 'I chose to Riso print this comic as a playful contrast between old and new technology. Since Cognis explores the future and AI, it felt fitting to use a retro printing aesthetic like Riso, emphasizing the blend of classic craftsmanship with futuristic themes.' },
+            { hd: 'Crafting the Visual Narrative', body: 'From AI-generated concepts to careful editing and Riso printing, every step was designed to bridge the gap between emerging technology and traditional art forms.' },
+        ],
+        gallery: ['1.png','2.png','3.png','P7En9uM5opfvlaWzS9S5tyGB4.png'].map(f => BASE+'/cognis/'+f),
+    },
+    {
+        name: 'Pawlish', cat: 'Packaging & Advertising', year: '2024', role: 'Creative Director',
+        services: 'Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Advertising',
+        img: BASE + '/pawlish/hero.png',
+        desc: 'A specially formulated nail polish with a rubbery finish that improves traction and prevents sliding on hard surfaces like wood floors, while also protecting floors from scratches.',
+        sections: [
+            { hd: 'Concept: Safety Meets Style', body: 'A solution for dogs that slip and hurt themselves on hard surfaces — a specially formulated nail polish with a rubbery finish that improves traction and prevents sliding, while also protecting your floors from scratches.' },
+            { hd: 'Packaging: What Customers Want', body: 'Research at major retailers revealed around 80% of customers gravitate toward packaging featuring a realistic dog. The packaging design features a realistic dog leaning over a see-through panel highlighting painted nails.' },
+            { hd: 'Color Strategy: Three Unique Shades', body: 'Jungle Glow (Green) — natural ingredients. Azure Dream (Blue) — peace of mind from slip prevention. Pinkalicious (Pink) — vibrant personality option for standout dogs.' },
+            { hd: 'Advertising: Speaking to Pet Parents', body: 'Three key ads highlighted: durability (water resistance), grippy rubbery finish preventing slips, and stress-free application.' },
+        ],
+        gallery: ['1.png','2.png','3.jpg','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.jpg'].map(f => BASE+'/pawlish/'+f),
+    },
+    {
+        name: 'Voiage', cat: 'Website Design', year: '2024', role: 'Creative Director',
+        services: 'Concept · UI/UX Design · Branding · Web Design',
+        img: BASE + '/voiage/1.png',
+        desc: 'A comprehensive travel platform designed to make trip planning effortless and enjoyable — using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.',
+        sections: [
+            { hd: 'Transparency in Giving', body: 'Traditional charitable giving often lacks transparency, leaving donors unsure of where their money goes. Voiage changes this by using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.' },
+            { hd: 'Trust Through Design', body: 'I focused on transparency over the technical details of blockchain. The website looks like any other charitable site at first, but once you make a donation, you get access to a dashboard that shows exactly where your money is going.' },
+            { hd: 'Campaign', body: 'Each ad featured a see-through bus stop design, symbolizing how every donation is clearly recorded on a permanent ledger. This literal display emphasizes that nothing is hidden with Voiage.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','8.png','9.png','10.png','11.png'].map(f => BASE+'/voiage/'+f),
+    },
+    {
+        name: 'Mirage', cat: 'Digital / Web', year: '2024', role: 'Creative Director',
+        services: 'Concept · Branding · Art Direction · 3D Modeling · Animation · Advertising',
+        img: BASE + '/mirage/1.png',
+        desc: 'Mirage is a virtual tribute event designed to honor hip-hop artists whose lives were tragically cut short due to drug addiction. Drawing inspiration from virtual concerts like those in Fortnite — combining live hip-hop performance energy with charitable impact. All proceeds support addiction recovery organizations.',
+        sections: [
+            { hd: 'Virtual Tribute, Real Impact', body: 'The project blends virtual reality concert experiences with meaningful charitable outcomes supporting addiction recovery.' },
+            { hd: 'The Illusion of a Mirage', body: 'The strategy employs reflection, glare, and contrasting colors to evoke mirage imagery and prompt reflection on life, death, and the possibility of reincarnation while celebrating artist legacies.' },
+            { hd: 'Campaign', body: 'Focused on demonstrating accessibility — that users can experience the Mirage festival from any location, including personal spaces.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.webp'].map(f => BASE+'/mirage/'+f),
+    },
+    {
+        name: 'OXA', cat: 'Industrial Design', year: '2024', role: 'Creative Director',
+        services: 'Concept · Industrial Design · 3D Printing · Branding · Advertising',
+        img: BASE + '/oxa/hero.png',
+        desc: 'OXA is a 3D printed air detoxifier inspired by Favia coral, whose intricate, porous structure helps trap sediments and supports filter feeders. It blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.',
+        sections: [
+            { hd: 'Reinventing Air Purification', body: 'Modern air purification devices are bulky, noisy, and require an energy source. OXA blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.' },
+            { hd: 'Inspired by Nature', body: 'Design inspiration derives from Favia coral structure, mimicking natural forms to create an elegant solution to air purification, symbolizing nature\'s innate ability to refresh and cleanse.' },
+            { hd: 'Spreading Awareness', body: 'Campaign elements include bus stop advertisements featuring a real time meter that shows exactly how clean or dirty the air is, and demonstrations of the before and after difference when OXA is installed.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.png','10.png','11.png','12.png','13.png','14.png','15.png','16.png'].map(f => BASE+'/oxa/'+f),
+    },
+    {
+        name: 'Sessio', cat: 'Advertising & 3D', year: '2024', role: 'Creative Director',
+        services: 'Concept · 3D Modeling · Character Design · Branding · Advertising',
+        img: BASE + '/sessio/1.png',
+        desc: 'I wanted to push the boundaries of skateboarding and make Sessio feel like a whole new world, kind of like Disney. I modeled a frog, named Sevvy, to be the mascot of Sessio. Sevvy represents that playful, rebellious spirit that skateboarding is all about.',
+        sections: [
+            { hd: 'A Revolutionary Skatepark', body: 'The project redefines skateparks by drawing inspiration from world wonders and exclusive locations, addressing how traditional skateparks feel uninspiring to skateboarders who crave unexpected, risk-taking experiences.' },
+            { hd: 'Meet Sevvy the Frog', body: 'Sevvy serves as the mascot embodying skateboarding\'s playful and rebellious character. The strategy blends wonder with forbidden elements, transforming skate sessions into adventures where rules are rewritten.' },
+            { hd: 'Campaign', body: 'The campaign depicts Sevvy traveling globally, skating iconic off-limits locations styled like theme park attractions. Visuals emphasize vibrant, bold imagery transforming skateboarding into a world of adventure.' },
+        ],
+        gallery: ['1.png','2.png','3.png','4.png','5.png','6.png','7.png','8.png','9.webp','10.webp'].map(f => BASE+'/sessio/'+f),
+    },
 ];
 
 function openProject(idx) {
     const p = PROJECTS_DATA[idx];
-    document.getElementById('proj-detail-cat').textContent   = p.cat;
-    document.getElementById('proj-detail-title').textContent = p.name;
-    document.getElementById('proj-detail-img').src           = p.img;
-    document.getElementById('proj-detail-img').alt           = p.name;
-    document.getElementById('proj-detail-desc').textContent  = p.desc || '';
-    document.getElementById('proj-detail-link').href         = p.url;
+    const galleryHTML = p.gallery.map(src =>
+        `<img src="${src}" alt="${p.name}" loading="lazy">`
+    ).join('');
+    const sectionsHTML = p.sections.map(s =>
+        `<div class="proj-detail-section">
+            <div class="proj-detail-section-hd">${s.hd}</div>
+            <p class="proj-detail-section-body">${s.body}</p>
+        </div>`
+    ).join('');
+    document.getElementById('proj-detail-content').innerHTML = `
+        <div class="proj-detail-header">
+            <div class="proj-detail-cat">${p.cat}</div>
+            <h1 class="proj-detail-title">${p.name}</h1>
+            <div class="proj-detail-meta">
+                <div class="proj-detail-meta-item">
+                    <span class="proj-detail-meta-label">Year</span>
+                    <span class="proj-detail-meta-value">${p.year}</span>
+                </div>
+                <div class="proj-detail-meta-item">
+                    <span class="proj-detail-meta-label">Role</span>
+                    <span class="proj-detail-meta-value">${p.role}</span>
+                </div>
+                <div class="proj-detail-meta-item">
+                    <span class="proj-detail-meta-label">Services</span>
+                    <span class="proj-detail-meta-value">${p.services}</span>
+                </div>
+            </div>
+        </div>
+        <div class="proj-detail-hero"><img src="${p.img}" alt="${p.name}"></div>
+        <p class="proj-detail-desc">${p.desc}</p>
+        ${sectionsHTML}
+        <div class="proj-detail-gallery">${galleryHTML}</div>`;
     showPage('project');
+    window.scrollTo(0, 0);
 }
 
 function renderProjects() {
@@ -3395,7 +3554,6 @@ function renderProjects() {
     PROJECTS_DATA.forEach((p, i) => {
         const card = document.createElement('div');
         card.className = 'proj-card';
-        card.style.cursor = 'pointer';
         card.onclick = () => openProject(i);
         card.innerHTML = `
             <img src="${p.img}" alt="${p.name}" loading="lazy">
