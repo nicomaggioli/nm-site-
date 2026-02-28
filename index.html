@@ -14,8 +14,8 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --green:  #FF6600;
-            --gd:     #E05500;
+            --green:  #FF8C33;
+            --gd:     #E06A1A;
             --black:  #111;
             --muted:  #666;
             --g1:     #f5f5f5;
@@ -27,7 +27,7 @@
         }
 
         html { scroll-behavior: smooth; }
-        ::selection { background: rgba(255,102,0,.25); color: #111; }
+        ::selection { background: rgba(255,140,51,.25); color: #111; }
 
         body {
             font-family: var(--font);
@@ -76,7 +76,7 @@
         .logo img {
             width: 100%; height: 100%; object-fit: contain;
             animation: logoSpin3d 7s linear infinite;
-            filter: brightness(0) saturate(100%) invert(46%) sepia(97%) saturate(700%) hue-rotate(5deg) brightness(108%);
+            filter: brightness(0) saturate(100%) invert(65%) sepia(80%) saturate(500%) hue-rotate(360deg) brightness(105%);
         }
         @keyframes logoSpin3d {
             0%   { transform: rotateY(0deg); }
@@ -540,7 +540,7 @@
         }
         .shop-scan {
             position: absolute; left: 0; right: 0; top: -35%; height: 35%;
-            background: linear-gradient(to bottom, transparent, rgba(255,102,0,.06), transparent);
+            background: linear-gradient(to bottom, transparent, rgba(255,140,51,.06), transparent);
             z-index: 3; pointer-events: none;
         }
         .shop-item:hover .shop-scan { animation: scan-sweep .85s ease-in-out forwards; }
@@ -552,7 +552,7 @@
         .shop-item:hover .shop-img-wrap img { transform: scale(1.05); }
         .shop-item-spec {
             font-family: 'Courier New', monospace; font-size: 7px; letter-spacing: 2px;
-            color: rgba(255,102,0,.6); padding: 10px 0 3px; text-transform: uppercase;
+            color: rgba(255,140,51,.6); padding: 10px 0 3px; text-transform: uppercase;
         }
         .shop-item-name {
             display: block; font-family: var(--font); font-size: 14px; font-weight: 500;
@@ -572,7 +572,7 @@
             overflow: hidden; white-space: nowrap; max-width: 74%;
             transition: color .4s;
         }
-        .shop-item:hover .shop-item-braille { color: rgba(255,102,0,.3); }
+        .shop-item:hover .shop-item-braille { color: rgba(255,140,51,.3); }
         .shop-item-idx {
             font-family: 'Courier New', monospace; font-size: 9px;
             color: rgba(255,255,255,.18); flex-shrink: 0; letter-spacing: 0;
@@ -588,7 +588,7 @@
             display: inline-block;
             animation: scroll-left 120s linear infinite;
             font-family: 'Courier New', monospace; font-size: 12px;
-            color: rgba(255,102,0,.18); letter-spacing: 5px;
+            color: rgba(255,140,51,.18); letter-spacing: 5px;
         }
         /* Strip spacing variants */
         .braille-strip.shop-strip { margin-bottom: 20px; }
@@ -623,7 +623,7 @@
         .pdp-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 8%; }
         .pdp-info { padding: 32px 28px 32px 8px; display: flex; flex-direction: column; gap: 16px; }
         @media (max-width: 700px) { .pdp-info { padding: 0 24px 28px; } }
-        .pdp-spec { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase; }
+        .pdp-spec { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase; }
         .pdp-name { font-size: 24px; font-weight: 700; color: #f0f0f0; letter-spacing: -0.5px; }
         .pdp-price { font-family: 'Courier New', monospace; font-size: 20px; color: var(--green); letter-spacing: 1px; }
         .pdp-desc { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.5); }
@@ -637,7 +637,7 @@
             color: rgba(255,255,255,.6); cursor: pointer; transition: all .15s;
         }
         .pdp-size-btn:hover  { border-color: #444; color: #fff; }
-        .pdp-size-btn.active { border-color: var(--green); background: rgba(255,102,0,.1); color: #fff; }
+        .pdp-size-btn.active { border-color: var(--green); background: rgba(255,140,51,.1); color: #fff; }
         .pdp-add-btn {
             height: 52px; border-radius: 26px; border: none;
             background: var(--green); color: #000;
@@ -657,14 +657,14 @@
 
 
         /* ── ABOUT PAGE ───────────────────────────────────────────── */
-        .about-wrap { max-width: 1100px; margin: 0 auto; padding: 0 0 80px; }
+        .about-wrap { max-width: 1100px; margin: 0 auto; padding: 0; }
         /* Channel header */
         .about-ch-head {
-            padding: 36px 0 32px; border-bottom: 1px solid #1a1a1a;
+            padding: 36px 0 12px; border-bottom: 1px solid #1a1a1a;
         }
         .about-ch-kicker {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 14px;
         }
         .about-ch-title {
@@ -672,7 +672,7 @@
             color: #f0f0f0; letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 14px;
         }
         .about-ch-sub {
-            font-size: 14px; line-height: 1.75; color: rgba(255,255,255,.5); max-width: 580px;
+            font-size: 16px; line-height: 1.75; color: rgba(255,255,255,.7); max-width: 580px;
         }
         /* Cards row */
         .about-cards {
@@ -685,49 +685,49 @@
         .about-card:last-child { border-right: none; }
         .about-card-label {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 18px;
         }
         .about-card-body {
-            font-size: 14px; line-height: 1.8; color: rgba(255,255,255,.55); margin-bottom: 24px;
+            font-size: 15px; line-height: 1.8; color: rgba(255,255,255,.75); margin-bottom: 24px;
         }
         /* Pills */
         .about-pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
         .about-pill {
             padding: 5px 12px; border: 1px solid #222;
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 1px; color: rgba(255,255,255,.4); text-transform: uppercase;
+            letter-spacing: 1px; color: rgba(255,255,255,.6); text-transform: uppercase;
         }
         /* Accordion */
         .about-expand-list { display: flex; flex-direction: column; }
         .about-expand-item { border-top: 1px solid #1a1a1a; padding: 12px 0; }
         .about-expand-item:first-child { border-top: none; padding-top: 0; }
         .about-expand-item summary {
-            font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1px;
-            color: rgba(255,255,255,.6); text-transform: uppercase; cursor: pointer;
+            font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1px;
+            color: rgba(255,255,255,.75); text-transform: uppercase; cursor: pointer;
             list-style: none; display: flex; justify-content: space-between; align-items: center;
             gap: 12px;
         }
         .about-expand-item summary::-webkit-details-marker { display: none; }
         .about-expand-item summary::after {
-            content: '+'; color: rgba(255,102,0,.6); font-size: 14px;
+            content: '+'; color: rgba(255,140,51,.6); font-size: 14px;
             font-family: monospace; flex-shrink: 0;
         }
         .about-expand-item[open] summary::after { content: '−'; }
         .about-expand-item p {
-            font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.4);
+            font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.65);
             margin-top: 10px; padding-right: 16px;
         }
         /* Resume panel */
         .about-resume {
-            margin: 32px 24px 0; border: 1px solid #1a1a1a;
+            margin: 32px 0 0; border: 1px solid #1a1a1a;
         }
         .about-resume-head {
             padding: 28px; border-bottom: 1px solid #1a1a1a;
         }
         .about-resume-kicker {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 10px;
         }
         .about-resume-title {
@@ -735,47 +735,47 @@
             color: #f0f0f0; letter-spacing: -0.5px; margin-bottom: 8px;
         }
         .about-resume-note {
-            font-size: 13px; line-height: 1.7; color: rgba(255,255,255,.4); max-width: 520px;
+            font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.6); max-width: 520px;
         }
         .about-resume-cols { display: grid; grid-template-columns: 1fr 1fr; }
         .about-resume-col { padding: 28px; }
         .about-resume-col + .about-resume-col { border-left: 1px solid #1a1a1a; }
         .about-resume-section-label {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a;
         }
         .about-resume-entry { margin-bottom: 28px; }
         .about-resume-entry:last-child { margin-bottom: 0; }
         .about-resume-org {
-            font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); margin-bottom: 4px;
+            font-size: 15px; font-weight: 600; color: rgba(255,255,255,.85); margin-bottom: 4px;
         }
         .about-resume-role {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 2px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 2px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 8px;
         }
         .about-resume-facts {
             display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px;
             font-family: 'Courier New', monospace; font-size: 9px;
-            color: rgba(255,255,255,.35); letter-spacing: 1px;
+            color: rgba(255,255,255,.55); letter-spacing: 1px;
         }
-        .about-resume-fact-lbl { color: rgba(255,102,0,.5); margin-right: 4px; }
-        .about-resume-entry p { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.45); }
+        .about-resume-fact-lbl { color: rgba(255,140,51,.5); margin-right: 4px; }
+        .about-resume-entry p { font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.65); }
         .about-resume-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
         .about-resume-skills-label {
             font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 2px; color: rgba(255,255,255,.35); text-transform: uppercase;
+            letter-spacing: 2px; color: rgba(255,255,255,.55); text-transform: uppercase;
             margin-bottom: 10px;
         }
         .about-resume-skills ul { list-style: none; padding: 0; margin: 0; }
         .about-resume-skills li {
-            font-size: 13px; color: rgba(255,255,255,.55);
+            font-size: 14px; color: rgba(255,255,255,.7);
             padding: 7px 0; border-bottom: 1px solid #1a1a1a;
         }
         .about-resume-list { list-style: none; padding: 0; margin: 0 0 8px; }
         .about-resume-list li {
-            font-size: 13px; color: rgba(255,255,255,.45);
+            font-size: 14px; color: rgba(255,255,255,.65);
             padding: 10px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.6;
         }
         @media (max-width: 860px) {
@@ -784,7 +784,7 @@
             .about-card:last-child { border-bottom: none; }
             .about-resume-cols { grid-template-columns: 1fr; }
             .about-resume-col + .about-resume-col { border-left: none; border-top: 1px solid #1a1a1a; }
-            .about-resume { margin: 24px 16px 0; }
+            .about-resume { margin: 24px 0 0; }
             .about-ch-head { padding: 28px 0 24px; }
         }
 
@@ -833,14 +833,14 @@
         .proj-card:hover .proj-card-img img { transform: scale(1.05); }
         .proj-card-scan {
             position: absolute; left: 0; right: 0; top: -35%; height: 35%;
-            background: linear-gradient(to bottom, transparent, rgba(255,102,0,.07), transparent);
+            background: linear-gradient(to bottom, transparent, rgba(255,140,51,.07), transparent);
             z-index: 3; pointer-events: none;
         }
         .proj-card:hover .proj-card-scan { animation: scan-sweep .85s ease-in-out forwards; }
         .proj-card-info { padding: 10px 12px 14px; }
         .proj-card-spec {
             font-family: 'Courier New', monospace; font-size: 7px; letter-spacing: 2px;
-            color: rgba(255,102,0,.6); text-transform: uppercase; margin-bottom: 4px;
+            color: rgba(255,140,51,.6); text-transform: uppercase; margin-bottom: 4px;
         }
         .proj-card-name {
             font-size: 14px; font-weight: 600; color: rgba(255,255,255,.88);
@@ -860,7 +860,7 @@
             overflow: hidden; white-space: nowrap; max-width: 76%;
             transition: color .4s;
         }
-        .proj-card:hover .proj-card-braille { color: rgba(255,102,0,.25); }
+        .proj-card:hover .proj-card-braille { color: rgba(255,140,51,.25); }
         .proj-card-idx {
             font-family: 'Courier New', monospace; font-size: 9px;
             color: rgba(255,255,255,.15); flex-shrink: 0;
@@ -869,22 +869,22 @@
         @media (max-width: 560px) { .proj-grid { grid-template-columns: 1fr; gap: 10px; } }
 
         /* ── PROJECT DETAIL PAGE ───────────────────────────────────── */
-        .proj-detail-wrap { padding-left: 0; padding-right: 0; }
+        /* proj-detail-wrap uses standard shop-wrap padding */
         .proj-detail-back {
             display: inline-flex; align-items: center; gap: 8px;
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 10px;
             letter-spacing: 2px; text-transform: uppercase;
-            color: rgba(255,255,255,.35); background: none; border: none;
-            cursor: pointer; padding: 28px 24px; transition: color .2s;
+            color: rgba(255,255,255,.55); background: none; border: none;
+            cursor: pointer; padding: 28px 0; transition: color .2s;
         }
         .proj-detail-back:hover { color: var(--green); }
         .proj-detail-header {
-            padding: 0 24px 36px; border-bottom: 1px solid #1a1a1a;
+            padding: 0 0 36px; border-bottom: 1px solid #1a1a1a;
             max-width: 1100px; margin: 0 auto;
         }
         .proj-detail-cat {
-            font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             margin-bottom: 12px;
         }
         .proj-detail-title {
@@ -902,11 +902,11 @@
         }
         .proj-detail-meta-item:last-child { border-right: none; }
         .proj-detail-meta-label {
-            font-family: 'Courier New', monospace; font-size: 7px;
-            letter-spacing: 3px; color: rgba(255,102,0,.55); text-transform: uppercase;
+            font-family: 'Courier New', monospace; font-size: 8px;
+            letter-spacing: 3px; color: rgba(255,140,51,.55); text-transform: uppercase;
         }
         .proj-detail-meta-value {
-            font-size: 13px; font-weight: 500; color: rgba(255,255,255,.7);
+            font-size: 15px; font-weight: 500; color: rgba(255,255,255,.85);
         }
         .proj-detail-hero {
             width: 100%; overflow: hidden; aspect-ratio: 16/9;
@@ -914,10 +914,10 @@
         }
         .proj-detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .proj-detail-body {
-            max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px;
+            max-width: 1100px; margin: 0 auto; padding: 48px 0 80px;
         }
         .proj-detail-desc {
-            font-size: 18px; line-height: 1.85; color: rgba(255,255,255,.6);
+            font-size: 19px; line-height: 1.85; color: rgba(255,255,255,.75);
             margin-bottom: 56px; max-width: 680px;
         }
         .proj-detail-sections { display: flex; flex-direction: column; }
@@ -926,12 +926,12 @@
             padding: 28px 0; border-top: 1px solid #1a1a1a;
         }
         .proj-detail-section-hd {
-            font-family: 'Courier New', monospace; font-size: 8px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            font-family: 'Courier New', monospace; font-size: 9px;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
             padding-top: 3px;
         }
         .proj-detail-section-body {
-            font-size: 15px; line-height: 1.85; color: rgba(255,255,255,.5);
+            font-size: 16px; line-height: 1.85; color: rgba(255,255,255,.7);
         }
         .proj-detail-gallery {
             display: grid; grid-template-columns: repeat(3, 1fr);
@@ -944,10 +944,10 @@
         }
         .proj-detail-gallery img:hover { opacity: .85; transform: scale(1.01); cursor: zoom-in; }
         @media (max-width: 768px) {
-            .proj-detail-header { padding: 0 16px 28px; }
-            .proj-detail-back { padding: 24px 16px; }
+            .proj-detail-header { padding: 0 0 28px; }
+            .proj-detail-back { padding: 24px 0; }
             .proj-detail-hero { aspect-ratio: 4/3; }
-            .proj-detail-body { padding: 32px 16px 60px; }
+            .proj-detail-body { padding: 32px 0 60px; }
             .proj-detail-section { grid-template-columns: 1fr; gap: 10px; }
             .proj-detail-gallery { grid-template-columns: repeat(2, 1fr); gap: 6px; }
             .proj-detail-meta-item { padding: 0 20px 0 0; margin-right: 20px; }
@@ -987,7 +987,7 @@
             display: flex; align-items: center; justify-content: center;
             transition: border-color .2s, color .2s, background .2s; font-family: var(--font);
         }
-        .solo-arrow:hover { border-color: var(--green); color: var(--green); background: rgba(255,102,0,.05); }
+        .solo-arrow:hover { border-color: var(--green); color: var(--green); background: rgba(255,140,51,.05); }
 
         /* dot rail */
         .solo-dot-rail {
@@ -1018,21 +1018,21 @@
             border: 1px solid #1a1a1a; overflow: hidden; position: relative;
             transition: border-color .3s;
         }
-        .solo-img-wrap:hover { border-color: rgba(255,102,0,.3); }
+        .solo-img-wrap:hover { border-color: rgba(255,140,51,.3); }
 
         /* 4-corner bracket marks */
         .solo-img-wrap::after {
             content: '';
             position: absolute; inset: 12px; z-index: 4; pointer-events: none;
             background:
-                linear-gradient(to right,  rgba(255,102,0,.55) 1px, transparent 1px) 0   0   / 20px 1px no-repeat,
-                linear-gradient(to bottom, rgba(255,102,0,.55) 1px, transparent 1px) 0   0   / 1px 20px no-repeat,
-                linear-gradient(to left,   rgba(255,102,0,.55) 1px, transparent 1px) 100% 0   / 20px 1px no-repeat,
-                linear-gradient(to bottom, rgba(255,102,0,.55) 1px, transparent 1px) 100% 0   / 1px 20px no-repeat,
-                linear-gradient(to right,  rgba(255,102,0,.55) 1px, transparent 1px) 0   100% / 20px 1px no-repeat,
-                linear-gradient(to top,    rgba(255,102,0,.55) 1px, transparent 1px) 0   100% / 1px 20px no-repeat,
-                linear-gradient(to left,   rgba(255,102,0,.55) 1px, transparent 1px) 100% 100% / 20px 1px no-repeat,
-                linear-gradient(to top,    rgba(255,102,0,.55) 1px, transparent 1px) 100% 100% / 1px 20px no-repeat;
+                linear-gradient(to right,  rgba(255,140,51,.55) 1px, transparent 1px) 0   0   / 20px 1px no-repeat,
+                linear-gradient(to bottom, rgba(255,140,51,.55) 1px, transparent 1px) 0   0   / 1px 20px no-repeat,
+                linear-gradient(to left,   rgba(255,140,51,.55) 1px, transparent 1px) 100% 0   / 20px 1px no-repeat,
+                linear-gradient(to bottom, rgba(255,140,51,.55) 1px, transparent 1px) 100% 0   / 1px 20px no-repeat,
+                linear-gradient(to right,  rgba(255,140,51,.55) 1px, transparent 1px) 0   100% / 20px 1px no-repeat,
+                linear-gradient(to top,    rgba(255,140,51,.55) 1px, transparent 1px) 0   100% / 1px 20px no-repeat,
+                linear-gradient(to left,   rgba(255,140,51,.55) 1px, transparent 1px) 100% 100% / 20px 1px no-repeat,
+                linear-gradient(to top,    rgba(255,140,51,.55) 1px, transparent 1px) 100% 100% / 1px 20px no-repeat;
             opacity: 0; transition: opacity .3s;
         }
         .solo-img-wrap:hover::after { opacity: 1; }
@@ -1041,8 +1041,8 @@
         .solo-img-wrap::before {
             content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
             background-image:
-                linear-gradient(rgba(255,102,0,.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,102,0,.025) 1px, transparent 1px);
+                linear-gradient(rgba(255,140,51,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,140,51,.025) 1px, transparent 1px);
             background-size: 44px 44px;
             opacity: 0; transition: opacity .4s;
         }
@@ -1085,7 +1085,7 @@
         }
         .solo-spec {
             font-family: 'Courier New', monospace; font-size: 8px;
-            letter-spacing: 3px; color: rgba(255,102,0,.7); text-transform: uppercase;
+            letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
         }
         .solo-name { font-size: 28px; font-weight: 700; color: #f0f0f0; letter-spacing: -0.5px; line-height: 1.15; }
         .solo-price { font-family: 'Courier New', monospace; font-size: 22px; color: var(--green); letter-spacing: 1px; }
@@ -1128,7 +1128,7 @@
             color: rgba(255,255,255,.1); letter-spacing: 1px;
             overflow: hidden; white-space: nowrap; max-width: 76%; transition: color .4s;
         }
-        .solo-braille:hover { color: rgba(255,102,0,.3); }
+        .solo-braille:hover { color: rgba(255,140,51,.3); }
         .solo-idx { font-family: 'Courier New', monospace; font-size: 10px; color: rgba(255,255,255,.18); }
 
         /* ── CONTACT ──────────────────────────────────────────────── */
@@ -1213,7 +1213,7 @@
             font-size: 14px;
             font-weight: 600;
             min-width: 200px;
-            box-shadow: 0 8px 28px rgba(255,102,0,.35);
+            box-shadow: 0 8px 28px rgba(255,140,51,.35);
             animation: toastIn .3s cubic-bezier(.34,1.56,.64,1);
         }
         .toast.out { animation: toastOut .25s ease forwards; }
@@ -1287,7 +1287,7 @@
             transition: opacity .5s ease;
         }
         .ldr-line.show { opacity: 1; }
-        .ldr-prompt { color: #FF6600; }
+        .ldr-prompt { color: #FF8C33; }
 
         .ldr-counter-row {
             display: flex;
@@ -1396,7 +1396,7 @@
             position: absolute;
             left: 0; right: 0; top: 0;
             height: 1px;
-            background: linear-gradient(to right, transparent 0%, rgba(255,102,0,.2) 50%, transparent 100%);
+            background: linear-gradient(to right, transparent 0%, rgba(255,140,51,.2) 50%, transparent 100%);
             animation: scan 7s linear infinite;
             pointer-events: none;
             z-index: 6;
@@ -1475,7 +1475,7 @@
             pointer-events: none; z-index: 0;
             text-transform: uppercase;
         }
-        .hud-amb-g   { color: rgba(255,102,0,.30); }
+        .hud-amb-g   { color: rgba(255,140,51,.30); }
         .hud-amb-sep { opacity: .25; display: block; margin: 2px 0; }
         /* Left-side only — both start below the nav bar */
         .hud-amb-tl  { top: calc(var(--nav-h) + 10px); left: 2%; }
@@ -1595,7 +1595,7 @@
 
         /* ── SCROLLED: logo turns orange ──────────────────────── */
         .header.scrolled .logo img {
-            filter: brightness(0) saturate(100%) invert(46%) sepia(97%) saturate(700%) hue-rotate(5deg) brightness(108%);
+            filter: brightness(0) saturate(100%) invert(65%) sepia(80%) saturate(500%) hue-rotate(360deg) brightness(105%);
         }
 
         /* ══════════════════════════════════════════════════════
@@ -1631,12 +1631,12 @@
         .form-field input:focus, .form-field textarea:focus { border-bottom-color: var(--green); }
         .form-field input::placeholder, .form-field textarea::placeholder { color: #444; }
         .submit-btn       { background: var(--green); color: #000; }
-        .submit-btn:hover { filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(255,102,0,.35); opacity: 1; }
+        .submit-btn:hover { filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(255,140,51,.35); opacity: 1; }
 
         .saved-empty-mono { color: #666; }
         .saved-empty p    { color: #888; }
         .browse-link      { background: var(--green); color: #000; }
-        .browse-link:hover { filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(255,102,0,.35); opacity: 1; }
+        .browse-link:hover { filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(255,140,51,.35); opacity: 1; }
 
         .back-top         { background: #111; border-color: #222; color: #d0d0d0; }
         .back-top:hover   { background: var(--green); color: #000; }
@@ -2958,7 +2958,7 @@ window.addEventListener('load', () => {
 })();
 
 // ── Easter eggs ───────────────────────────────────────────────────
-console.log('%c◈ Nico Maggioli Studio', 'font-size:18px;color:#FF6600;font-weight:bold;');
+console.log('%c◈ Nico Maggioli Studio', 'font-size:18px;color:#FF8C33;font-weight:bold;');
 console.log('%cType unlock() for a surprise.', 'color:#888;font-style:italic;');
 
 window.unlock = () => {
@@ -2986,7 +2986,7 @@ document.addEventListener('keydown', e => {
     const id = setInterval(() => {
         ctx.fillStyle = 'rgba(0,0,0,0.05)';
         ctx.fillRect(0, 0, c.width, c.height);
-        ctx.fillStyle = '#FF6600';
+        ctx.fillStyle = '#FF8C33';
         ctx.font = '14px monospace';
         drops.forEach((y, i) => {
             ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, y * 14);
