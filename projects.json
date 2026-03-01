@@ -5,14 +5,26 @@
         "cat": "Product Design",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Animation",
+        "services": "Concept Â· Naming Â· Logo Â· Branding Â· Packaging Â· 3D Modeling Â· Animation",
         "img": "https://framerusercontent.com/images/8ll4eZW9dMcSalASqJVX15Qg8.png",
         "desc": "Boreal ski bindings is intentionally designed with a brutalist aesthetic, embodying safety, strength, and reliability. The angular, solid shape conveys a sense of protection and durability.",
         "sections": [
-            { "hd": "Concept: Performance Meets Protection", "body": "The objective involved creating ski bindings with integrated GPS and sensor technology plus anti-theft security. The goal was to help skiers track progress while protecting equipment." },
-            { "hd": "Creative Strategy: For the Serious Skier", "body": "\"These bindings aren't for the average jerry.\" The strategy fused cutting-edge technology with performance-driven aesthetics, targeting competitive skiers wanting skill advancement." },
-            { "hd": "The App: Your Digital Companion", "body": "Real-time run feedback including speed, distance, and performance metrics. Anti-theft alerts and gamified competition features with daily achievement tracking." },
-            { "hd": "Process: Behind the Design", "body": "Documentation spanning sketches through final 3D renders with careful detail consideration." }
+            {
+                "hd": "Concept: Performance Meets Protection",
+                "body": "The objective involved creating ski bindings with integrated GPS and sensor technology plus anti-theft security. The goal was to help skiers track progress while protecting equipment."
+            },
+            {
+                "hd": "Creative Strategy: For the Serious Skier",
+                "body": "\"These bindings aren't for the average jerry.\" The strategy fused cutting-edge technology with performance-driven aesthetics, targeting competitive skiers wanting skill advancement."
+            },
+            {
+                "hd": "The App: Your Digital Companion",
+                "body": "Real-time run feedback including speed, distance, and performance metrics. Anti-theft alerts and gamified competition features with daily achievement tracking."
+            },
+            {
+                "hd": "Process: Behind the Design",
+                "body": "Documentation spanning sketches through final 3D renders with careful detail consideration."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/m357iejjVWLXOQwdgcJUgeYkc0.png",
@@ -33,14 +45,26 @@
         "cat": "Branding & Product Design",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Product Design · App Design · Card Game Design · Branding",
+        "services": "Concept Â· Product Design Â· App Design Â· Card Game Design Â· Branding",
         "img": "https://framerusercontent.com/images/sOv0ScmhL9yNXi6jRfWIdvjgtQs.png",
         "desc": "Nestquest is all about using technology to pull kids away from endless screen time and into the great outdoors. Kids use advanced image recognition binoculars that instantly identify different bird species, making nature exploration fun, interactive, and educational.",
         "sections": [
-            { "hd": "Concept: Technology for Outdoor Exploration", "body": "The creator observed that children spend excessive time on digital devices and sought to repurpose technology as an exploration instrument rather than a distraction tool." },
-            { "hd": "Creative Strategy: New Tech, Familiar Feel", "body": "The approach combines emerging technology with the nostalgic appeal of trading card collection, transforming birdwatching into a competitive, shareable game." },
-            { "hd": "The Card Game: Collect, Trade, Compete", "body": "Collection mechanics, trading systems, and friend-based sharing sustain user motivation and exploration incentives." },
-            { "hd": "Advertising Campaign", "body": "Vibrant, playful visuals designed to captivate young audiences, incorporating interactive components to stimulate curiosity and encourage exploration." }
+            {
+                "hd": "Concept: Technology for Outdoor Exploration",
+                "body": "The creator observed that children spend excessive time on digital devices and sought to repurpose technology as an exploration instrument rather than a distraction tool."
+            },
+            {
+                "hd": "Creative Strategy: New Tech, Familiar Feel",
+                "body": "The approach combines emerging technology with the nostalgic appeal of trading card collection, transforming birdwatching into a competitive, shareable game."
+            },
+            {
+                "hd": "The Card Game: Collect, Trade, Compete",
+                "body": "Collection mechanics, trading systems, and friend-based sharing sustain user motivation and exploration incentives."
+            },
+            {
+                "hd": "Advertising Campaign",
+                "body": "Vibrant, playful visuals designed to captivate young audiences, incorporating interactive components to stimulate curiosity and encourage exploration."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/6WhpNoyZi20aELw2547FcTJgo4.png",
@@ -68,14 +92,26 @@
         "cat": "Packaging & Branding",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Website Design",
+        "services": "Concept Â· Naming Â· Logo Â· Branding Â· Packaging Â· 3D Modeling Â· Website Design",
         "img": "https://framerusercontent.com/images/IIvsgvqjImAYpHZTihrep4zW4.png",
         "desc": "Peak reimagines Lion's Mane consumption through a sublingual troche format. The product melts under your tongue, allowing it to be absorbed directly into your bloodstream, so you experience the benefits in hours instead of weeks.",
         "sections": [
-            { "hd": "Rethinking Supplement Delivery", "body": "Peak addresses traditional supplement limitations by offering faster absorption than tablets or pills through digestive processes." },
-            { "hd": "Stand Out From the Crowd", "body": "The strategy targets entrepreneurs in fast-paced environments who prioritize efficiency, contrasting against generic, holistic supplement market aesthetics." },
-            { "hd": "Luxury That Signals Success", "body": "Design incorporates gold, dark green, maroon, and navy blue to convey wealth and luxury, differentiating from competitors." },
-            { "hd": "Campaign for the Hustlers", "body": "Campaign imagery includes lightbulbs symbolizing bright ideas and money depicting financial success, aimed at entrepreneurs seeking mental clarity and productivity enhancement." }
+            {
+                "hd": "Rethinking Supplement Delivery",
+                "body": "Peak addresses traditional supplement limitations by offering faster absorption than tablets or pills through digestive processes."
+            },
+            {
+                "hd": "Stand Out From the Crowd",
+                "body": "The strategy targets entrepreneurs in fast-paced environments who prioritize efficiency, contrasting against generic, holistic supplement market aesthetics."
+            },
+            {
+                "hd": "Luxury That Signals Success",
+                "body": "Design incorporates gold, dark green, maroon, and navy blue to convey wealth and luxury, differentiating from competitors."
+            },
+            {
+                "hd": "Campaign for the Hustlers",
+                "body": "Campaign imagery includes lightbulbs symbolizing bright ideas and money depicting financial success, aimed at entrepreneurs seeking mental clarity and productivity enhancement."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/DijOXVTDZL9Ir8JZMF1Rk0Tbyk.png",
@@ -83,9 +119,6 @@
             "https://framerusercontent.com/images/bMLifogiXgvAL5R6hz6Uhm66qSA.png",
             "https://framerusercontent.com/images/kLkgXW9IpOcjxuHd2S1rVQjDOSw.png",
             "https://framerusercontent.com/images/3rzuMe3pMoEICjRHA6nNekTiso.png",
-            "https://framerusercontent.com/images/DikcH3HO6D31xjKXo50P5CQov8.png",
-            "https://framerusercontent.com/images/nyNm8tbhBlWTuPKZjgVs6MZAJc.png",
-            "https://framerusercontent.com/images/oFs2kXhvc5oKlmMImvs0hFbL7c.png",
             "https://framerusercontent.com/images/8AF1FDB7K6wMp3tABFf5X99yMM.png",
             "https://framerusercontent.com/images/HnsbMqGKFZcK8PiJawySCdkWmo.jpg",
             "https://framerusercontent.com/images/W8t70Mf8L15wqAHBPl6p0FtCiG0.jpg",
@@ -98,13 +131,22 @@
         "cat": "AI Comic",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · AI Art · Storytelling · Print Design · Riso Printing",
+        "services": "Concept Â· AI Art Â· Storytelling Â· Print Design Â· Riso Printing",
         "img": "https://framerusercontent.com/images/llk2v2ue8sghF49ztVTxIJM.png",
         "desc": "At the start of 2023, with tools like ChatGPT and Midjourney on the rise, I saw an opportunity to bring a long time dream to life: making a comic book.",
         "sections": [
-            { "hd": "AI Meets Traditional Storytelling", "body": "I spent weeks generating thousands of images, combining them into a cohesive narrative, and used Photoshop to maintain character consistency throughout. The result was a fully realized AI-assisted visual story." },
-            { "hd": "Old Tech, New Stories", "body": "I chose to Riso print this comic as a playful contrast between old and new technology. Since Cognis explores the future and AI, it felt fitting to use a retro printing aesthetic like Riso." },
-            { "hd": "Crafting the Visual Narrative", "body": "From AI-generated concepts to careful editing and Riso printing, every step was designed to bridge the gap between emerging technology and traditional art forms." }
+            {
+                "hd": "AI Meets Traditional Storytelling",
+                "body": "I spent weeks generating thousands of images, combining them into a cohesive narrative, and used Photoshop to maintain character consistency throughout. The result was a fully realized AI-assisted visual story."
+            },
+            {
+                "hd": "Old Tech, New Stories",
+                "body": "I chose to Riso print this comic as a playful contrast between old and new technology. Since Cognis explores the future and AI, it felt fitting to use a retro printing aesthetic like Riso."
+            },
+            {
+                "hd": "Crafting the Visual Narrative",
+                "body": "From AI-generated concepts to careful editing and Riso printing, every step was designed to bridge the gap between emerging technology and traditional art forms."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/l4ax2ER9XGE5Hv3o07zTeVYDsY.png",
@@ -117,14 +159,26 @@
         "cat": "Packaging & Advertising",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Naming · Logo · Branding · Packaging · 3D Modeling · Advertising",
+        "services": "Concept Â· Naming Â· Logo Â· Branding Â· Packaging Â· 3D Modeling Â· Advertising",
         "img": "https://framerusercontent.com/images/2lrGrixZjfAcxkowqvppIDmFcA.png",
         "desc": "A specially formulated nail polish with a rubbery finish that improves traction and prevents sliding on hard surfaces like wood floors, while also protecting floors from scratches.",
         "sections": [
-            { "hd": "Concept: Safety Meets Style", "body": "A solution for dogs that slip and hurt themselves on hard surfaces — a specially formulated nail polish with a rubbery finish that improves traction and prevents sliding, while also protecting your floors from scratches." },
-            { "hd": "Packaging: What Customers Want", "body": "Research at major retailers revealed around 80% of customers gravitate toward packaging featuring a realistic dog. The packaging features a realistic dog leaning over a see-through panel highlighting painted nails." },
-            { "hd": "Color Strategy: Three Unique Shades", "body": "Jungle Glow (Green) — natural ingredients. Azure Dream (Blue) — peace of mind from slip prevention. Pinkalicious (Pink) — vibrant personality option for standout dogs." },
-            { "hd": "Advertising: Speaking to Pet Parents", "body": "Three key ads highlighted: durability (water resistance), grippy rubbery finish preventing slips, and stress-free application." }
+            {
+                "hd": "Concept: Safety Meets Style",
+                "body": "A solution for dogs that slip and hurt themselves on hard surfaces â a specially formulated nail polish with a rubbery finish that improves traction and prevents sliding, while also protecting your floors from scratches."
+            },
+            {
+                "hd": "Packaging: What Customers Want",
+                "body": "Research at major retailers revealed around 80% of customers gravitate toward packaging featuring a realistic dog. The packaging features a realistic dog leaning over a see-through panel highlighting painted nails."
+            },
+            {
+                "hd": "Color Strategy: Three Unique Shades",
+                "body": "Jungle Glow (Green) â natural ingredients. Azure Dream (Blue) â peace of mind from slip prevention. Pinkalicious (Pink) â vibrant personality option for standout dogs."
+            },
+            {
+                "hd": "Advertising: Speaking to Pet Parents",
+                "body": "Three key ads highlighted: durability (water resistance), grippy rubbery finish preventing slips, and stress-free application."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/zP0w6iRB8rnrwdpOMcknqcPTNAg.png",
@@ -146,13 +200,22 @@
         "cat": "Website Design",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · UI/UX Design · Branding · Web Design",
+        "services": "Concept Â· UI/UX Design Â· Branding Â· Web Design",
         "img": "https://framerusercontent.com/images/7hqPzcZoSjjOY0seRjB4jmMV4.png",
-        "desc": "A comprehensive travel platform designed to make trip planning effortless and enjoyable — using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.",
+        "desc": "A comprehensive travel platform designed to make trip planning effortless and enjoyable â using blockchain technology to create a fully trackable donation system, ensuring every contribution reaches its intended destination.",
         "sections": [
-            { "hd": "Transparency in Giving", "body": "Traditional charitable giving often lacks transparency, leaving donors unsure of where their money goes. Voiage changes this by using blockchain technology to create a fully trackable donation system." },
-            { "hd": "Trust Through Design", "body": "I focused on transparency over the technical details of blockchain. The website looks like any other charitable site at first, but once you make a donation, you get access to a dashboard that shows exactly where your money is going." },
-            { "hd": "Campaign", "body": "Each ad featured a see-through bus stop design, symbolizing how every donation is clearly recorded on a permanent ledger. This literal display emphasizes that nothing is hidden with Voiage." }
+            {
+                "hd": "Transparency in Giving",
+                "body": "Traditional charitable giving often lacks transparency, leaving donors unsure of where their money goes. Voiage changes this by using blockchain technology to create a fully trackable donation system."
+            },
+            {
+                "hd": "Trust Through Design",
+                "body": "I focused on transparency over the technical details of blockchain. The website looks like any other charitable site at first, but once you make a donation, you get access to a dashboard that shows exactly where your money is going."
+            },
+            {
+                "hd": "Campaign",
+                "body": "Each ad featured a see-through bus stop design, symbolizing how every donation is clearly recorded on a permanent ledger. This literal display emphasizes that nothing is hidden with Voiage."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/AP1KQSWNzSYIosZaKydn2AWt30.png",
@@ -171,13 +234,22 @@
         "cat": "Digital / Web",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Branding · Art Direction · 3D Modeling · Animation · Advertising",
+        "services": "Concept Â· Branding Â· Art Direction Â· 3D Modeling Â· Animation Â· Advertising",
         "img": "https://framerusercontent.com/images/X95IgPNY7T2scTr8FhFTCVBsG24.png",
-        "desc": "Mirage is a virtual tribute event designed to honor hip-hop artists whose lives were tragically cut short due to drug addiction. Drawing inspiration from virtual concerts like those in Fortnite — combining live hip-hop performance energy with charitable impact. All proceeds support addiction recovery organizations.",
+        "desc": "Mirage is a virtual tribute event designed to honor hip-hop artists whose lives were tragically cut short due to drug addiction. Drawing inspiration from virtual concerts like those in Fortnite â combining live hip-hop performance energy with charitable impact. All proceeds support addiction recovery organizations.",
         "sections": [
-            { "hd": "Virtual Tribute, Real Impact", "body": "The project blends virtual reality concert experiences with meaningful charitable outcomes supporting addiction recovery." },
-            { "hd": "The Illusion of a Mirage", "body": "The strategy employs reflection, glare, and contrasting colors to evoke mirage imagery and prompt reflection on life, death, and the possibility of reincarnation while celebrating artist legacies." },
-            { "hd": "Campaign", "body": "Focused on demonstrating accessibility — that users can experience the Mirage festival from any location, including personal spaces." }
+            {
+                "hd": "Virtual Tribute, Real Impact",
+                "body": "The project blends virtual reality concert experiences with meaningful charitable outcomes supporting addiction recovery."
+            },
+            {
+                "hd": "The Illusion of a Mirage",
+                "body": "The strategy employs reflection, glare, and contrasting colors to evoke mirage imagery and prompt reflection on life, death, and the possibility of reincarnation while celebrating artist legacies."
+            },
+            {
+                "hd": "Campaign",
+                "body": "Focused on demonstrating accessibility â that users can experience the Mirage festival from any location, including personal spaces."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/NJcOdR334BwF851QryxiML9mZc.png",
@@ -197,13 +269,22 @@
         "cat": "Industrial Design",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · Industrial Design · 3D Printing · Branding · Advertising",
+        "services": "Concept Â· Industrial Design Â· 3D Printing Â· Branding Â· Advertising",
         "img": "https://framerusercontent.com/images/6aOl8GOlrb4sENFW9IDrNeD8.png",
         "desc": "OXA is a 3D printed air detoxifier inspired by Favia coral, whose intricate, porous structure helps trap sediments and supports filter feeders. It blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament.",
         "sections": [
-            { "hd": "Reinventing Air Purification", "body": "Modern air purification devices are bulky, noisy, and require an energy source. OXA blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament." },
-            { "hd": "Inspired by Nature", "body": "Design inspiration derives from Favia coral structure, mimicking natural forms to create an elegant solution to air purification, symbolizing nature's innate ability to refresh and cleanse." },
-            { "hd": "Spreading Awareness", "body": "Campaign elements include bus stop advertisements featuring a real time meter that shows exactly how clean or dirty the air is, and demonstrations of the before and after difference when OXA is installed." }
+            {
+                "hd": "Reinventing Air Purification",
+                "body": "Modern air purification devices are bulky, noisy, and require an energy source. OXA blends into its surroundings, can be placed anywhere without electricity, and uses activated carbon based filament."
+            },
+            {
+                "hd": "Inspired by Nature",
+                "body": "Design inspiration derives from Favia coral structure, mimicking natural forms to create an elegant solution to air purification, symbolizing nature's innate ability to refresh and cleanse."
+            },
+            {
+                "hd": "Spreading Awareness",
+                "body": "Campaign elements include bus stop advertisements featuring a real time meter that shows exactly how clean or dirty the air is, and demonstrations of the before and after difference when OXA is installed."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/2Vta3DstJK9ln453S0zrjuOKE4w.png",
@@ -237,13 +318,22 @@
         "cat": "Advertising & 3D",
         "year": "2024",
         "role": "Creative Director",
-        "services": "Concept · 3D Modeling · Character Design · Branding · Advertising",
+        "services": "Concept Â· 3D Modeling Â· Character Design Â· Branding Â· Advertising",
         "img": "https://framerusercontent.com/images/zPJiuI55d1gr5zlbU9hAXihG2A.png",
         "desc": "I wanted to push the boundaries of skateboarding and make Sessio feel like a whole new world, kind of like Disney. I modeled a frog, named Sevvy, to be the mascot of Sessio. Sevvy represents that playful, rebellious spirit that skateboarding is all about.",
         "sections": [
-            { "hd": "A Revolutionary Skatepark", "body": "The project redefines skateparks by drawing inspiration from world wonders and exclusive locations, addressing how traditional skateparks feel uninspiring to skateboarders who crave unexpected, risk-taking experiences." },
-            { "hd": "Meet Sevvy the Frog", "body": "Sevvy serves as the mascot embodying skateboarding's playful and rebellious character. The strategy blends wonder with forbidden elements, transforming skate sessions into adventures where rules are rewritten." },
-            { "hd": "Campaign", "body": "The campaign depicts Sevvy traveling globally, skating iconic off-limits locations styled like theme park attractions. Visuals emphasize vibrant, bold imagery transforming skateboarding into a world of adventure." }
+            {
+                "hd": "A Revolutionary Skatepark",
+                "body": "The project redefines skateparks by drawing inspiration from world wonders and exclusive locations, addressing how traditional skateparks feel uninspiring to skateboarders who crave unexpected, risk-taking experiences."
+            },
+            {
+                "hd": "Meet Sevvy the Frog",
+                "body": "Sevvy serves as the mascot embodying skateboarding's playful and rebellious character. The strategy blends wonder with forbidden elements, transforming skate sessions into adventures where rules are rewritten."
+            },
+            {
+                "hd": "Campaign",
+                "body": "The campaign depicts Sevvy traveling globally, skating iconic off-limits locations styled like theme park attractions. Visuals emphasize vibrant, bold imagery transforming skateboarding into a world of adventure."
+            }
         ],
         "gallery": [
             "https://framerusercontent.com/images/W2uwg15HhGasDS7ZhwHghBYxw.png",
