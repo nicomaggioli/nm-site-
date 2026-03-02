@@ -3453,6 +3453,16 @@ renderSaved();
         console.warn('projects.json not found');
     }
 })();
+
+// Easter egg: type "ravi" anywhere to visit ravisauce.com
+(function(){
+  let buf = '';
+  document.addEventListener('keydown', function(e){
+    buf += e.key.toLowerCase();
+    if (buf.length > 20) buf = buf.slice(-20);
+    if (buf.endsWith('ravi')) { buf = ''; window.location.href = 'https://ravisauce.com'; }
+  });
+})();
 </script>
 </body>
 </html>
