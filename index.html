@@ -658,132 +658,138 @@
         .about-wrap { max-width: 100%; margin: 0; padding: 0; }
         /* Channel header */
         .about-ch-head {
-            padding: 24px 0 12px; border-bottom: 1px solid #1a1a1a;
+            padding: 48px 0 40px;
         }
         .about-ch-kicker {
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 11px;
             letter-spacing: 3px; color: #FF8C33; text-transform: uppercase;
-            margin-bottom: 14px;
+            margin-bottom: 20px;
         }
         .about-ch-title {
-            font-size: clamp(17px, 3vw, 26px); font-weight: 700;
-            color: #f0f0f0; letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 14px;
+            font-size: clamp(28px, 5vw, 48px); font-weight: 800;
+            color: #f0f0f0; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 20px;
         }
         .about-ch-sub {
-            font-size: 16px; line-height: 1.75; color: rgba(255,255,255,.7); max-width: 580px;
+            font-size: 19px; line-height: 1.8; color: rgba(255,255,255,.7); max-width: 640px;
         }
-        /* Cards row */
+        /* Profile intro — full width */
+        .about-card-profile {
+            padding: 40px 0 48px; border-bottom: 1px solid #1a1a1a;
+        }
+        /* Cards row — 2 col for capabilities + workflow */
         .about-cards {
-            display: grid; grid-template-columns: repeat(3, 1fr);
+            display: grid; grid-template-columns: 1fr 1fr;
             border-bottom: 1px solid #1a1a1a;
         }
         .about-card {
-            padding: 24px; border-right: 1px solid #1a1a1a;
+            padding: 40px 40px 40px 0; border-right: 1px solid #1a1a1a;
         }
-        .about-card:last-child { border-right: none; }
+        .about-card:last-child { border-right: none; padding: 40px 0 40px 40px; }
         .about-card-label {
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 11px;
             letter-spacing: 3px; color: #FF8C33; text-transform: uppercase;
-            margin-bottom: 18px;
+            margin-bottom: 24px;
         }
         .about-card-body {
-            font-size: 15px; line-height: 1.8; color: rgba(255,255,255,.75); margin-bottom: 24px;
+            font-size: 18px; line-height: 1.85; color: rgba(255,255,255,.75); margin-bottom: 28px;
         }
         /* Pills */
-        .about-pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .about-pill-row { display: flex; flex-wrap: wrap; gap: 10px; }
         .about-pill {
-            padding: 5px 12px; border: 1px solid #222;
-            font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 1px; color: rgba(255,255,255,.6); text-transform: uppercase;
+            padding: 8px 16px; border: 1px solid #2a2a2a; border-radius: 4px;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 1px; color: rgba(255,255,255,.7); text-transform: uppercase;
         }
         /* Accordion */
         .about-expand-list { display: flex; flex-direction: column; }
-        .about-expand-item { border-top: 1px solid #1a1a1a; padding: 12px 0; }
+        .about-expand-item { border-top: 1px solid #1a1a1a; padding: 16px 0; }
         .about-expand-item:first-child { border-top: none; padding-top: 0; }
         .about-expand-item summary {
-            font-family: var(--font); font-size: 14px; letter-spacing: 0;
-            color: rgba(255,255,255,.75); text-transform: none; cursor: pointer;
+            font-family: var(--font); font-size: 16px; letter-spacing: 0;
+            color: rgba(255,255,255,.8); text-transform: none; cursor: pointer;
             list-style: none; display: flex; justify-content: space-between; align-items: center;
             gap: 12px;
         }
         .about-expand-item summary::-webkit-details-marker { display: none; }
         .about-expand-item summary::after {
-            content: '+'; color: #FF8C33; font-size: 14px;
+            content: '+'; color: #FF8C33; font-size: 16px;
             font-family: monospace; flex-shrink: 0;
         }
         .about-expand-item[open] summary::after { content: '−'; }
         .about-expand-item p {
-            font-family: var(--font); font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.65);
-            margin-top: 10px; padding-right: 16px;
+            font-family: var(--font); font-size: 16px; line-height: 1.8; color: rgba(255,255,255,.65);
+            margin-top: 12px; padding-right: 16px;
         }
         /* Resume panel */
         .about-resume {
-            margin: 32px 0 0; border: 1px solid #1a1a1a;
+            margin: 56px 0 0; border: 1px solid #1a1a1a; border-radius: 6px;
         }
         .about-resume-head {
-            padding: 24px; border-bottom: 1px solid #1a1a1a;
+            padding: 36px 40px; border-bottom: 1px solid #1a1a1a;
         }
         .about-resume-kicker {
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 11px;
             letter-spacing: 3px; color: #FF8C33; text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .about-resume-title {
-            font-size: clamp(17px, 2.5vw, 22px); font-weight: 700;
-            color: #f0f0f0; letter-spacing: -0.5px; margin-bottom: 8px;
+            font-size: clamp(22px, 3vw, 30px); font-weight: 700;
+            color: #f0f0f0; letter-spacing: -0.5px; margin-bottom: 10px;
         }
         .about-resume-note {
-            font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.6); max-width: 520px;
+            font-size: 16px; line-height: 1.75; color: rgba(255,255,255,.6); max-width: 560px;
         }
         .about-resume-cols { display: grid; grid-template-columns: 1fr 1fr; }
-        .about-resume-col { padding: 24px; }
+        .about-resume-col { padding: 36px 40px; }
         .about-resume-col + .about-resume-col { border-left: 1px solid #1a1a1a; }
         .about-resume-section-label {
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 11px;
             letter-spacing: 3px; color: #FF8C33; text-transform: uppercase;
-            margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 24px; padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;
         }
-        .about-resume-entry { margin-bottom: 28px; }
+        .about-resume-entry { margin-bottom: 32px; }
         .about-resume-entry:last-child { margin-bottom: 0; }
         .about-resume-org {
-            font-size: 15px; font-weight: 600; color: rgba(255,255,255,.85); margin-bottom: 4px;
+            font-size: 17px; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 5px;
         }
         .about-resume-role {
-            font-family: 'Courier New', monospace; font-size: 9px;
+            font-family: 'Courier New', monospace; font-size: 10px;
             letter-spacing: 2px; color: #FF8C33; text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .about-resume-facts {
-            display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px;
-            font-family: 'Courier New', monospace; font-size: 12px;
-            color: rgba(255,255,255,.55); letter-spacing: 1px;
+            display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 12px;
+            font-family: 'Courier New', monospace; font-size: 13px;
+            color: rgba(255,255,255,.6); letter-spacing: 1px;
         }
         .about-resume-fact-lbl { color: #FF8C33; margin-right: 4px; }
-        .about-resume-entry p { font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.65); }
-        .about-resume-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
+        .about-resume-entry p { font-size: 16px; line-height: 1.8; color: rgba(255,255,255,.7); }
+        .about-resume-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 12px; }
         .about-resume-skills-label {
-            font-family: 'Courier New', monospace; font-size: 9px;
-            letter-spacing: 2px; color: rgba(255,255,255,.55); text-transform: uppercase;
-            margin-bottom: 10px;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            letter-spacing: 2px; color: #FF8C33; text-transform: uppercase;
+            margin-bottom: 12px;
         }
         .about-resume-skills ul { list-style: none; padding: 0; margin: 0; }
         .about-resume-skills li {
-            font-size: 14px; color: rgba(255,255,255,.7);
-            padding: 7px 0; border-bottom: 1px solid #1a1a1a;
+            font-size: 15px; color: rgba(255,255,255,.75);
+            padding: 9px 0; border-bottom: 1px solid #1a1a1a;
         }
         .about-resume-list { list-style: none; padding: 0; margin: 0 0 8px; }
         .about-resume-list li {
-            font-size: 14px; color: rgba(255,255,255,.65);
-            padding: 10px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.6;
+            font-size: 15px; color: rgba(255,255,255,.7);
+            padding: 12px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.7;
         }
         @media (max-width: 860px) {
             .about-cards { grid-template-columns: 1fr; }
-            .about-card { border-right: none; border-bottom: 1px solid #1a1a1a; }
-            .about-card:last-child { border-bottom: none; }
+            .about-card { border-right: none; border-bottom: 1px solid #1a1a1a; padding: 32px 0; }
+            .about-card:last-child { border-bottom: none; padding: 32px 0; }
             .about-resume-cols { grid-template-columns: 1fr; }
             .about-resume-col + .about-resume-col { border-left: none; border-top: 1px solid #1a1a1a; }
-            .about-resume { margin: 24px 0 0; }
-            .about-ch-head { padding: 24px 0; }
+            .about-resume { margin: 36px 0 0; }
+            .about-resume-head { padding: 28px 24px; }
+            .about-resume-col { padding: 28px 24px; }
+            .about-ch-head { padding: 32px 0; }
         }
 
         /* ── PROJECTS / WORK ───────────────────────────────────────── */
@@ -1960,18 +1966,19 @@
                     <p class="about-ch-sub">Designer focused on creative strategy and 3D visualization for brands, products, and digital campaigns.</p>
                 </div>
 
+                <!-- Profile intro -->
+                <div class="about-card-profile">
+                    <div class="about-card-label">Profile</div>
+                    <p class="about-card-body">I build visual systems that connect strategy with execution — logos, packaging, websites, and immersive renders shaped into one coherent brand language.</p>
+                    <div class="about-pill-row">
+                        <span class="about-pill">Strategy + Design</span>
+                        <span class="about-pill">3D Visualization</span>
+                        <span class="about-pill">AI Workflow</span>
+                    </div>
+                </div>
+
                 <!-- Cards -->
                 <div class="about-cards">
-                    <div class="about-card about-card-profile">
-                        <div class="about-card-label">Profile</div>
-                        <p class="about-card-body">I build visual systems that connect strategy with execution — logos, packaging, websites, and immersive renders shaped into one coherent brand language.</p>
-                        <div class="about-pill-row">
-                            <span class="about-pill">Strategy + Design</span>
-                            <span class="about-pill">3D Visualization</span>
-                            <span class="about-pill">AI Workflow</span>
-                        </div>
-                    </div>
-
                     <div class="about-card">
                         <div class="about-card-label">Capabilities</div>
                         <div class="about-expand-list">
