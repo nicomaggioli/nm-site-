@@ -910,7 +910,7 @@
             padding: 0 40px 0 0; margin-right: 40px;
             border-right: 1px solid #1a1a1a;
         }
-        .proj-detail-meta-item:last-child { border-right: none; flex-basis: 100%; margin-top: 20px; padding-top: 20px; border-top: 1px solid #1a1a1a; }
+        .proj-detail-meta-item:last-child { border-right: none; }
         .proj-detail-meta-label {
             font-family: 'Courier New', monospace; font-size: 10px;
             letter-spacing: 3px; color: #FF8C33; text-transform: uppercase;
@@ -968,6 +968,7 @@
             .proj-detail-row-img { order: -1; }
             .proj-detail-gallery { grid-template-columns: repeat(2, 1fr); gap: 6px; }
             .proj-detail-meta-item { padding: 0 20px 0 0; margin-right: 20px; }
+            .proj-detail-meta-item:last-child { flex-basis: 100%; margin-top: 20px; padding-top: 20px; border-top: 1px solid #1a1a1a; border-right: none; }
         }
         @media (max-width: 480px) {
             .proj-detail-gallery { grid-template-columns: 1fr; }
