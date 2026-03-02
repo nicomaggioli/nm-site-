@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+// GitHub Pages SPA redirect: rewrite path to index.html
+// so the client-side router can handle it
+window.location.replace('/' + '?p=' + window.location.pathname.slice(1));
+</script>
+</head>
+<body></body>
+</html>

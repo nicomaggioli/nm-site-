@@ -1954,7 +1954,7 @@
         <div class="saved-empty" id="saved-empty" style="display:none;">
             <div class="saved-empty-mono">COLLECTION EMPTY</div>
             <p>Tap Save on any image to start your&nbsp;collection.</p>
-            <a href="#" class="browse-link" onclick="showPage('home');return false;">Browse Work</a>
+            <a href="/" class="browse-link" onclick="showPage('home');return false;">Browse Work</a>
         </div>
     </div>
 
@@ -2496,7 +2496,7 @@ function showPage(page) {
         m.classList.toggle('active', m.dataset.page === page));
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    window.location.hash = page;
+    if (page !== 'project') history.pushState(null, '', '/' + (page === 'home' ? '' : page));
 
     if (page === 'saved') renderSaved();
     if (page === 'home') setTimeout(updateHeaderMode, 50);
@@ -2945,18 +2945,26 @@ function updateHeaderMode() {
 }
 window.addEventListener('scroll', updateHeaderMode, { passive: true });
 
-// ── Hash routing ──────────────────────────────────────────────────
-function handleHash() {
+// ── Routing ───────────────────────────────────────────────────────
+function handleRoute() {
+    // Support 404.html redirect via ?p= query param
+    const params = new URLSearchParams(window.location.search);
+    const redirectSlug = params.get('p');
+    if (redirectSlug) {
+        history.replaceState(null, '', '/' + redirectSlug);
+    }
+    const path = window.location.pathname.replace(/^\//, '') || 'home';
+    // Also check for legacy hash URLs
     const hash = window.location.hash.replace('#', '');
-    if (['home','saved','work','contact'].includes(hash)) { showPage(hash); return; }
-    // Check if hash matches a project id
+    const slug = redirectSlug || hash || path;
+    if (['home','saved','work','contact','about'].includes(slug)) { showPage(slug); return; }
     if (PROJECTS.length) {
-        const pIdx = PROJECTS.findIndex(p => p.id === hash);
+        const pIdx = PROJECTS.findIndex(p => p.id === slug);
         if (pIdx >= 0) { openProject(pIdx); return; }
     }
 }
-window.addEventListener('load', handleHash);
-window.addEventListener('hashchange', handleHash);
+window.addEventListener('load', handleRoute);
+window.addEventListener('popstate', handleRoute);
 
 // ── Loader ────────────────────────────────────────────────────────
 (function () {
@@ -3384,7 +3392,7 @@ function openProject(idx) {
             <div class="proj-detail-nav">${prevHTML}${nextHTML}</div>
         </div>`;
     showPage('project');
-    window.location.hash = p.id;
+    history.pushState(null, '', '/' + p.id);
     window.scrollTo(0, 0);
 }
 
@@ -3448,7 +3456,7 @@ renderSaved();
         const res = await fetch('projects.json?v=' + Date.now());
         PROJECTS = await res.json();
         renderProjects();
-        handleHash();
+        handleRoute();
     } catch(e) {
         console.warn('projects.json not found');
     }
