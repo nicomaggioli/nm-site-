@@ -2202,15 +2202,15 @@
             <form class="contact-form" onsubmit="handleContact(event)">
                 <div class="form-field">
                     <label class="form-field-label">NAME //</label>
-                    <input type="text" required autocomplete="name">
+                    <input type="text" name="name" required autocomplete="name">
                 </div>
                 <div class="form-field">
                     <label class="form-field-label">EMAIL //</label>
-                    <input type="email" required autocomplete="email">
+                    <input type="email" name="email" required autocomplete="email">
                 </div>
                 <div class="form-field">
                     <label class="form-field-label">MESSAGE //</label>
-                    <textarea rows="5" required></textarea>
+                    <textarea rows="5" name="message" required></textarea>
                 </div>
                 <button type="submit" class="submit-btn">Send</button>
             </form>
@@ -2841,8 +2841,32 @@ document.addEventListener('keydown', e => {
 // ── Contact ───────────────────────────────────────────────────────
 function handleContact(e) {
     e.preventDefault();
-    toast('Message sent!', '✉️');
-    e.target.reset();
+    const form = e.target;
+    const btn = form.querySelector('.submit-btn');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    fetch('https://formsubmit.co/ajax/nicomaggioli@gmail.com', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: form.name.value,
+            email: form.email.value,
+            message: form.message.value,
+            _subject: 'New message from nicomaggioli.com'
+        })
+    }).then(r => {
+        if (r.ok) {
+            toast('Message sent!');
+            form.reset();
+        } else {
+            toast('Failed to send. Try again.');
+        }
+    }).catch(() => {
+        toast('Failed to send. Try again.');
+    }).finally(() => {
+        btn.textContent = 'Send';
+        btn.disabled = false;
+    });
 }
 
 // ── Toast ─────────────────────────────────────────────────────────
