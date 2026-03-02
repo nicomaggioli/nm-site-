@@ -918,17 +918,25 @@
             font-size: 19px; line-height: 1.85; color: rgba(255,255,255,.75);
             margin-bottom: 64px; max-width: 780px;
         }
-        .proj-detail-sections { display: flex; flex-direction: column; }
-        .proj-detail-section {
-            display: flex; flex-direction: column; gap: 12px;
-            padding: 32px 0; border-top: 1px solid #1a1a1a;
-        }
         .proj-detail-section-hd {
             font-family: 'Courier New', monospace; font-size: 10px;
             letter-spacing: 3px; color: rgba(255,140,51,.7); text-transform: uppercase;
         }
         .proj-detail-section-body {
             font-size: 16px; line-height: 1.85; color: rgba(255,255,255,.7);
+        }
+        /* alternating image/text rows */
+        .proj-detail-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 40px; padding: 56px 0; border-top: 1px solid #1a1a1a;
+            align-items: center;
+        }
+        .proj-detail-row-img {
+            width: 100%; border-radius: 6px; display: block;
+            aspect-ratio: 4/3; object-fit: cover;
+        }
+        .proj-detail-row-text {
+            display: flex; flex-direction: column; gap: 14px;
         }
         .proj-detail-gallery {
             display: grid; grid-template-columns: repeat(3, 1fr);
@@ -945,7 +953,8 @@
             .proj-detail-back { padding: 24px 0; }
             .proj-detail-hero { aspect-ratio: 4/3; }
             .proj-detail-body { padding: 32px 0 60px; }
-            .proj-detail-section { gap: 10px; }
+            .proj-detail-row { grid-template-columns: 1fr; gap: 24px; padding: 40px 0; }
+            .proj-detail-row-img { order: -1; }
             .proj-detail-gallery { grid-template-columns: repeat(2, 1fr); gap: 6px; }
             .proj-detail-meta-item { padding: 0 20px 0 0; margin-right: 20px; }
         }
@@ -3256,15 +3265,30 @@ let PROJECTS = [];
 
 function openProject(idx) {
     const p = PROJECTS[idx];
-    const galleryHTML = (p.gallery || []).map(src =>
-        `<img src="${src}" referrerpolicy="no-referrer" alt="${p.name}" loading="lazy">`
-    ).join('');
-    const sectionsHTML = (p.sections || []).map(s =>
-        `<div class="proj-detail-section">
+    const gallery = p.gallery || [];
+    const sections = p.sections || [];
+
+    // Build alternating image/text rows — pair each section with a gallery image
+    const rowsHTML = sections.map((s, i) => {
+        const img = gallery[i] ? `<img class="proj-detail-row-img" src="${gallery[i]}" referrerpolicy="no-referrer" alt="${s.hd}" loading="lazy">` : '';
+        const text = `<div class="proj-detail-row-text">
             <div class="proj-detail-section-hd">${s.hd}</div>
             <p class="proj-detail-section-body">${s.body}</p>
-        </div>`
-    ).join('');
+        </div>`;
+        // Even rows: image left, text right. Odd rows: text left, image right.
+        return i % 2 === 0
+            ? `<div class="proj-detail-row">${img}${text}</div>`
+            : `<div class="proj-detail-row">${text}${img}</div>`;
+    }).join('');
+
+    // Remaining gallery images after sections
+    const remaining = gallery.slice(sections.length);
+    const remainingHTML = remaining.length
+        ? `<div class="proj-detail-gallery">${remaining.map(src =>
+            `<img src="${src}" referrerpolicy="no-referrer" alt="${p.name}" loading="lazy">`
+          ).join('')}</div>`
+        : '';
+
     document.getElementById('proj-detail-content').innerHTML = `
         <div class="proj-detail-header">
             <div class="proj-detail-cat">${p.cat}</div>
@@ -3287,8 +3311,8 @@ function openProject(idx) {
         <div class="proj-detail-hero"><img src="${p.img}" referrerpolicy="no-referrer" alt="${p.name}"></div>
         <div class="proj-detail-body">
             <p class="proj-detail-desc">${p.desc}</p>
-            <div class="proj-detail-sections">${sectionsHTML}</div>
-            <div class="proj-detail-gallery">${galleryHTML}</div>
+            ${rowsHTML}
+            ${remainingHTML}
         </div>`;
     showPage('project');
     window.scrollTo(0, 0);
