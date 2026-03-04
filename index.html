@@ -1761,7 +1761,7 @@
 
             <!-- ── PANEL PA ── -->
             <div class="hud-panel hud-pa">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pa">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pa">
                     <source src="videos/NEW/Clean%20Camera%20Movement.MP4?feed=a" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1774,7 +1774,7 @@
 
             <!-- ── PANEL PB ── -->
             <div class="hud-panel hud-pb">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pb">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pb">
                     <source src="videos/NEW/Volcano%20Video.MP4?feed=b" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1787,7 +1787,7 @@
 
             <!-- ── PANEL PC ── -->
             <div class="hud-panel hud-pc">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pc">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pc">
                     <source src="videos/NEW/Sleek%20Animation.MP4?feed=c" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1800,7 +1800,7 @@
 
             <!-- ── PANEL PD ── -->
             <div class="hud-panel hud-pd">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pd">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pd">
                     <source src="videos/NEW/SOMA.MP4?feed=d" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1813,7 +1813,7 @@
 
             <!-- ── PANEL PE ── -->
             <div class="hud-panel hud-pe">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pe">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pe">
                     <source src="videos/NEW/clash.MP4?feed=e" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1826,7 +1826,7 @@
 
             <!-- ── PANEL PF ── -->
             <div class="hud-panel hud-pf">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pf">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pf">
                     <source src="videos/NEW/Puffco%20ad.MP4?feed=f" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -1839,7 +1839,7 @@
 
             <!-- ── PANEL PG ── -->
             <div class="hud-panel hud-pg">
-                <video autoplay muted loop playsinline preload="metadata" class="hud-vid hud-vid-pg">
+                <video autoplay muted loop playsinline preload="auto" class="hud-vid hud-vid-pg">
                     <source src="videos/NEW/waves.MP4?feed=g" type="video/mp4">
                 </video>
                 <div class="panel-ui">
@@ -3014,15 +3014,14 @@ window.addEventListener('popstate', handleRoute);
     // Video ready signal
     if (hv) {
         hv.addEventListener('canplaythrough', () => { videoReady = true; finishLoader(); }, { once: true });
-        hv.addEventListener('canplay', () => { hv.classList.add('playing'); videoReady = true; finishLoader(); }, { once: true });
-        hv.addEventListener('playing', () => hv.classList.add('playing'), { once: true });
+        hv.addEventListener('canplay', () => { videoReady = true; finishLoader(); }, { once: true });
     } else {
         videoReady = true;
     }
     // Hard fallback — never trap user more than 5s
     setTimeout(() => {
         if (!videoReady) { videoReady = true; finishLoader(); }
-        if (hv) hv.classList.add('playing');
+        // playing class handled by panel sync code
     }, 5000);
 
     // Counting animation — fast start, slows near 99
