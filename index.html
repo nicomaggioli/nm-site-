@@ -3096,27 +3096,33 @@ document.addEventListener('keydown', e => {
 // ── Panel videos: random start times (each source URL is unique so browser
 //    treats them as independent streams — no shared buffer sync) ────────
 (function () {
-    document.querySelectorAll('.hud-vid').forEach(v => {
+    const allVids = Array.from(document.querySelectorAll('.hud-vid'));
+    const ready = new Set();
+
+    function revealAll() {
+        allVids.forEach(v => v.classList.add('playing'));
+    }
+
+    allVids.forEach(v => {
         const isMain = v.classList.contains('hud-vid-main');
 
         function seekRandom() {
             if (!isMain && v.duration > 2) {
-                // Pick a random point but leave 1s buffer before end
                 v.currentTime = 0.5 + Math.random() * (v.duration - 1.5);
             }
         }
 
-        // Primary: set on loadedmetadata
         v.addEventListener('loadedmetadata', seekRandom, { once: true });
 
-        // Fallback: if canplay fires before seek stuck, reapply + make visible
         v.addEventListener('canplay', () => {
             if (!isMain && v.currentTime < 0.3 && v.duration > 2) seekRandom();
-            v.classList.add('playing');
+            ready.add(v);
+            if (ready.size === allVids.length) revealAll();
         }, { once: true });
-
-        v.addEventListener('playing', () => v.classList.add('playing'), { once: true });
     });
+
+    // Safety: if any vid stalls, reveal all after 4s
+    setTimeout(() => { if (ready.size < allVids.length) revealAll(); }, 4000);
 })();
 
 // ── Hero panels: designed layout + drag (mouse desktop, touch mobile) ─
