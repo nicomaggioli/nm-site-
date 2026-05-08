@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/clients/:slug", "destination": "/clients.html?c=:slug" }
+  ]
+}
