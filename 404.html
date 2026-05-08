@@ -3,9 +3,16 @@
 <head>
 <meta charset="utf-8">
 <script>
-// GitHub Pages SPA redirect: rewrite path to index.html
-// so the client-side router can handle it
-window.location.replace('/' + '?p=' + window.location.pathname.slice(1));
+(function(){
+  var p = window.location.pathname;
+  var m = p.match(/^\/clients\/([^/?#]+)\/?$/);
+  if (m) {
+    window.location.replace('/clients.html?c=' + encodeURIComponent(m[1]) + window.location.hash);
+    return;
+  }
+  // Default GitHub Pages SPA fallback
+  window.location.replace('/' + '?p=' + p.slice(1));
+})();
 </script>
 </head>
 <body></body>
