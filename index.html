@@ -1303,12 +1303,16 @@
             width: 110px;
             height: 110px;
             margin: -55px 0 0 -55px;
-            object-fit: contain;
+            -webkit-mask-image: url('favicon.png');
+                    mask-image: url('favicon.png');
+            -webkit-mask-size: contain;
+                    mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+                    mask-position: center;
             transform-style: preserve-3d;
             backface-visibility: visible;
-            filter:
-                brightness(0) invert(1)
-                drop-shadow(0 0 28px rgba(255, 255, 255, .32));
             animation: ldrSpinOnce 2.4s cubic-bezier(0.45, 0.05, 0.55, 1) forwards;
             transition:
                 top     1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
@@ -1316,12 +1320,15 @@
                 width   1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 height  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 margin  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
-                filter  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 opacity .45s ease-in-out .3s;
         }
+        .ldr-logo-base {
+            background-color: #fff;
+            filter: drop-shadow(0 0 28px rgba(255, 255, 255, .32));
+        }
         .ldr-logo-tint {
+            background-color: #FF8520;
             opacity: 0;
-            filter: brightness(0) saturate(100%) invert(56%) sepia(99%) saturate(2200%) hue-rotate(347deg) brightness(102%) contrast(106%);
         }
         @keyframes ldrSpinOnce {
             from { transform: rotateY(0deg); }
@@ -2207,8 +2214,8 @@
 
 <!-- LOADER -->
 <div id="loader" class="loader">
-    <img class="ldr-logo ldr-logo-base" src="favicon.png" alt="" aria-hidden="true">
-    <img class="ldr-logo ldr-logo-tint" src="favicon.png" alt="" aria-hidden="true">
+    <div class="ldr-logo ldr-logo-base" aria-hidden="true"></div>
+    <div class="ldr-logo ldr-logo-tint" aria-hidden="true"></div>
 </div>
 
 <!-- HEADER -->
