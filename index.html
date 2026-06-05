@@ -137,7 +137,7 @@
         .logo img {
             width: 100%; height: 100%; object-fit: contain;
             animation: logoSpin3d 7s linear infinite;
-            filter: brightness(0) saturate(100%) invert(62%) sepia(97%) saturate(1000%) hue-rotate(346deg) brightness(101%) contrast(101%);
+            filter: brightness(0) saturate(100%) invert(56%) sepia(99%) saturate(2200%) hue-rotate(347deg) brightness(102%) contrast(106%);
         }
         @keyframes logoSpin3d {
             0%   { transform: rotateY(0deg); }
@@ -1321,7 +1321,7 @@
         }
         .ldr-logo-tint {
             opacity: 0;
-            filter: brightness(0) saturate(100%) invert(62%) sepia(97%) saturate(1000%) hue-rotate(346deg) brightness(101%) contrast(101%);
+            filter: brightness(0) saturate(100%) invert(56%) sepia(99%) saturate(2200%) hue-rotate(347deg) brightness(102%) contrast(106%);
         }
         @keyframes ldrSpinOnce {
             from { transform: rotateY(0deg); }
@@ -1578,7 +1578,7 @@
             transition: filter .25s ease;
         }
         .brand-img:hover img {
-            filter: brightness(0) saturate(100%) invert(62%) sepia(97%) saturate(1000%) hue-rotate(346deg) brightness(101%) contrast(101%);
+            filter: brightness(0) saturate(100%) invert(56%) sepia(99%) saturate(2200%) hue-rotate(347deg) brightness(102%) contrast(106%);
         }
         /* Bose's SVG letters fill 100% of viewBox so the rendered cap-height equals the
            height value. Other wordmark SVGs have ~25% padding around cap-height, so they
@@ -1892,19 +1892,6 @@
             margin-bottom: 24px;
             text-wrap: balance;
         }
-        /* Kinetic typography: each word bobs gently with staggered delay. */
-        .kw {
-            display: inline-block;
-            animation: kwBob 3.6s ease-in-out infinite;
-            will-change: transform;
-        }
-        @keyframes kwBob {
-            0%, 100% { transform: translateY(0); }
-            50%      { transform: translateY(-6px); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .kw { animation: none; }
-        }
         .hero-sub {
             font-family: var(--font);
             font-size: clamp(16px, 1.4vw, 19px);
@@ -2174,7 +2161,7 @@
 
         /* ── SCROLLED: logo turns orange ──────────────────────── */
         .header.scrolled .logo img {
-            filter: brightness(0) saturate(100%) invert(62%) sepia(97%) saturate(1000%) hue-rotate(346deg) brightness(101%) contrast(101%);
+            filter: brightness(0) saturate(100%) invert(56%) sepia(99%) saturate(2200%) hue-rotate(347deg) brightness(102%) contrast(106%);
         }
 
         /* ══════════════════════════════════════════════════════
@@ -4029,32 +4016,6 @@ function renderProjects() {
 
 // ── Init ──────────────────────────────────────────────────────────
 renderHome();
-
-// Kinetic headline: wrap each word in .kw with staggered animation-delay.
-(function kineticHeadline() {
-    const h = document.querySelector('.hero-h');
-    if (!h) return;
-    const walker = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    let i = 0;
-    nodes.forEach(node => {
-        const parts = node.textContent.split(/(\s+)/);
-        const frag = document.createDocumentFragment();
-        parts.forEach(p => {
-            if (p.trim()) {
-                const span = document.createElement('span');
-                span.className = 'kw';
-                span.style.animationDelay = `${(i++ % 9) * 0.16}s`;
-                span.textContent = p;
-                frag.appendChild(span);
-            } else {
-                frag.appendChild(document.createTextNode(p));
-            }
-        });
-        node.parentNode.replaceChild(frag, node);
-    });
-})();
 renderIndex();
 
 // Background-prefetch ALL index images after home settles so the index page
