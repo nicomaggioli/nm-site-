@@ -1249,40 +1249,48 @@
         }
         .loader.done { background: transparent; pointer-events: none; }
 
-        .ldr-logo,
-        .ldr-logo-final {
+        .ldr-logo {
             position: fixed;
             top: 50%;
             left: 50%;
             width: 110px;
             height: 110px;
             margin: -55px 0 0 -55px;
-            display: block;
+            object-fit: contain;
+            transform-style: preserve-3d;
+            backface-visibility: visible;
+            filter:
+                brightness(0) invert(1)
+                drop-shadow(0 0 28px rgba(255, 255, 255, .32));
+            animation: ldrSpinOnce 2.4s cubic-bezier(0.45, 0.05, 0.55, 1) forwards;
             transition:
                 top     1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 left    1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 width   1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 height  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 margin  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
+                filter  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 opacity .45s ease-in-out .3s;
         }
-        .ldr-logo-final {
-            object-fit: contain;
+        .ldr-logo-tint {
             opacity: 0;
             filter: brightness(0) saturate(100%) invert(62%) sepia(97%) saturate(1000%) hue-rotate(346deg) brightness(101%) contrast(101%);
         }
+        @keyframes ldrSpinOnce {
+            from { transform: rotateY(0deg); }
+            to   { transform: rotateY(360deg); }
+        }
 
         /* End state: lands exactly where the header logo sits. */
-        .loader.done .ldr-logo,
-        .loader.done .ldr-logo-final {
+        .loader.done .ldr-logo {
             top: calc(var(--nav-h) / 2);
             left: 46px;
             width: 44px;
             height: 44px;
             margin: -22px 0 0 -22px;
         }
-        .loader.done .ldr-logo       { opacity: 0; }
-        .loader.done .ldr-logo-final { opacity: 1; }
+        .loader.done .ldr-logo-base { opacity: 0; }
+        .loader.done .ldr-logo-tint { opacity: 1; }
 
         /* Hide the original header <img> permanently. The loader logo IS the
            header logo now — same position, same scale, no handoff glitch. */
@@ -1292,8 +1300,7 @@
             .ldr-logo { width: 84px; height: 84px; margin: -42px 0 0 -42px; }
         }
         @media (max-width: 760px) {
-            .loader.done .ldr-logo,
-            .loader.done .ldr-logo-final { left: 40px; }
+            .loader.done .ldr-logo { left: 40px; }
         }
         @media (prefers-reduced-motion: reduce) {
             .ldr-logo { animation: none; transform: none; }
@@ -2153,8 +2160,8 @@
 
 <!-- LOADER -->
 <div id="loader" class="loader">
-    <canvas class="ldr-logo" aria-hidden="true"></canvas>
-    <img class="ldr-logo-final" src="favicon.png" alt="" aria-hidden="true">
+    <img class="ldr-logo ldr-logo-base" src="favicon.png" alt="" aria-hidden="true">
+    <img class="ldr-logo ldr-logo-tint" src="favicon.png" alt="" aria-hidden="true">
 </div>
 
 <!-- HEADER -->
@@ -2720,83 +2727,7 @@
 <div class="toast-area" id="toast-area"></div>
 
 
-<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/OBJLoader.js"></script>
 <script>
-// ── 3D loader (Three.js renders NicoMLogo.obj inside the canvas.ldr-logo) ─
-// Spins once for 2.4s (matches the old CSS spin timing). When .loader.done
-// fires the corner morph, the material color lerps white → orange around the
-// midpoint of the morph (same delay/duration as the previous CSS crossfade).
-(function init3DLoader() {
-    const canvas = document.querySelector('canvas.ldr-logo');
-    if (!canvas || !window.THREE || !window.THREE.OBJLoader) return;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(220, 220, false);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
-    camera.position.set(0, 0, 12);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const key = new THREE.DirectionalLight(0xffffff, 1.2);
-    key.position.set(3, 4, 5);
-    scene.add(key);
-    const rim = new THREE.DirectionalLight(0xffffff, 0.45);
-    rim.position.set(-3, 1, -2);
-    scene.add(rim);
-
-    const WHITE  = new THREE.Color(0xffffff);
-    const ORANGE = new THREE.Color(0xff8c33);
-    const material = new THREE.MeshStandardMaterial({
-        color: WHITE.clone(), roughness: 0.42, metalness: 0.12
-    });
-
-    let mesh = null;
-    new THREE.OBJLoader().load('obj/NicoMLogo.obj', (root) => {
-        root.traverse(c => { if (c.isMesh) c.material = material; });
-        const box = new THREE.Box3().setFromObject(root);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const scale = 7.0 / maxDim;
-        root.scale.setScalar(scale);
-        const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
-        root.position.sub(center);
-        mesh = root;
-        scene.add(mesh);
-    });
-
-    const SPIN_MS    = 2400;
-    const FADE_DELAY = 300;
-    const FADE_MS    = 450;
-    const loaderEl   = document.getElementById('loader');
-    const start      = performance.now();
-    let doneAt       = null;
-
-    new MutationObserver(() => {
-        if (loaderEl.classList.contains('done') && doneAt === null) {
-            doneAt = performance.now();
-        }
-    }).observe(loaderEl, { attributes: true, attributeFilter: ['class'] });
-
-    function tick(now) {
-        requestAnimationFrame(tick);
-        if (mesh) {
-            const t = Math.min((now - start) / SPIN_MS, 1);
-            const e = 0.5 - 0.5 * Math.cos(t * Math.PI);   // sine ease in/out
-            mesh.rotation.y = e * Math.PI * 2;
-        }
-        if (doneAt !== null) {
-            const ft = Math.max(0, Math.min((now - doneAt - FADE_DELAY) / FADE_MS, 1));
-            const ct = 0.5 - 0.5 * Math.cos(ft * Math.PI);
-            material.color.copy(WHITE).lerp(ORANGE, ct);
-        }
-        renderer.render(scene, camera);
-    }
-    requestAnimationFrame(tick);
-})();
-
 // ── Images ────────────────────────────────────────────────────────
 const homeImages = [
     'videos/originals/hf_20260520_001429_589f4149-6b59-4ae2-b961-18574d666ed5.mp4',
@@ -3045,7 +2976,7 @@ const isVideo = src => /\.(mp4|webm|mov)$/i.test(src);
 
 const _BUST = '?v=rot2';
 const _v = (s) => s + _BUST;
-const mediaDims = {"images/webp/0mhoy0a9fhnklvtvalyhikte9sm.webp":[4284,4284],"images/webp/0udmd1dqmdxttj2tmo1w6oyde6q.webp":[4284,5712],"images/webp/1.webp":[1728,1728],"images/webp/2024-10-15_13-59.webp":[1200,958],"images/webp/265c005b-d5b5-483f-8b7a-bcbb94b24a4b.webp":[1080,984],"images/webp/2ebhjluf7jnnicix5nmrmkiszs.webp":[2048,2048],"images/webp/2lrgrixzjfacxkowqvppidmfca.webp":[2048,1152],"images/webp/3iojgg9pg5ishphded0qrhgjg.webp":[1179,1179],"images/webp/3rzume3pmoeicjrha6nnektiso.webp":[2640,1760],"images/webp/3uueo2w2giml0ivvh0mak7mrhks.webp":[1765,1764],"images/webp/447f43a5-9af7-41d6-8c613d066eac9011_sc7.webp":[700,700],"images/webp/50rjhy5ebvdvmkksjalgukghcla.webp":[1920,1920],"images/webp/5itwgkoayxmyoialca6rjjxgw.webp":[1920,1920],"images/webp/5lraffdhtsknwafrepaerwsnk0.webp":[1920,1920],"images/webp/6.webp":[1707,1708],"images/webp/68tqbmrjrujtixok79482ezbq.webp":[4284,4284],"images/webp/6aol8golrb4senfw9idrned8.webp":[3200,2000],"images/webp/7.webp":[1660,1660],"images/webp/7chhnlz6vojjerjddachgnya0e.webp":[1200,1200],"images/webp/8.webp":[2160,1440],"images/webp/8003b4fb-67cc-44d6-9831c33d122a63bf_sc7.webp":[700,700],"images/webp/89efgkuyuy3flehxhsus61kxuug.webp":[1179,1179],"images/webp/8he9te1jaool20kvh9ox5j2ri.webp":[1280,1280],"images/webp/8ll4ezw9dmcsalasqjvx15qg8.webp":[1200,1200],"images/webp/8oizq8ydfwrbyb7uqfs16p4wxc.webp":[1920,1920],"images/webp/8s21jtaonfvqz9wya5ypoxppw.webp":[1179,1179],"images/webp/95f5ghjlwg2av7b4ufmgwltctsw.webp":[480,854],"images/webp/9bc5beb0-8658-4f35-8090b51163734de5_sc7.webp":[700,700],"images/webp/ainuzhhn3ibk883yqsvvyud4dms.webp":[1179,1179],"images/webp/all_3.webp":[1200,852],"images/webp/bus_ad.webp":[1200,1200],"images/webp/c7hfcqhvjhsuwnlkuk5d6iyfpk.webp":[3000,3000],"images/webp/cards.webp":[1200,1200],"images/webp/cards_and_packs.webp":[1200,786],"images/webp/daaiyqejjv5na752yvefcsnqw8.webp":[800,800],"images/webp/dh1am2oolyuvobii6bjy4ss1p9g.webp":[600,800],"images/webp/dru28gwriztfgkwxoafpnh5a6ci.webp":[3000,2000],"images/webp/f602f8a7-fde1-4601-99ad-614e689f3bd4.webp":[1200,1600],"images/webp/fblamxnlrdocyybgdgkn2bvxvs.webp":[4284,4284],"images/webp/floatingravigrey.webp":[1600,1458],"images/webp/full_shot.webp":[1200,757],"images/webp/g-001.webp":[900,1600],"images/webp/g-002.webp":[1194,1600],"images/webp/g-003.webp":[1600,1600],"images/webp/g-004.webp":[974,1600],"images/webp/g-005.webp":[1201,1600],"images/webp/g-006.webp":[1200,1600],"images/webp/g-007.webp":[1600,1600],"images/webp/g-008.webp":[1317,1600],"images/webp/g-010.webp":[900,1600],"images/webp/g-011.webp":[1600,1600],"images/webp/g-012.webp":[1593,1600],"images/webp/g-013.webp":[900,1600],"images/webp/g-014.webp":[900,1600],"images/webp/g-015.webp":[1600,1600],"images/webp/g-016.webp":[1194,1600],"images/webp/g-017.webp":[1600,1600],"images/webp/g-018.webp":[900,1600],"images/webp/g-019.webp":[1600,1600],"images/webp/g-020.webp":[1600,1600],"images/webp/g-021.webp":[1600,1600],"images/webp/g-022.webp":[1600,1457],"images/webp/g-023.webp":[900,1600],"images/webp/g-024.webp":[900,1600],"images/webp/g-025.webp":[1600,1600],"images/webp/g-026.webp":[1200,1600],"images/webp/g-027.webp":[1600,1600],"images/webp/g-028.webp":[1200,1600],"images/webp/g-029.webp":[900,1600],"images/webp/g-030.webp":[1600,1545],"images/webp/g-031.webp":[900,1600],"images/webp/g-032.webp":[1600,1600],"images/webp/g-033.webp":[1600,1572],"images/webp/g-034.webp":[1200,1600],"images/webp/g-035.webp":[900,1600],"images/webp/g-036.webp":[1600,1600],"images/webp/g-037.webp":[1200,1600],"images/webp/g-038.webp":[900,1600],"images/webp/g-039.webp":[900,1600],"images/webp/g-040.webp":[1200,1600],"images/webp/g-041.webp":[893,1600],"images/webp/g-042.webp":[1600,1600],"images/webp/g-043.webp":[1600,1194],"images/webp/g-044.webp":[1600,1600],"images/webp/g-045.webp":[1600,1600],"images/webp/g-046.webp":[1600,1600],"images/webp/g-047.webp":[1600,1600],"images/webp/g-048.webp":[1200,1600],"images/webp/g-049.webp":[1600,1600],"images/webp/g-050.webp":[1200,1600],"images/webp/g-051.webp":[1600,1200],"images/webp/g-052.webp":[1600,1200],"images/webp/g-053.webp":[1200,1600],"images/webp/g-054.webp":[1600,1066],"images/webp/g-055.webp":[1600,1600],"images/webp/g-056.webp":[1200,1600],"images/webp/g-057.webp":[1200,1600],"images/webp/g-058.webp":[1600,1600],"images/webp/g-059.webp":[1600,1600],"images/webp/g-060.webp":[1200,1600],"images/webp/g-061.webp":[1586,1600],"images/webp/g-062.webp":[1600,1545],"images/webp/g-063.webp":[1600,1200],"images/webp/g-064.webp":[1200,1600],"images/webp/g-065.webp":[1200,1600],"images/webp/g-068.webp":[1200,1600],"images/webp/g-069.webp":[1200,1600],"images/webp/g-070.webp":[1200,1600],"images/webp/g-071.webp":[1200,1600],"images/webp/g-072.webp":[1200,1600],"images/webp/g-073.webp":[1200,1600],"images/webp/g-074.webp":[1200,1600],"images/webp/g-075.webp":[1269,1600],"images/webp/g-076.webp":[1200,1600],"images/webp/g-077.webp":[1600,1290],"images/webp/g-078.webp":[1200,1600],"images/webp/g-079.webp":[1600,1600],"images/webp/g-080.webp":[955,1600],"images/webp/g-081.webp":[1600,882],"images/webp/g-082.webp":[1600,1527],"images/webp/g-083.webp":[1600,1391],"images/webp/g-084.webp":[1600,1600],"images/webp/g-085.webp":[1600,1391],"images/webp/g-086.webp":[1600,1391],"images/webp/g-087.webp":[1600,1600],"images/webp/g-088.webp":[1600,1600],"images/webp/g-089.webp":[1600,1600],"images/webp/generated_image_december_05_2025_-_10_29am.webp":[896,1200],"images/webp/generated_image_december_06_2025_-_1_01pm.webp":[768,1376],"images/webp/generated_image_may_18_2026_-_1_47pm.webp":[1024,1024],"images/webp/generated_image_may_18_2026_-_9_26pm.webp":[843,1264],"images/webp/generated_image_may_18_2026_-_9_38pm.webp":[843,1264],"images/webp/gjjajtjcqboxlqnjqmfcn7bfyyg.webp":[4284,4284],"images/webp/hero.webp":[2070,2070],"images/webp/hero_2.webp":[1600,1600],"images/webp/hnsbmqgkfzck8pijawyscdkwmo.webp":[2561,2561],"images/webp/image0.webp":[1024,1024],"images/webp/img_0231.webp":[4284,5712],"images/webp/img_0286.webp":[3024,4032],"images/webp/img_0324.webp":[4284,5712],"images/webp/img_0326.webp":[4284,5712],"images/webp/img_0573.webp":[3024,4032],"images/webp/img_1093.webp":[3024,4032],"images/webp/img_1351.webp":[4280,3900],"images/webp/img_1583.webp":[3655,4000],"images/webp/img_1584.webp":[3024,4032],"images/webp/img_1845.webp":[3021,3097],"images/webp/img_4411.webp":[800,800],"images/webp/img_4412.webp":[800,800],"images/webp/img_4413.webp":[800,800],"images/webp/img_4415.webp":[800,800],"images/webp/img_4416.webp":[800,800],"images/webp/img_4418.webp":[1179,1179],"images/webp/img_4448.webp":[800,800],"images/webp/img_9971.webp":[3024,4032],"images/webp/keu3bgzc4jskao5zthopmzyeky.webp":[1179,1179],"images/webp/lamp.webp":[896,1200],"images/webp/mvvxrn2z7zxql37pswhsrzueyrc.webp":[1920,1920],"images/webp/oxa3web.webp":[800,800],"images/webp/p1lf97kow8ecqirblbfufjigt2o.webp":[789,789],"images/webp/peakinsta.webp":[1200,1200],"images/webp/peakport.webp":[800,468],"images/webp/peakport_copy.webp":[1200,701],"images/webp/pesmpmn9fullsze9xhk4puszw.webp":[1200,1200],"images/webp/pg1.webp":[2500,2500],"images/webp/pg2.webp":[2500,2500],"images/webp/photo-2026-06-04-11-54-18.webp":[768,1024],"images/webp/pm63310_0.webp":[1920,1920],"images/webp/qdid4zpeenkdn7b4mqihbmdb5m.webp":[1920,1920],"images/webp/ravi-art.webp":[1593,1600],"images/webp/ravi-avatar.webp":[1600,1600],"images/webp/ravi-float.webp":[1490,1600],"images/webp/ravi-moon.webp":[1600,1600],"images/webp/ravi-print.webp":[1600,1572],"images/webp/ravi-puffer.webp":[1600,1600],"images/webp/rock4.webp":[1600,1600],"images/webp/screenshot_2026-02-25_at_11_19_13_am.webp":[1382,1852],"images/webp/screenshot_2026-02-25_at_11_23_45_pm.webp":[1726,1900],"images/webp/screenshot_2026-06-04_at_5_55_40_pm.webp":[1232,1290],"images/webp/screenshot_2026-06-05_at_9_07_32_am.webp":[1208,898],"images/webp/shoeupdated.webp":[1280,832],"images/webp/sximvl9brhh4bygimynbtwycuhm.webp":[1920,1920],"images/webp/vd9wduxlvlmmtzkvh3c240u6ksm.webp":[1200,1200],"images/webp/wallet.webp":[1600,1600],"images/webp/watch-ai.webp":[1280,1600],"images/webp/woodravi.webp":[1200,1600],"images/webp/y51ckw2eetnvsqt6amqyrk.webp":[1179,1179],"images/webp/y5ktbqm6lccbb2lwsh6zdzwye8.webp":[600,800],"videos/originals/79a87692-c65c-4ac0-baa0-86edfd0e6758.MOV":[716,960],"videos/originals/NYiQvhvSpB94g8crZ7wM9tKjIMw.mp4":[720,720],"videos/originals/Uq98V0e2NmiMfH7g06el9phPN4.mp4":[1080,1080],"videos/originals/astro-final.orig.mp4":[720,720],"videos/originals/f869e000-8a5a-4943-b251-695e176e09db.mp4":[1080,1444],"videos/originals/hf_20260520_001429_589f4149-6b59-4ae2-b961-18574d666ed5.mp4":[1080,1444],"videos/originals/rock-loop.orig.mp4":[1080,1080],"videos/originals/v-new.orig.mp4":[960,960],"videos/flag-loop.mp4":[1080,1080]};
+const mediaDims = {"images/webp/0mhoy0a9fhnklvtvalyhikte9sm.webp":[1600,1600],"images/webp/0udmd1dqmdxttj2tmo1w6oyde6q.webp":[1200,1600],"images/webp/1.webp":[1600,1600],"images/webp/2024-10-15_13-59.webp":[1200,958],"images/webp/265c005b-d5b5-483f-8b7a-bcbb94b24a4b.webp":[1080,984],"images/webp/2ebhjluf7jnnicix5nmrmkiszs.webp":[1600,1600],"images/webp/2lrgrixzjfacxkowqvppidmfca.webp":[1600,900],"images/webp/3iojgg9pg5ishphded0qrhgjg.webp":[1179,1179],"images/webp/3rzume3pmoeicjrha6nnektiso.webp":[1600,1067],"images/webp/3uueo2w2giml0ivvh0mak7mrhks.webp":[1600,1599],"images/webp/447f43a5-9af7-41d6-8c613d066eac9011_sc7.webp":[700,700],"images/webp/50rjhy5ebvdvmkksjalgukghcla.webp":[1600,1600],"images/webp/5itwgkoayxmyoialca6rjjxgw.webp":[1600,1600],"images/webp/5lraffdhtsknwafrepaerwsnk0.webp":[1600,1600],"images/webp/6.webp":[1599,1600],"images/webp/68tqbmrjrujtixok79482ezbq.webp":[1600,1600],"images/webp/6aol8golrb4senfw9idrned8.webp":[1600,1000],"images/webp/7.webp":[1600,1600],"images/webp/7chhnlz6vojjerjddachgnya0e.webp":[1200,1200],"images/webp/8.webp":[1600,1067],"images/webp/8003b4fb-67cc-44d6-9831c33d122a63bf_sc7.webp":[700,700],"images/webp/89efgkuyuy3flehxhsus61kxuug.webp":[1179,1179],"images/webp/8he9te1jaool20kvh9ox5j2ri.webp":[1280,1280],"images/webp/8ll4ezw9dmcsalasqjvx15qg8.webp":[1200,1200],"images/webp/8oizq8ydfwrbyb7uqfs16p4wxc.webp":[1600,1600],"images/webp/8s21jtaonfvqz9wya5ypoxppw.webp":[1179,1179],"images/webp/95f5ghjlwg2av7b4ufmgwltctsw.webp":[480,854],"images/webp/9bc5beb0-8658-4f35-8090b51163734de5_sc7.webp":[700,700],"images/webp/ainuzhhn3ibk883yqsvvyud4dms.webp":[1179,1179],"images/webp/all_3.webp":[1200,852],"images/webp/bus_ad.webp":[1200,1200],"images/webp/c7hfcqhvjhsuwnlkuk5d6iyfpk.webp":[1600,1600],"images/webp/cards.webp":[1200,1200],"images/webp/cards_and_packs.webp":[1200,786],"images/webp/daaiyqejjv5na752yvefcsnqw8.webp":[800,800],"images/webp/dh1am2oolyuvobii6bjy4ss1p9g.webp":[600,800],"images/webp/dru28gwriztfgkwxoafpnh5a6ci.webp":[1600,1067],"images/webp/f602f8a7-fde1-4601-99ad-614e689f3bd4.webp":[1200,1600],"images/webp/fblamxnlrdocyybgdgkn2bvxvs.webp":[1600,1600],"images/webp/floatingravigrey.webp":[1600,1458],"images/webp/full_shot.webp":[1200,757],"images/webp/g-001.webp":[900,1600],"images/webp/g-002.webp":[1194,1600],"images/webp/g-003.webp":[1600,1600],"images/webp/g-004.webp":[974,1600],"images/webp/g-005.webp":[1201,1600],"images/webp/g-006.webp":[1200,1600],"images/webp/g-007.webp":[1600,1600],"images/webp/g-008.webp":[1317,1600],"images/webp/g-010.webp":[900,1600],"images/webp/g-011.webp":[1600,1600],"images/webp/g-012.webp":[1593,1600],"images/webp/g-013.webp":[900,1600],"images/webp/g-014.webp":[900,1600],"images/webp/g-015.webp":[1600,1600],"images/webp/g-016.webp":[1194,1600],"images/webp/g-017.webp":[1600,1600],"images/webp/g-018.webp":[900,1600],"images/webp/g-019.webp":[1600,1600],"images/webp/g-020.webp":[1600,1600],"images/webp/g-021.webp":[1600,1600],"images/webp/g-022.webp":[1600,1457],"images/webp/g-023.webp":[900,1600],"images/webp/g-024.webp":[900,1600],"images/webp/g-025.webp":[1600,1600],"images/webp/g-026.webp":[1200,1600],"images/webp/g-027.webp":[1600,1600],"images/webp/g-028.webp":[1200,1600],"images/webp/g-029.webp":[900,1600],"images/webp/g-030.webp":[1600,1545],"images/webp/g-031.webp":[900,1600],"images/webp/g-032.webp":[1600,1600],"images/webp/g-033.webp":[1600,1572],"images/webp/g-034.webp":[1200,1600],"images/webp/g-035.webp":[900,1600],"images/webp/g-036.webp":[1600,1600],"images/webp/g-037.webp":[1200,1600],"images/webp/g-038.webp":[900,1600],"images/webp/g-039.webp":[900,1600],"images/webp/g-040.webp":[1200,1600],"images/webp/g-041.webp":[893,1600],"images/webp/g-042.webp":[1600,1600],"images/webp/g-043.webp":[1600,1194],"images/webp/g-044.webp":[1600,1600],"images/webp/g-045.webp":[1600,1600],"images/webp/g-046.webp":[1600,1600],"images/webp/g-047.webp":[1600,1600],"images/webp/g-048.webp":[1200,1600],"images/webp/g-049.webp":[1600,1600],"images/webp/g-050.webp":[1200,1600],"images/webp/g-051.webp":[1600,1200],"images/webp/g-052.webp":[1600,1200],"images/webp/g-053.webp":[1200,1600],"images/webp/g-054.webp":[1600,1066],"images/webp/g-055.webp":[1600,1600],"images/webp/g-056.webp":[1200,1600],"images/webp/g-057.webp":[1200,1600],"images/webp/g-058.webp":[1600,1600],"images/webp/g-059.webp":[1600,1600],"images/webp/g-060.webp":[1200,1600],"images/webp/g-061.webp":[1586,1600],"images/webp/g-062.webp":[1600,1545],"images/webp/g-063.webp":[1600,1200],"images/webp/g-064.webp":[1200,1600],"images/webp/g-065.webp":[1200,1600],"images/webp/g-068.webp":[1200,1600],"images/webp/g-069.webp":[1200,1600],"images/webp/g-070.webp":[1200,1600],"images/webp/g-071.webp":[1200,1600],"images/webp/g-072.webp":[1200,1600],"images/webp/g-073.webp":[1200,1600],"images/webp/g-074.webp":[1200,1600],"images/webp/g-075.webp":[1269,1600],"images/webp/g-076.webp":[1200,1600],"images/webp/g-077.webp":[1600,1290],"images/webp/g-078.webp":[1200,1600],"images/webp/g-079.webp":[1600,1600],"images/webp/g-080.webp":[955,1600],"images/webp/g-081.webp":[1600,882],"images/webp/g-082.webp":[1600,1527],"images/webp/g-083.webp":[1600,1391],"images/webp/g-084.webp":[1600,1600],"images/webp/g-085.webp":[1600,1391],"images/webp/g-086.webp":[1600,1391],"images/webp/g-087.webp":[1600,1600],"images/webp/g-088.webp":[1600,1600],"images/webp/g-089.webp":[1600,1600],"images/webp/generated_image_december_05_2025_-_10_29am.webp":[896,1200],"images/webp/generated_image_december_06_2025_-_1_01pm.webp":[768,1376],"images/webp/generated_image_may_18_2026_-_1_47pm.webp":[1024,1024],"images/webp/generated_image_may_18_2026_-_9_26pm.webp":[843,1264],"images/webp/generated_image_may_18_2026_-_9_38pm.webp":[843,1264],"images/webp/gjjajtjcqboxlqnjqmfcn7bfyyg.webp":[1600,1600],"images/webp/hero.webp":[1600,1600],"images/webp/hero_2.webp":[1600,1600],"images/webp/hnsbmqgkfzck8pijawyscdkwmo.webp":[1600,1600],"images/webp/image0.webp":[1024,1024],"images/webp/img_0231.webp":[1200,1600],"images/webp/img_0286.webp":[1200,1600],"images/webp/img_0324.webp":[1200,1600],"images/webp/img_0326.webp":[1200,1600],"images/webp/img_0573.webp":[1200,1600],"images/webp/img_1093.webp":[1200,1600],"images/webp/img_1351.webp":[1600,1458],"images/webp/img_1583.webp":[1462,1600],"images/webp/img_1584.webp":[1200,1600],"images/webp/img_1845.webp":[1561,1600],"images/webp/img_4411.webp":[800,800],"images/webp/img_4412.webp":[800,800],"images/webp/img_4413.webp":[800,800],"images/webp/img_4415.webp":[800,800],"images/webp/img_4416.webp":[800,800],"images/webp/img_4418.webp":[1179,1179],"images/webp/img_4448.webp":[800,800],"images/webp/img_9971.webp":[1200,1600],"images/webp/keu3bgzc4jskao5zthopmzyeky.webp":[1179,1179],"images/webp/lamp.webp":[896,1200],"images/webp/mvvxrn2z7zxql37pswhsrzueyrc.webp":[1600,1600],"images/webp/oxa3web.webp":[800,800],"images/webp/p1lf97kow8ecqirblbfufjigt2o.webp":[789,789],"images/webp/peakinsta.webp":[1200,1200],"images/webp/peakport.webp":[800,468],"images/webp/peakport_copy.webp":[1200,701],"images/webp/pesmpmn9fullsze9xhk4puszw.webp":[1200,1200],"images/webp/pg1.webp":[1600,1600],"images/webp/pg2.webp":[1600,1600],"images/webp/photo-2026-06-04-11-54-18.webp":[768,1024],"images/webp/pm63310_0.webp":[1600,1600],"images/webp/qdid4zpeenkdn7b4mqihbmdb5m.webp":[1600,1600],"images/webp/ravi-art.webp":[1593,1600],"images/webp/ravi-avatar.webp":[1600,1600],"images/webp/ravi-float.webp":[1490,1600],"images/webp/ravi-moon.webp":[1600,1600],"images/webp/ravi-print.webp":[1600,1572],"images/webp/ravi-puffer.webp":[1600,1600],"images/webp/rock4.webp":[1600,1600],"images/webp/screenshot_2026-02-25_at_11_19_13_am.webp":[1194,1600],"images/webp/screenshot_2026-02-25_at_11_23_45_pm.webp":[1453,1600],"images/webp/screenshot_2026-06-04_at_5_55_40_pm.webp":[1232,1290],"images/webp/screenshot_2026-06-05_at_9_07_32_am.webp":[1208,898],"images/webp/shoeupdated.webp":[1280,832],"images/webp/sximvl9brhh4bygimynbtwycuhm.webp":[1600,1600],"images/webp/vd9wduxlvlmmtzkvh3c240u6ksm.webp":[1200,1200],"images/webp/wallet.webp":[1600,1600],"images/webp/watch-ai.webp":[1280,1600],"images/webp/woodravi.webp":[1200,1600],"images/webp/y51ckw2eetnvsqt6amqyrk.webp":[1179,1179],"images/webp/y5ktbqm6lccbb2lwsh6zdzwye8.webp":[600,800],"videos/originals/79a87692-c65c-4ac0-baa0-86edfd0e6758.MOV":[716,960],"videos/originals/NYiQvhvSpB94g8crZ7wM9tKjIMw.mp4":[720,720],"videos/originals/Uq98V0e2NmiMfH7g06el9phPN4.mp4":[720,720],"videos/originals/astro-final.orig.mp4":[720,720],"videos/originals/f869e000-8a5a-4943-b251-695e176e09db.mp4":[720,962],"videos/originals/hf_20260520_001429_589f4149-6b59-4ae2-b961-18574d666ed5.mp4":[720,962],"videos/originals/rock-loop.orig.mp4":[720,720],"videos/originals/v-new.orig.mp4":[720,720],"videos/flag-loop.mp4":[720,720]};
 
 function makePin(src) {
     const div = document.createElement('div');
@@ -3087,6 +3018,12 @@ const pinObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: isMobile ? '150px 0px' : '400px 0px' });
 
 // ── Render ────────────────────────────────────────────────────────
+// Map a video src to its poster JPEG (first frame, pre-generated).
+function _poster(src) {
+    const base = src.split('/').pop().replace(/\.[^.]+$/, '');
+    return `videos/posters/${base}.jpg`;
+}
+
 function renderHome() {
     const grid = document.getElementById('index-feature');
     if (!grid) return;
@@ -3096,8 +3033,8 @@ function renderHome() {
         a.className = 'idx-cell' + (i === 0 ? ' idx-cell-1' : '');
         a.onclick = () => { showPage('index'); return false; };
         a.innerHTML = isVideo(src)
-            ? `<video src="${_v(src)}" autoplay loop muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"></video>`
-            : `<img src="${_v(src)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
+            ? `<video src="${_v(src)}" poster="${_poster(src)}" autoplay loop muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"></video>`
+            : `<img src="${_v(src)}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`;
         grid.appendChild(a);
         if (!window.matchMedia('(pointer:coarse)').matches) attachTilt(a, 8);
     });
