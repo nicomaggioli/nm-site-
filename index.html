@@ -1262,11 +1262,7 @@
             filter:
                 brightness(0) invert(1)
                 drop-shadow(0 0 28px rgba(255, 255, 255, .32));
-            /* Exactly ONE 360° rotation, plays once, holds end state. */
             animation: ldrSpinOnce 2.4s cubic-bezier(0.45, 0.05, 0.55, 1) forwards;
-            /* Smooth single-tween morph fires when .loader.done sets new property values.
-               Opacity is concentrated around the midpoint of the morph so the white→orange
-               crossfade happens partway between center and corner, not at the start. */
             transition:
                 top     1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 left    1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
@@ -3960,6 +3956,21 @@ function renderProjects() {
 // ── Init ──────────────────────────────────────────────────────────
 renderHome();
 renderIndex();
+
+// Background-prefetch the first slice of index media after home settles, so
+// the index page feels instant when the user navigates over. Skips videos
+// because they're large; videos still lazy-load on visit.
+function prefetchIndexMedia() {
+    const LIMIT = 60;
+    shuffled.slice(0, LIMIT).forEach((src, i) => {
+        if (isVideo(src)) return;
+        setTimeout(() => {
+            const img = new Image();
+            img.src = _v(src);
+        }, i * 50);
+    });
+}
+setTimeout(prefetchIndexMedia, 1500);
 
 // Load projects async
 (async function loadProjects() {
