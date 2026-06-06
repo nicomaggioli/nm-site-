@@ -1303,17 +1303,7 @@
             width: 110px;
             height: 110px;
             margin: -55px 0 0 -55px;
-            -webkit-mask-image: url('favicon.png');
-                    mask-image: url('favicon.png');
-            -webkit-mask-size: contain;
-                    mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-                    mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-                    mask-position: center;
-            transform-style: preserve-3d;
-            backface-visibility: visible;
-            animation: ldrSpinOnce 2.4s cubic-bezier(0.45, 0.05, 0.55, 1) forwards;
+            display: block;
             transition:
                 top     1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 left    1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
@@ -1322,19 +1312,21 @@
                 margin  1.05s cubic-bezier(0.65, 0.04, 0.36, 1),
                 opacity .45s ease-in-out .3s;
         }
-        .ldr-logo-base {
-            background-color: #fff;
-            filter: drop-shadow(0 0 28px rgba(255, 255, 255, .32));
-        }
+        /* Base = the 3D canvas. Three.js spins the mesh inside it. */
+        canvas.ldr-logo-base { filter: drop-shadow(0 0 28px rgba(255, 255, 255, .32)); }
+        /* Tint = flat 2D mask filled with the brand orange. Fades in at handoff. */
         .ldr-logo-tint {
+            -webkit-mask-image: url('favicon.png');
+                    mask-image: url('favicon.png');
+            -webkit-mask-size: contain;
+                    mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+                    mask-position: center;
             background-color: #FF8520;
             opacity: 0;
         }
-        @keyframes ldrSpinOnce {
-            from { transform: rotateY(0deg); }
-            to   { transform: rotateY(360deg); }
-        }
-
         /* End state: lands exactly where the header logo sits. */
         .loader.done .ldr-logo {
             top: calc(var(--nav-h) / 2);
@@ -1922,7 +1914,7 @@
         .hero-cta:hover { background: #fff; transform: translateY(-1px); }
         @media (max-width: 760px) {
             .hero { align-items: center; height: 78svh; }
-            .hero-content { padding: 0 18px 64px; }
+            .hero-content { padding: 80px 18px 0; }
             .hero-canvas { display: none; }
         }
 
@@ -2214,7 +2206,7 @@
 
 <!-- LOADER -->
 <div id="loader" class="loader">
-    <div class="ldr-logo ldr-logo-base" aria-hidden="true"></div>
+    <canvas class="ldr-logo ldr-logo-base" aria-hidden="true"></canvas>
     <div class="ldr-logo ldr-logo-tint" aria-hidden="true"></div>
 </div>
 
@@ -2781,7 +2773,63 @@
 <div class="toast-area" id="toast-area"></div>
 
 
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/OBJLoader.js"></script>
 <script>
+// ── 3D loader: Three.js renders nicom-logo.obj inside canvas.ldr-logo-base ─
+// Spins the mesh on Y, holds at 360° once the 2.4s spin completes. When the
+// loader morphs to the corner, the canvas fades out and the orange flat
+// .ldr-logo-tint fades in for a clean 3D-to-2D handoff in the corner.
+(function init3DLoader() {
+    const canvas = document.querySelector('canvas.ldr-logo-base');
+    if (!canvas || !window.THREE || !window.THREE.OBJLoader) return;
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3));
+    renderer.setSize(330, 330, false);   // higher internal res for sharper edges
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
+    camera.position.set(0, 0, 12);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(3, 4, 5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.55); rim.position.set(-3, 1, -2); scene.add(rim);
+    // flatShading:false (default) + higher roughness hides faceting
+    const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0.08, flatShading: false });
+    let mesh = null;
+    new THREE.OBJLoader().load('obj/nicom-logo.obj', (root) => {
+        root.traverse(c => {
+            if (c.isMesh) {
+                // OBJ export often leaves geometry with face-normals only.
+                // Recomputing vertex normals averages adjacent face normals
+                // at shared vertices so lighting interpolates smoothly (kills
+                // the faceted "low poly" look).
+                c.geometry.computeVertexNormals();
+                c.material = material;
+            }
+        });
+        const box = new THREE.Box3().setFromObject(root);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 7.0 / maxDim;
+        root.scale.setScalar(scale);
+        const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
+        root.position.sub(center);
+        mesh = root;
+        scene.add(mesh);
+    });
+    const SPIN_MS = 2400;
+    const start = performance.now();
+    function tick(now) {
+        requestAnimationFrame(tick);
+        if (mesh) {
+            const t = Math.min((now - start) / SPIN_MS, 1);
+            const e = 0.5 - 0.5 * Math.cos(t * Math.PI);  // sine ease in/out
+            mesh.rotation.y = e * Math.PI * 2;
+        }
+        renderer.render(scene, camera);
+    }
+    requestAnimationFrame(tick);
+})();
+
 // ── Images ────────────────────────────────────────────────────────
 const homeImages = [
     'videos/originals/hf_20260520_001429_589f4149-6b59-4ae2-b961-18574d666ed5.mp4',
