@@ -2817,12 +2817,22 @@
         scene.add(mesh);
     });
     const SPIN_MS = 2400;
+    const MORPH_MS = 1050;
     const start = performance.now();
+    let alive = true;
+    // After the spin + morph is done, the canvas is at opacity 0 in the
+    // corner — stop the render loop so we don't burn GPU each frame
+    // competing with the hero metaball canvas.
+    setTimeout(() => {
+        alive = false;
+        renderer.dispose();
+    }, SPIN_MS + MORPH_MS + 100);
     function tick(now) {
+        if (!alive) return;
         requestAnimationFrame(tick);
         if (mesh) {
             const t = Math.min((now - start) / SPIN_MS, 1);
-            const e = 0.5 - 0.5 * Math.cos(t * Math.PI);  // sine ease in/out
+            const e = 0.5 - 0.5 * Math.cos(t * Math.PI);
             mesh.rotation.y = e * Math.PI * 2;
         }
         renderer.render(scene, camera);
