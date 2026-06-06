@@ -9,6 +9,9 @@
     <meta name="author" content="Nico Maggioli">
     <link rel="canonical" href="https://nicomaggioli.com/">
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preload" as="image" href="favicon.png">
+    <link rel="preload" as="fetch" href="obj/nicom-logo.obj" crossorigin>
 
     <!-- Open Graph -->
     <meta property="og:type" content="profile">
@@ -3128,10 +3131,16 @@ function renderHome() {
         const a = document.createElement('a');
         a.className = 'idx-cell' + (i === 0 ? ' idx-cell-1' : '');
         a.onclick = () => { showPage('index'); return false; };
+        // First cell gets fetch priority + auto preload (it's the hero).
+        // Others use metadata-only preload (saves ~5-10MB upfront);
+        // _kickAutoplay starts each video once it buffers enough.
+        const pri = i === 0 ? 'high' : 'auto';
+        const pl  = i === 0 ? 'auto' : 'metadata';
         a.innerHTML = isVideo(src)
-            ? `<video src="${_v(src)}" autoplay loop muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"></video>`
-            : `<img src="${_v(src)}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`;
+            ? `<video src="${_v(src)}" autoplay loop muted playsinline preload="${pl}" fetchpriority="${pri}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"></video>`
+            : `<img src="${_v(src)}" alt="" loading="lazy" decoding="async" fetchpriority="${pri}" style="width:100%;height:100%;object-fit:cover;">`;
         grid.appendChild(a);
+        if (isVideo(src)) _kickAutoplay(a.querySelector('video'));
         if (!window.matchMedia('(pointer:coarse)').matches) attachTilt(a, 8);
     });
 }
@@ -4074,12 +4083,12 @@ function renderProjects() {
 renderHome();
 renderIndex();
 
-// Background-prefetch ALL index images after home settles so the index page
-// is fully warm by the time the user navigates. Uses Image() (which triggers
-// the same HTTP cache the masonry will hit). Videos still lazy-load on demand
-// because their combined weight isn't worth blanket-prefetching.
+// Background-prefetch the first 40 index images (roughly above-the-fold on
+// /index across all viewports). The rest lazy-load via IntersectionObserver
+// when the user actually scrolls — saves CPU/network when the user never
+// navigates to /index.
 function prefetchIndexMedia() {
-    shuffled.forEach((src, i) => {
+    shuffled.slice(0, 40).forEach((src, i) => {
         if (isVideo(src)) return;
         setTimeout(() => {
             const img = new Image();
@@ -4162,8 +4171,21 @@ setTimeout(prefetchIndexMedia, 1500);
         ctx.fill();
     }
 
+    // Pause animation when the hero is scrolled offscreen — wasted 60fps
+    // otherwise, and the SVG goo filter is GPU-heavy.
+    let visible = true;
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+            const wasVisible = visible;
+            visible = entries[0].isIntersecting;
+            if (visible && !wasVisible) requestAnimationFrame(tick);
+        }, { rootMargin: '50px' });
+        io.observe(hero);
+    }
+
     let t = 0;
     function tick() {
+        if (!visible) return;
         ctx.clearRect(0, 0, W, H);
         t += 0.012;
 
