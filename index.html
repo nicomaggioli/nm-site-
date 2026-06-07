@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nico Maggioli — Brand &amp; Product Developer | Boston</title>
+    <title>Nico Maggioli | Brand &amp; Product Developer | Boston</title>
     <meta name="description" content="Nico Maggioli is a Brand &amp; Product Developer based in Boston. I define the strategy and manufacture the product. Positioning, identity, visuals, and physical product manufacturing with factories in Italy, China, India, Pakistan, and the US.">
     <meta name="keywords" content="brand developer, product developer, brand strategy, brand designer, product designer, identity design, packaging design, product development, manufacturing, Boston brand designer, Boston product designer, brand and product developer, Italy manufacturing, China manufacturing, India manufacturing, Pakistan manufacturing, US manufacturing, Nico Maggioli, freelance brand designer, freelance product designer">
     <meta name="author" content="Nico Maggioli">
@@ -13,7 +13,7 @@
     <!-- Open Graph -->
     <meta property="og:type" content="profile">
     <meta property="og:url" content="https://nicomaggioli.com/">
-    <meta property="og:title" content="Nico Maggioli — Brand &amp; Product Developer">
+    <meta property="og:title" content="Nico Maggioli | Brand &amp; Product Developer">
     <meta property="og:description" content="I define the strategy and manufacture the product. Brand thinking and real manufacturing, from one head. Boston-based, manufacturing in Italy, China, India, Pakistan, and the US.">
     <meta property="og:image" content="https://nicomaggioli.com/favicon.png">
     <meta property="og:site_name" content="Nico Maggioli">
@@ -22,7 +22,7 @@
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Nico Maggioli — Brand &amp; Product Developer">
+    <meta name="twitter:title" content="Nico Maggioli | Brand &amp; Product Developer">
     <meta name="twitter:description" content="I define the strategy and manufacture the product. Boston-based, manufacturing in Italy, China, India, Pakistan, and the US.">
     <meta name="twitter:image" content="https://nicomaggioli.com/favicon.png">
 
@@ -66,6 +66,7 @@
         :root {
             --green:    #FF8520;
             --gd:       #FF8520;
+            --orange-grad: linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
             --black:    #111;
             --muted:    #666;
             --g1:       #f5f5f5;
@@ -87,6 +88,13 @@
 
         html { scroll-behavior: smooth; }
         ::selection { background: rgba(255, 133, 32,.25); color: #111; }
+        .grad-text {
+            background: var(--orange-grad);
+            -webkit-background-clip: text;
+                    background-clip: text;
+            -webkit-text-fill-color: transparent;
+                    color: transparent;
+        }
 
         body {
             font-family: var(--font);
@@ -432,7 +440,7 @@
         }
         .cs-bar-fill {
             height: 100%;
-            background: var(--green);
+            background: var(--orange-grad);
             border-radius: 2px;
             animation: csSlide 2.4s ease-in-out infinite alternate;
         }
@@ -621,7 +629,7 @@
         .pdp-size-btn.active { border-color: var(--green); background: rgba(255, 133, 32,.1); color: #fff; }
         .pdp-add-btn {
             height: 52px; border-radius: 26px; border: none;
-            background: var(--green); color: #000;
+            background: var(--orange-grad); color: #000;
             font-family: var(--font); font-size: 15px; font-weight: 700;
             cursor: pointer; transition: opacity .2s; margin-top: auto;
         }
@@ -1155,7 +1163,7 @@
 
         .solo-add-btn {
             height: 50px; border-radius: 25px; border: none;
-            background: var(--green); color: #000;
+            background: var(--orange-grad); color: #000;
             font-family: var(--font); font-size: 15px; font-weight: 700;
             cursor: pointer; transition: opacity .2s, transform .1s; width: 100%;
         }
@@ -1220,9 +1228,12 @@
 
         .submit-btn {
             align-self: flex-start;
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
             height: 44px;
             padding: 0 26px;
-            background: var(--green);
+            background: var(--orange-grad);
             color: #000;
             border: none;
             border-radius: 999px;
@@ -1230,10 +1241,20 @@
             font-weight: 600;
             font-family: var(--font);
             cursor: pointer;
-            transition: opacity .15s;
+            transition: transform .15s ease;
             margin-top: 4px;
         }
-        .submit-btn:hover { opacity: .8; }
+        .submit-btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            transition: opacity .2s ease;
+            z-index: -1;
+        }
+        .submit-btn:hover { transform: translateY(-1px); }
+        .submit-btn:hover::before { opacity: 1; }
 
 
         /* ── TOAST ────────────────────────────────────────────────── */
@@ -1246,7 +1267,7 @@
             gap: 8px;
         }
         .toast {
-            background: var(--green);
+            background: var(--orange-grad);
             color: #fff;
             padding: 13px 18px;
             border-radius: 12px;
@@ -1280,7 +1301,7 @@
             color: var(--black);
         }
         .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
-        .back-top:hover { background: var(--green); color: #000; transform: translateY(-4px); }
+        .back-top:hover { background: var(--orange-grad); color: #000; transform: translateY(-4px); }
 
         @media (max-width: 768px) { .back-top { bottom: 18px; right: 18px; } }
 
@@ -1324,7 +1345,7 @@
                     mask-repeat: no-repeat;
             -webkit-mask-position: center;
                     mask-position: center;
-            background-color: #FF8520;
+            background: var(--orange-grad);
             opacity: 0;
         }
         /* End state: lands exactly where the header logo sits. */
@@ -1415,7 +1436,7 @@
             text-decoration: none;
             transition: background .2s ease, color .2s ease;
         }
-        .idx-view-all:hover { background: #FF8520; color: #000; }
+        .idx-view-all:hover { background: var(--orange-grad); color: #000; }
         @media (max-width: 900px) {
             .index-feature {
                 grid-template-columns: 1fr 1fr 1fr;
@@ -1510,6 +1531,67 @@
             .site-card:hover { padding-left: 8px; padding-right: 8px; }
         }
 
+        /* Floating screenshot preview on site-card hover */
+        .site-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 380px;
+            aspect-ratio: 16 / 10;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 140, 40, .22);
+            box-shadow: 0 24px 64px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(.96);
+            transition: opacity .18s ease, transform .26s cubic-bezier(.22,1,.36,1);
+            z-index: 9000;
+            will-change: transform, opacity, left, top;
+        }
+        .site-preview.show { opacity: 1; transform: scale(1); }
+        .site-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+        }
+        .site-preview::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.55));
+            pointer-events: none;
+        }
+        .site-preview-label {
+            position: absolute;
+            bottom: 12px;
+            left: 14px;
+            right: 14px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.85);
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .site-preview-label .dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--orange-grad);
+            margin-right: 6px;
+            transform: translateY(-1px);
+        }
+        @media (hover: none), (max-width: 720px) {
+            .site-preview { display: none; }
+        }
+
         /* ── BRAND MARQUEE ───────────────────────────────────────── */
         .brands {
             padding: 56px 0 64px;
@@ -1566,19 +1648,28 @@
         .brand-img {
             display: inline-flex;
             align-items: center;
+            position: relative;
         }
         .brand-img img {
             height: 100%;
             width: auto;
             display: block;
-            /* Muted gray at rest (≈ #888 on dark) — matches the understated
-               "trusted by" reference, not aggressive pure-white. */
             filter: brightness(0) invert(1) brightness(.62);
-            transition: filter .25s ease;
+            transition: opacity .25s ease, filter .25s ease;
         }
-        .brand-img:hover img {
-            filter: brightness(0) saturate(100%) invert(64%) sepia(89%) saturate(1683%) hue-rotate(345deg) brightness(101%) contrast(101%);
+        .brand-img::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--orange-grad);
+            -webkit-mask: var(--brand-mask) center/contain no-repeat;
+                    mask: var(--brand-mask) center/contain no-repeat;
+            opacity: 0;
+            transition: opacity .25s ease;
+            pointer-events: none;
         }
+        .brand-img:hover img { opacity: 0; }
+        .brand-img:hover::after { opacity: 1; }
         /* Bose's SVG letters fill 100% of viewBox so the rendered cap-height equals the
            height value. Other wordmark SVGs have ~25% padding around cap-height, so they
            need to be taller to render at the same cap-height. Icons need to be bigger
@@ -1587,16 +1678,17 @@
            tight to its content (no internal whitespace). The reference style
            lets wordmarks sit at one cap-height and symbol logos float a bit
            larger because they feel less visually dense. */
-        .brand-bose      { height: 26px; }
-        .brand-staples   { height: 32px; }
-        .brand-kohler    { height: 30px; }
-        .brand-seagate   { height: 36px; }
+        .brand-bose      { height: 26px; --brand-mask: url(brands/bose.svg); }
+        .brand-staples   { height: 32px; --brand-mask: url(brands/staples.svg); }
+        .brand-kohler    { height: 30px; --brand-mask: url(brands/kohler.svg); }
+        .brand-seagate   { height: 36px; --brand-mask: url(brands/seagate.svg); }
         /* Alares uses its original 720x720 square viewBox where the wing fills ~74%
            vertically, so we render the slot taller to land the visible wing
            at the same cap-height as the wordmark logos. */
-        .brand-alares    { height: 46px; }
-        .brand-ravisauce { height: 44px; }
-        .brand-puffco    { height: 36px; }
+        .brand-alares    { height: 46px; --brand-mask: url(brands/alares.svg); }
+        .brand-ravisauce { height: 44px; --brand-mask: url(brands/ravisauce.png); }
+        .brand-puffco    { height: 36px; --brand-mask: url(brands/puffco.svg); }
+        .brand-puffco[data-fallback="png"] { --brand-mask: url(brands/puffco.png); }
         @media (max-width: 760px) {
             .brand-bose      { height: 18px; }
             .brand-staples   { height: 22px; }
@@ -1615,6 +1707,7 @@
         }
         @media (max-width: 760px) {
             .brands { padding: 28px 0 32px; }
+            .brands-track { animation-duration: 20s; }
             .brands-track .brand { margin-right: 48px; }
             .brands-tag { margin-bottom: 16px; padding: 0 18px; }
         }
@@ -1905,17 +1998,35 @@
             font-size: 15px;
             font-weight: 600;
             padding: 14px 26px;
-            background: #FF8520;
+            background: var(--orange-grad);
             color: #000;
             cursor: pointer;
             border-radius: 999px;
             transition: transform .15s ease, background .2s ease;
         }
         .hero-cta:hover { background: #fff; transform: translateY(-1px); }
+        .hero-h-stack { position: relative; }
+        .hero-h-mask {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            margin: 0;
+            color: #fff;
+            pointer-events: none;
+            -webkit-mask-image: url(#hero-blob-mask);
+                    mask-image: url(#hero-blob-mask);
+        }
+        .hero-h-mask .grad-text {
+            background: none;
+            -webkit-background-clip: initial;
+                    background-clip: initial;
+            -webkit-text-fill-color: #fff;
+                    color: #fff;
+        }
         @media (max-width: 760px) {
             .hero { align-items: center; height: 78svh; }
             .hero-content { padding: 80px 18px 0; }
             .hero-canvas { display: none; }
+            .hero-h-mask { display: none; }
         }
 
         /* ── PANELS ── */
@@ -2195,11 +2306,10 @@
         .form-field input, .form-field textarea { color: #d0d0d0; border-bottom-color: #2a2a2a; }
         .form-field input:focus, .form-field textarea:focus { border-bottom-color: var(--green); }
         .form-field input::placeholder, .form-field textarea::placeholder { color: #444; }
-        .submit-btn       { background: var(--green); color: #000; }
-        .submit-btn:hover { filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(255, 133, 32,.35); opacity: 1; }
+        .submit-btn       { background: var(--orange-grad); color: #000; }
 
         .back-top         { background: #111; border-color: #222; color: #d0d0d0; }
-        .back-top:hover   { background: var(--green); color: #000; }
+        .back-top:hover   { background: var(--orange-grad); color: #000; }
     </style>
 </head>
 <body>
@@ -2266,13 +2376,39 @@
                 <defs>
                     <filter id="slime-goo">
                         <feGaussianBlur in="SourceGraphic" stdDeviation="14"/>
-                        <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"/>
+                        <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12"/>
                     </filter>
+                    <filter id="hero-mask-goo">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="14"/>
+                        <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12"/>
+                    </filter>
+                    <radialGradient id="hero-blob-grad">
+                        <stop offset="0%"   stop-color="white" stop-opacity="1"/>
+                        <stop offset="55%"  stop-color="white" stop-opacity="0.85"/>
+                        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                    </radialGradient>
+                    <mask id="hero-blob-mask">
+                        <g filter="url(#hero-mask-goo)">
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                            <circle class="hbm" cx="0" cy="0" r="0" fill="url(#hero-blob-grad)"/>
+                        </g>
+                    </mask>
                 </defs>
             </svg>
             <canvas class="hero-canvas" id="hero-canvas"></canvas>
             <div class="hero-content">
-                <h1 class="hero-h">I define the strategy and <span style="color:#FF8520">manufacture the product</span>.</h1>
+                <div class="hero-h-stack">
+                    <h1 class="hero-h">I define the strategy and <span class="grad-text">manufacture the product</span>.</h1>
+                    <h1 class="hero-h hero-h-mask" aria-hidden="true">I define the strategy and <span class="grad-text">manufacture the product</span>.</h1>
+                </div>
                 <p class="hero-sub">Positioning, identity, visuals, and the product itself. Factories in Italy, China, India, Pakistan, US.</p>
                 <a class="hero-cta" onclick="showPage('contact');return false;">Got an idea? &rarr;</a>
             </div>
@@ -2424,7 +2560,7 @@
                     <span class="site-name">Spectra</span>
                     <span class="site-arrow">&rarr;</span>
                 </a>
-                <a href="https://nicomaggioli.github.io/alares/" target="_blank" rel="noopener noreferrer" class="site-card">
+                <a href="https://alaresengineering.com/" target="_blank" rel="noopener noreferrer" class="site-card">
                     <span class="site-num">[02]</span>
                     <span class="site-name">Alares</span>
                     <span class="site-arrow">&rarr;</span>
@@ -4132,7 +4268,20 @@ setTimeout(prefetchIndexMedia, 1500);
     resize();
     addEventListener('resize', resize);
 
-    const cursor = { x: W * 0.6, y: H * 0.5, active: false };
+    const maskH1 = document.querySelector('.hero-h-mask');
+    const maskCircles = document.querySelectorAll('#hero-blob-mask .hbm');
+    let maskOffX = 0, maskOffY = 0;
+    function measureMask() {
+        if (!maskH1) return;
+        const mr = maskH1.getBoundingClientRect();
+        const hr = hero.getBoundingClientRect();
+        maskOffX = mr.left - hr.left;
+        maskOffY = mr.top  - hr.top;
+    }
+    measureMask();
+    addEventListener('resize', measureMask);
+
+    const cursor = { x: W * 0.5, y: H * 0.7, active: false };
     hero.addEventListener('pointermove', e => {
         const r = hero.getBoundingClientRect();
         cursor.x = (e.clientX - r.left) * DPR;
@@ -4141,21 +4290,21 @@ setTimeout(prefetchIndexMedia, 1500);
     });
     hero.addEventListener('pointerleave', () => { cursor.active = false; });
 
-    const leader = { x: W * 0.6, y: H * 0.5, r: 130 * DPR };
-    const satellites = Array.from({ length: 7 }, () => ({
+    const leader = { x: W * 0.5, y: H * 0.7, r: 170 * DPR };
+    const satellites = Array.from({ length: 9 }, () => ({
         x: Math.random() * W,
         y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 1.4,
-        vy: (Math.random() - 0.5) * 1.4,
-        r: (60 + Math.random() * 70) * DPR,
+        vx: (Math.random() - 0.5) * 1.6,
+        vy: (Math.random() - 0.5) * 1.6,
+        r: (70 + Math.random() * 85) * DPR,
         phase: Math.random() * Math.PI * 2,
     }));
 
     function drawBlob(b) {
         const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
-        g.addColorStop(0,    'rgba(255, 133, 32,1)');
-        g.addColorStop(0.55, 'rgba(255, 133, 32,0.85)');
-        g.addColorStop(1,    'rgba(255, 133, 32,0)');
+        g.addColorStop(0,    'rgba(255,140,40,1)');
+        g.addColorStop(0.55, 'rgba(255,120,28,0.85)');
+        g.addColorStop(1,    'rgba(255,100,18,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
@@ -4165,35 +4314,124 @@ setTimeout(prefetchIndexMedia, 1500);
     let t = 0;
     function tick() {
         ctx.clearRect(0, 0, W, H);
-        t += 0.012;
+        t += 0.011;
 
-        const tx = cursor.active ? cursor.x : W * 0.5 + Math.sin(t * 0.45) * W * 0.28;
-        const ty = cursor.active ? cursor.y : H * 0.5 + Math.cos(t * 0.62) * H * 0.22;
-        leader.x += (tx - leader.x) * (cursor.active ? 0.11 : 0.045);
-        leader.y += (ty - leader.y) * (cursor.active ? 0.11 : 0.045);
+        const tx = cursor.active ? cursor.x : W * 0.5 + Math.sin(t * 0.4) * W * 0.34;
+        const ty = cursor.active ? cursor.y : H * 0.65 + Math.cos(t * 0.55) * H * 0.22;
+        leader.x += (tx - leader.x) * (cursor.active ? 0.13 : 0.04);
+        leader.y += (ty - leader.y) * (cursor.active ? 0.13 : 0.04);
 
         for (const s of satellites) {
             const dx = leader.x - s.x;
             const dy = leader.y - s.y;
             const d  = Math.hypot(dx, dy) || 1;
-            const pull = 0.0009;
-            s.vx += dx * pull + (-dy / d) * 0.18 * Math.sin(t + s.phase);
-            s.vy += dy * pull + ( dx / d) * 0.18 * Math.sin(t + s.phase);
-            s.vx *= 0.94;
-            s.vy *= 0.94;
+            const pull = 0.0011;
+            s.vx += dx * pull + (-dy / d) * 0.22 * Math.sin(t + s.phase);
+            s.vy += dy * pull + ( dx / d) * 0.22 * Math.sin(t + s.phase);
+            s.vx *= 0.93;
+            s.vy *= 0.93;
             s.x  += s.vx;
             s.y  += s.vy;
-            if (s.x < s.r * 0.4)     { s.x = s.r * 0.4;     s.vx *= -0.6; }
-            if (s.x > W - s.r * 0.4) { s.x = W - s.r * 0.4; s.vx *= -0.6; }
-            if (s.y < s.r * 0.4)     { s.y = s.r * 0.4;     s.vy *= -0.6; }
-            if (s.y > H - s.r * 0.4) { s.y = H - s.r * 0.4; s.vy *= -0.6; }
+            if (s.x < s.r * 0.3)     { s.x = s.r * 0.3;     s.vx *= -0.6; }
+            if (s.x > W - s.r * 0.3) { s.x = W - s.r * 0.3; s.vx *= -0.6; }
+            if (s.y < s.r * 0.3)     { s.y = s.r * 0.3;     s.vy *= -0.6; }
+            if (s.y > H - s.r * 0.3) { s.y = H - s.r * 0.3; s.vy *= -0.6; }
             drawBlob(s);
         }
         drawBlob(leader);
+
+        if (maskCircles.length) {
+            const setC = (c, b) => {
+                c.setAttribute('cx', (b.x / DPR) - maskOffX);
+                c.setAttribute('cy', (b.y / DPR) - maskOffY);
+                c.setAttribute('r',  b.r / DPR);
+            };
+            setC(maskCircles[0], leader);
+            for (let i = 0; i < satellites.length; i++) setC(maskCircles[i + 1], satellites[i]);
+        }
+
         requestAnimationFrame(tick);
     }
     tick();
 })();
+
+// ── Site-card hover preview ──────────────────────────────────────
+(function sitePreview() {
+    const grid = document.querySelector('.sites-grid');
+    if (!grid) return;
+    if (matchMedia('(hover: none)').matches) return;
+
+    const cards = grid.querySelectorAll('.site-card');
+    const PW = 380;
+    const PH = Math.round(PW * 10 / 16);
+    const PAD = 24;
+    const SHOTS = {
+        'nicomaggioli.github.io/spectra':              'images/sites/spectra.png',
+        'alaresengineering.com':                       'images/sites/alares.png',
+        'hinode.ai':                                   'images/sites/hinode.png',
+        'ravisauce.com':                               'images/sites/ravisauce.png',
+        'nicomaggioli.github.io/FLH':                  'images/sites/flh.png',
+        'www.wagonhousemedia.com':                     'images/sites/wagonhouse.png',
+        'nicomaggioli.github.io/millbrook-manor-site': 'images/sites/millbrook.png',
+        'jordan50.com':                                'images/sites/jordan50.png',
+    };
+    const shotUrl = u => {
+        const key = u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        return SHOTS[key] || '';
+    };
+
+    // preload screenshots so first hover is instant
+    cards.forEach(c => { const src = shotUrl(c.href); if (src) { const i = new Image(); i.src = src; } });
+
+    const panel = document.createElement('div');
+    panel.className = 'site-preview';
+    panel.innerHTML =
+        '<img alt="" loading="eager">' +
+        '<div class="site-preview-label">' +
+            '<span><span class="dot"></span>LIVE</span>' +
+            '<span class="host"></span>' +
+        '</div>';
+    document.body.appendChild(panel);
+    const img = panel.querySelector('img');
+    const host = panel.querySelector('.host');
+
+    let activeUrl = '';
+    let raf = 0;
+    let pendingX = 0, pendingY = 0;
+
+    function place() {
+        raf = 0;
+        const vw = innerWidth, vh = innerHeight;
+        let x = pendingX + PAD;
+        if (x + PW > vw - 16) x = pendingX - PAD - PW;
+        x = Math.max(12, Math.min(x, vw - PW - 12));
+        let y = pendingY - PH / 2;
+        y = Math.max(12, Math.min(y, vh - PH - 12));
+        panel.style.left = x + 'px';
+        panel.style.top  = y + 'px';
+    }
+
+    cards.forEach(card => {
+        card.addEventListener('pointerenter', () => {
+            const url = card.href;
+            if (url !== activeUrl) {
+                img.src = shotUrl(url);
+                host.textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                activeUrl = url;
+            }
+            panel.classList.add('show');
+        });
+        card.addEventListener('pointermove', e => {
+            pendingX = e.clientX;
+            pendingY = e.clientY;
+            if (!raf) raf = requestAnimationFrame(place);
+        });
+        card.addEventListener('pointerleave', () => {
+            panel.classList.remove('show');
+        });
+    });
+})();
 </script>
+<script src="footer.js" defer></script>
 </body>
 </html>
