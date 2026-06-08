@@ -68,6 +68,7 @@
             --gd:       #FF8520;
             --orange-grad: linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
             --max-w:    1440px;
+            --zoom:     1;
             --black:    #111;
             --muted:    #666;
             --g1:       #f5f5f5;
@@ -273,7 +274,7 @@
         .main {
             padding-top: calc(var(--nav-h) + 4px);
             padding-bottom: 40px;
-            min-height: 100vh;
+            min-height: calc(100vh / var(--zoom));
         }
 
         .page { display: none; opacity: 0; transform: translateY(16px); }
@@ -405,7 +406,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - var(--nav-h));
+            min-height: calc((100vh - var(--nav-h)) / var(--zoom));
             padding: 0 24px;
             text-align: center;
         }
@@ -458,13 +459,10 @@
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
 
         .shop-wrap {
-            min-height: calc(100vh - var(--nav-h));
+            min-height: calc((100vh - var(--nav-h)) / var(--zoom));
             background: #0a0a0a;
             color: #e0e0e0;
             padding: 0 30px 80px;
-            max-width: var(--max-w);
-            margin-left: auto;
-            margin-right: auto;
         }
         @media (max-width: 760px) { .shop-wrap { padding: 0 18px 64px; } }
         .shop-hd {
@@ -1012,7 +1010,7 @@
         .proj-detail-nav .next { text-align: right; margin-left: auto; }
 
         /* ── SOLO PRODUCT VIEW ────────────────────────────────────── */
-        .solo-view { display: flex; flex-direction: column; min-height: calc(100vh - var(--nav-h)); padding: 0 0 60px; }
+        .solo-view { display: flex; flex-direction: column; min-height: calc((100vh - var(--nav-h)) / var(--zoom)); padding: 0 0 60px; }
 
         /* nav bar */
         .solo-nav-bar {
@@ -1614,8 +1612,7 @@
             text-transform: uppercase;
             text-align: left;
             padding: 0 30px;
-            margin: 0 auto 36px;
-            max-width: var(--max-w);
+            margin: 0 0 36px;
         }
         .brands-marquee {
             overflow: hidden;
@@ -1705,7 +1702,7 @@
         }
         @keyframes brandsScroll {
             from { transform: translateX(0); }
-            to   { transform: translateX(-50%); }
+            to   { transform: translateX(-25%); }
         }
         .brands:hover .brands-track {
             animation-play-state: paused;
@@ -1728,7 +1725,7 @@
             border-bottom: 1px solid rgba(255, 133, 32, .12);
             color: #fff;
         }
-        .pitch-inner { max-width: var(--max-w); margin: 0 auto; }
+        .pitch-inner { margin: 0; }
 
         /* top status strip */
         .pitch-hd {
@@ -1895,7 +1892,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - var(--nav-h));
+            min-height: calc((100vh - var(--nav-h)) / var(--zoom));
         }
         #contact-page .pitch-inner {
             max-width: 560px;
@@ -1951,8 +1948,8 @@
         /* ── HERO / RAVISAUCE LAB ────────────────────────────────── */
         .hero {
             position: relative;
-            height: 100vh;
-            height: 100svh;
+            height: calc(100vh / var(--zoom));
+            height: calc(100svh / var(--zoom));
             margin-top: calc(-1 * (var(--nav-h) + 4px));
             overflow: hidden;
             background: #060606;
@@ -1978,7 +1975,6 @@
             z-index: 2;
             padding: 0 30px 96px;
             max-width: 760px;
-            margin-left: max(0px, calc((100vw - var(--max-w)) / 2));
             color: #fff;
         }
         .hero-h {
@@ -2034,9 +2030,24 @@
             .hero-canvas { display: none; }
             .hero-h-mask { display: none; }
         }
-        @media (min-width: 1441px) {
-            .hero { align-items: center; }
-        }
+        body { zoom: var(--zoom); }
+        @media (min-width: 1441px) { :root { --zoom: 1.04; } }
+        @media (min-width: 1500px) { :root { --zoom: 1.10; } }
+        @media (min-width: 1600px) { :root { --zoom: 1.18; } }
+        @media (min-width: 1700px) { :root { --zoom: 1.25; } }
+        @media (min-width: 1800px) { :root { --zoom: 1.32; } }
+        @media (min-width: 1900px) { :root { --zoom: 1.40; } }
+        @media (min-width: 2000px) { :root { --zoom: 1.46; } }
+        @media (min-width: 2100px) { :root { --zoom: 1.53; } }
+        @media (min-width: 2200px) { :root { --zoom: 1.60; } }
+        @media (min-width: 2300px) { :root { --zoom: 1.67; } }
+        @media (min-width: 2400px) { :root { --zoom: 1.74; } }
+        @media (min-width: 2500px) { :root { --zoom: 1.78; } }
+        @media (min-width: 2600px) { :root { --zoom: 1.85; } }
+        @media (min-width: 2700px) { :root { --zoom: 1.92; } }
+        @media (min-width: 2800px) { :root { --zoom: 1.98; } }
+        @media (min-width: 3000px) { :root { --zoom: 2.10; } }
+        @media (min-width: 3200px) { :root { --zoom: 2.20; } }
 
         /* ── PANELS ── */
         .hud-panel {
@@ -2435,7 +2446,23 @@
                     <span class="brand brand-img brand-kohler"><img src="brands/kohler.svg" alt="Kohler"></span>
                     <span class="brand brand-img brand-ravisauce"><img src="brands/ravisauce.png" alt="Ravisauce"></span>
                     <span class="brand brand-img brand-puffco"><img src="brands/puffco.svg" alt="Puffco" onerror="this.onerror=null;this.src='brands/puffco.png';this.parentElement.dataset.fallback='png';"></span>
-                    <!-- duplicate set for seamless loop -->
+                    <!-- duplicate set 2 for seamless loop -->
+                    <span class="brand brand-img brand-staples"><img src="brands/staples.svg" alt="Staples"></span>
+                    <span class="brand brand-img brand-seagate"><img src="brands/seagate.svg" alt="Seagate"></span>
+                    <span class="brand brand-img brand-bose"><img src="brands/bose.svg" alt="Bose"></span>
+                    <span class="brand brand-img brand-alares"><img src="brands/alares.svg" alt="Alares"></span>
+                    <span class="brand brand-img brand-kohler"><img src="brands/kohler.svg" alt="Kohler"></span>
+                    <span class="brand brand-img brand-ravisauce"><img src="brands/ravisauce.png" alt="Ravisauce"></span>
+                    <span class="brand brand-img brand-puffco"><img src="brands/puffco.svg" alt="Puffco" onerror="this.onerror=null;this.src='brands/puffco.png';this.parentElement.dataset.fallback='png';"></span>
+                    <!-- duplicate set 3 -->
+                    <span class="brand brand-img brand-staples"><img src="brands/staples.svg" alt="Staples"></span>
+                    <span class="brand brand-img brand-seagate"><img src="brands/seagate.svg" alt="Seagate"></span>
+                    <span class="brand brand-img brand-bose"><img src="brands/bose.svg" alt="Bose"></span>
+                    <span class="brand brand-img brand-alares"><img src="brands/alares.svg" alt="Alares"></span>
+                    <span class="brand brand-img brand-kohler"><img src="brands/kohler.svg" alt="Kohler"></span>
+                    <span class="brand brand-img brand-ravisauce"><img src="brands/ravisauce.png" alt="Ravisauce"></span>
+                    <span class="brand brand-img brand-puffco"><img src="brands/puffco.svg" alt="Puffco" onerror="this.onerror=null;this.src='brands/puffco.png';this.parentElement.dataset.fallback='png';"></span>
+                    <!-- duplicate set 4 -->
                     <span class="brand brand-img brand-staples"><img src="brands/staples.svg" alt="Staples"></span>
                     <span class="brand brand-img brand-seagate"><img src="brands/seagate.svg" alt="Seagate"></span>
                     <span class="brand brand-img brand-bose"><img src="brands/bose.svg" alt="Bose"></span>
