@@ -85,7 +85,7 @@
                     '<h2 class="site-footer-name">Nico<br>Maggioli</h2>' +
                     '<h2 class="site-footer-name site-footer-name-mask" aria-hidden="true">Nico<br>Maggioli</h2>' +
                 '</div>' +
-                '<p class="site-footer-tag">Brand &amp; product developer. Strategy, identity, and manufacturing in one head. The idea you start with is the idea that ships.</p>' +
+                '<p class="site-footer-tag">Brand &amp; product developer. Strategy, identity, and manufacturing in one head. The idea you start with<br>is the idea that ships.</p>' +
             '</div>' +
             '<div class="site-footer-cols">' +
                 '<div class="site-footer-col">' +
