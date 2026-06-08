@@ -67,6 +67,7 @@
             --green:    #FF8520;
             --gd:       #FF8520;
             --orange-grad: linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+            --max-w:    1440px;
             --black:    #111;
             --muted:    #666;
             --g1:       #f5f5f5;
@@ -461,6 +462,9 @@
             background: #0a0a0a;
             color: #e0e0e0;
             padding: 0 30px 80px;
+            max-width: var(--max-w);
+            margin-left: auto;
+            margin-right: auto;
         }
         @media (max-width: 760px) { .shop-wrap { padding: 0 18px 64px; } }
         .shop-hd {
@@ -1610,7 +1614,8 @@
             text-transform: uppercase;
             text-align: left;
             padding: 0 30px;
-            margin: 0 0 36px;
+            margin: 0 auto 36px;
+            max-width: var(--max-w);
         }
         .brands-marquee {
             overflow: hidden;
@@ -1723,7 +1728,7 @@
             border-bottom: 1px solid rgba(255, 133, 32, .12);
             color: #fff;
         }
-        .pitch-inner { margin: 0; }
+        .pitch-inner { max-width: var(--max-w); margin: 0 auto; }
 
         /* top status strip */
         .pitch-hd {
@@ -1973,6 +1978,7 @@
             z-index: 2;
             padding: 0 30px 96px;
             max-width: 760px;
+            margin-left: max(0px, calc((100vw - var(--max-w)) / 2));
             color: #fff;
         }
         .hero-h {
@@ -2027,6 +2033,9 @@
             .hero-content { padding: 80px 18px 0; }
             .hero-canvas { display: none; }
             .hero-h-mask { display: none; }
+        }
+        @media (min-width: 1441px) {
+            .hero { align-items: center; }
         }
 
         /* ── PANELS ── */
