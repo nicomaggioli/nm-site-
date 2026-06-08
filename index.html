@@ -4437,11 +4437,13 @@ setTimeout(prefetchIndexMedia, 1500);
 
     function place() {
         raf = 0;
-        const vw = innerWidth, vh = innerHeight;
-        let x = pendingX + PAD;
-        if (x + PW > vw - 16) x = pendingX - PAD - PW;
+        const z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom')) || 1;
+        const vw = innerWidth / z, vh = innerHeight / z;
+        const cx = pendingX / z, cy = pendingY / z;
+        let x = cx + PAD;
+        if (x + PW > vw - 16) x = cx - PAD - PW;
         x = Math.max(12, Math.min(x, vw - PW - 12));
-        let y = pendingY - PH / 2;
+        let y = cy - PH / 2;
         y = Math.max(12, Math.min(y, vh - PH - 12));
         panel.style.left = x + 'px';
         panel.style.top  = y + 'px';
