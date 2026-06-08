@@ -35,7 +35,7 @@
         '.site-footer-rule{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding-top:28px;border-top:1px solid rgba(255,255,255,.08);font-family:' + MONO + ';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);flex-wrap:wrap}',
         '.site-footer-rule .right{color:rgba(255,255,255,.55)}',
 
-        '@media (max-width:780px){.site-footer-inner{padding:80px 18px 28px;gap:60px}.site-footer-cols{grid-template-columns:1fr 1fr;gap:36px 28px}.site-footer-mark{gap:14px}}',
+        '@media (max-width:780px){.site-footer-inner{padding:80px 18px 28px;gap:60px}.site-footer-cols{grid-template-columns:1fr 1fr;gap:36px 28px}.site-footer-mark{gap:14px}.site-footer-blob{display:none}.site-footer-name-mask{display:none}}',
         '@media (max-width:480px){.site-footer-cols{grid-template-columns:1fr;gap:32px}}'
     ].join('');
 
