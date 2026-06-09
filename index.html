@@ -90,6 +90,16 @@
 
         html { scroll-behavior: smooth; }
         ::selection { background: rgba(255, 133, 32,.25); color: #111; }
+        /* Prevent widows (single-word last lines) across all body text. */
+        p, li, .step-desc, .step-name, .hero-sub, .pitch-sub, .pitch-why-body p,
+        .pitch-why-note, .about-ch-sub, .about-card-label, .about-pill,
+        .shop-hd-label, .shop-hd-title, .shop-hd-count, .shop-item-desc,
+        .proj-card-desc, .service-desc, .service-name, .site-footer-tag,
+        .site-footer-eye, .site-footer-rule, .site-footer-col li,
+        .idx-feature-desc, .websites-intro, .site-name, .brands-tag,
+        .form-field-label, .cs-hint, .pitch-why-body, .pitch-h {
+            text-wrap: pretty;
+        }
         .grad-text {
             background: var(--orange-grad);
             -webkit-background-clip: text;
@@ -1759,9 +1769,12 @@
             font-size: clamp(15px, 1.2vw, 18px);
             line-height: 1.55;
             color: rgba(255,255,255,.66);
-            max-width: 660px;
             margin-bottom: 88px;
             font-weight: 400;
+            white-space: nowrap;
+        }
+        @media (max-width: 760px) {
+            .pitch-sub { white-space: normal; }
         }
 
         /* shared section divider */
@@ -2483,15 +2496,15 @@
                 </div>
 
                 <h2 class="pitch-h">Brand work and <em>manufacturing</em>.</h2>
-                <p class="pitch-sub">Positioning, identity, packaging, the product itself. All me, start to finish.</p>
+                <p class="pitch-sub">Positioning, identity, packaging, the product itself. Built with you, brief to factory.</p>
 
                 <!-- Why one designer reframe -->
                 <div class="pitch-why">
-                    <h3>Why one person beats <em>five</em>.</h3>
+                    <h3>Built <em>together</em>, idea to product.</h3>
                     <div class="pitch-why-body">
-                        <p>Most projects pass through three or four hands before they become a real thing. A strategist tells a brand designer. The brand designer sends files to a factory. Each handoff loses something. The product on the shelf isn't the idea you started with.</p>
-                        <p>I do all of it. Strategy, brand, visuals, factories. The idea you bring me is the idea that ships.</p>
-                        <p>Plenty of people can make a product. Fewer can keep the original idea intact while doing it.</p>
+                        <p>Most brand-to-product projects pass through three or four hands. A strategist briefs a designer. A designer briefs production. Production briefs the factory. Each handoff is a chance for your idea to drift. The product on the shelf isn't quite the one you started with.</p>
+                        <p>I work the whole arc with you. Strategy, brand, factories. Direct contact every step. Your idea stays your idea from brief to shelf.</p>
+                        <p>Plenty of people can make a product. Fewer can keep your original idea intact while doing it.</p>
                         <div class="pitch-why-note"><b>Based in Boston</b> · Factories in Italy, China, India, Pakistan, US</div>
                     </div>
                 </div>
@@ -2644,8 +2657,8 @@
                 <div class="about-ch-head">
                     <div class="about-ch-kicker">NM // About</div>
                     <h1 class="about-ch-title">Nico Maggioli / Brand &amp; Product Developer</h1>
-                    <p class="about-ch-sub">I define the strategy and manufacture the product. Positioning, identity, visuals, and the product itself. Factories in Italy, China, India, Pakistan, US.</p>
-                    <p class="about-ch-sub" style="margin-top: 12px;">Most projects pass through three or four hands before they become real. I'm all of those hands. The idea you start with is the idea that ships.</p>
+                    <p class="about-ch-sub">I help founders build the brand and manufacture the product. Positioning, identity, visuals, and the product itself. Factories in Italy, China, India, Pakistan, US.</p>
+                    <p class="about-ch-sub" style="margin-top: 12px;">Most brand projects pass through three or four hands before they become real. I work across all of them, with you, the whole way. The idea you start with is the idea that ships.</p>
                     <div class="about-pill-row" style="margin-top: 20px;">
                         <span class="about-pill">Brand &amp; Positioning</span>
                         <span class="about-pill">Product Development</span>
