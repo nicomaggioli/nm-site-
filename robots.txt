@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /clients-admin.html
+Disallow: /encrypt.html
+Disallow: /clients.html
+Disallow: /clients/
+Disallow: /clients.json
+
+Sitemap: https://nicomaggioli.com/sitemap.xml
