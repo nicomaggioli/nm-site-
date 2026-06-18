@@ -355,12 +355,7 @@
         }
         .lightbox.active { display: flex; }
 
-        /*
-         * CLOSE BUTTON FIX:
-         * • position:fixed so it's always top-right of the SCREEN, not the image
-         * • display:flex + align/justify center so the SVG is pixel-perfect centered
-         * • SVG instead of the × character (no font-metric surprises)
-         */
+        /* close button: fixed to the screen corner, not the image. SVG X dodges font-metric centering. */
         .lb-close {
             position: fixed;
             top: 18px;
@@ -1288,9 +1283,10 @@
             background: var(--orange-grad);
             color: #fff;
             padding: 13px 18px;
-            border-radius: 12px;
+            border-radius: 999px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 9px;
             font-size: 14px;
             font-weight: 600;
@@ -2454,7 +2450,7 @@
         </div>
 
         <!-- BRAND MARQUEE -->
-        <section class="brands" aria-label="Trusted by major companies">
+        <section class="brands" aria-label="Brands I've made things for">
             <div class="brands-tag">Made things for</div>
             <div class="brands-marquee">
                 <div class="brands-track">
@@ -2606,9 +2602,9 @@
                     <span class="shop-hd-label">NM // Websites</span>
                     <span class="shop-hd-title">Live websites</span>
                 </div>
-                <span class="shop-hd-count">08 / 08</span>
+                <span class="shop-hd-count">07 / 07</span>
             </div>
-            <div class="websites-intro">Eight live sites. Hand-coded or built in Framer.</div>
+            <div class="websites-intro">Seven live sites. Hand-coded or built in Framer.</div>
             <div class="sites-grid">
                 <a href="https://nicomaggioli.github.io/spectra/" target="_blank" rel="noopener noreferrer" class="site-card">
                     <span class="site-num">[01]</span>
@@ -2917,12 +2913,6 @@
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="handleLbClick(event)">
 
-    <!--
-        CLOSE BUTTON:
-        • position:fixed  → always top-right of viewport, never moves with image
-        • display:flex + align/justify:center → SVG is pixel-perfect centered
-        • SVG X icon → no font-metric centering issues
-    -->
     <button class="lb-close" onclick="closeLightbox()" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
