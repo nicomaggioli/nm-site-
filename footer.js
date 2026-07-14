@@ -85,7 +85,7 @@
                     '<h2 class="site-footer-name">Nico<br>Maggioli</h2>' +
                     '<h2 class="site-footer-name site-footer-name-mask" aria-hidden="true">Nico<br>Maggioli</h2>' +
                 '</div>' +
-                '<p class="site-footer-tag">Brand &amp; product developer. Strategy, identity, and manufacturing in one head. The idea you start with<br>is the idea that ships.</p>' +
+                '<p class="site-footer-tag">I build brands and products. Strategy, identity, and manufacturing in one head. The idea you start with<br>is the idea that ships.</p>' +
             '</div>' +
             '<div class="site-footer-cols">' +
                 '<div class="site-footer-col">' +
@@ -107,10 +107,10 @@
                 '<div class="site-footer-col">' +
                     '<h4>Index</h4>' +
                     '<ul>' +
-                        '<li><a href="#home">Home <span class="arr">→</span></a></li>' +
-                        '<li><a href="#about">About <span class="arr">→</span></a></li>' +
-                        '<li><a href="#index">Work <span class="arr">→</span></a></li>' +
-                        '<li><a href="#contact">Contact <span class="arr">→</span></a></li>' +
+                        '<li><a href="/">Home <span class="arr">→</span></a></li>' +
+                        '<li><a href="/about">About <span class="arr">→</span></a></li>' +
+                        '<li><a href="/index">Work <span class="arr">→</span></a></li>' +
+                        '<li><a href="/contact">Contact <span class="arr">→</span></a></li>' +
                     '</ul>' +
                 '</div>' +
             '</div>' +
