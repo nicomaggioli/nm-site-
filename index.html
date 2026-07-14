@@ -4475,13 +4475,18 @@ setTimeout(prefetchIndexMedia, 1500);
     }
 
     cards.forEach(card => {
-        card.addEventListener('pointerenter', () => {
+        card.addEventListener('pointerenter', e => {
             const url = card.href;
             if (url !== activeUrl) {
                 img.src = shotUrl(url);
                 host.textContent = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
                 activeUrl = url;
             }
+            // Position at the cursor before showing, so entering a card via scroll
+            // (no pointermove yet) doesn't flash the panel at a stale spot.
+            pendingX = e.clientX;
+            pendingY = e.clientY;
+            place();
             panel.classList.add('show');
         });
         card.addEventListener('pointermove', e => {
