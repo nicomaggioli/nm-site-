@@ -95,6 +95,11 @@
         }
 
         html { scroll-behavior: smooth; }
+        /* Lenis smooth scroll keeps the real scroll position; disable CSS smooth while it runs so anchor jumps don't double-ease. */
+        html.lenis, html.lenis body { height: auto; }
+        html.lenis.lenis-smooth { scroll-behavior: auto !important; }
+        html.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+        html.lenis.lenis-stopped { overflow: hidden; }
         ::selection { background: rgba(255, 133, 32,.25); color: #111; }
         /* Prevent widows (single-word last lines) across all body text. */
         p, li, .step-desc, .step-name, .hero-sub, .pitch-sub, .pitch-why-body p,
@@ -2945,7 +2950,7 @@
 </div>
 
 <!-- BACK TO TOP -->
-<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+<button class="back-top" id="back-top" onclick="window.lenis?lenis.scrollTo(0):window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <polyline points="18 15 12 9 6 15"/>
     </svg>
@@ -2954,6 +2959,7 @@
 <div class="toast-area" id="toast-area"></div>
 
 
+<script src="lenis.min.js"></script>
 <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.147.0/examples/js/loaders/OBJLoader.js"></script>
 <script>
@@ -3351,7 +3357,7 @@ function showPage(page) {
     document.querySelectorAll('.mob-item').forEach(m =>
         m.classList.toggle('active', m.dataset.page === page));
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo({ top: 0, behavior: 'smooth' });
     if (page !== 'project') history.pushState(null, '', '/' + (page === 'home' ? '' : page));
 
     if (page === 'home') setTimeout(updateHeaderMode, 50);
@@ -4206,7 +4212,7 @@ function openProject(idx) {
         </div>`;
     showPage('project');
     history.pushState(null, '', '/' + p.id);
-    window.scrollTo(0, 0);
+    if (window.lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo(0, 0);
 }
 
 function openProjectLightbox(projIdx, imgIdx) {
@@ -4487,6 +4493,20 @@ setTimeout(prefetchIndexMedia, 1500);
             panel.classList.remove('show');
         });
     });
+})();
+</script>
+<script>
+/* Slight smooth scroll via Lenis (self-hosted). Real scroll position is preserved, so the
+   fixed nav, WebGL hero, scroll listeners, and hover previews keep working. Falls back to
+   native scroll on reduced-motion or if Lenis fails to load.
+   Tune the feel with lerp: higher = snappier/less smooth (try 0.2), lower = floatier (try 0.06). */
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || typeof Lenis === 'undefined') return;
+  var lenis = new Lenis({ lerp: 0.12, smoothWheel: true, wheelMultiplier: 1 });
+  window.lenis = lenis;
+  function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
 })();
 </script>
 <script src="footer.js" defer></script>
