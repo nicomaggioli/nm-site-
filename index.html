@@ -1633,6 +1633,10 @@
         }
         .brands-marquee {
             overflow: hidden;
+            /* Vertical breathing room so the logos never sit flush against the clip
+               edge — otherwise the .brand:hover lift shaves the top off each logo,
+               which reads as a crop on the solid orange hover fill. */
+            padding: 10px 0;
             -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
                     mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
         }
