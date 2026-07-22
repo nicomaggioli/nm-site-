@@ -1661,9 +1661,14 @@
             align-items: center;
             cursor: pointer;
         }
-        .brand:hover {
-            color: #FF8520;
-            transform: translateY(-1px);
+        /* All marquee hover effects are gated to real pointer devices, so on touch/
+           mobile the logo strip is passive: tapping a logo won't stick it into the
+           orange hover state, lift it, or pause the scroll. */
+        @media (hover: hover) {
+            .brand:hover {
+                color: #FF8520;
+                transform: translateY(-1px);
+            }
         }
         /* SVG brand logos: per-brand heights tuned for visual balance, not pixel uniformity.
            Wordmark logos (Bose, Staples, Kohler) carry a cap-height that should match;
@@ -1691,8 +1696,10 @@
             transition: opacity .25s ease;
             pointer-events: none;
         }
-        .brand-img:hover img { opacity: 0; }
-        .brand-img:hover::after { opacity: 1; }
+        @media (hover: hover) {
+            .brand-img:hover img { opacity: 0; }
+            .brand-img:hover::after { opacity: 1; }
+        }
         /* Bose's SVG letters fill 100% of viewBox so the rendered cap-height equals the
            height value. Other wordmark SVGs have ~25% padding around cap-height, so they
            need to be taller to render at the same cap-height. Icons need to be bigger
@@ -1729,8 +1736,10 @@
             from { transform: translateX(0); }
             to   { transform: translateX(-25%); }
         }
-        .brands:hover .brands-track {
-            animation-play-state: paused;
+        @media (hover: hover) {
+            .brands:hover .brands-track {
+                animation-play-state: paused;
+            }
         }
         @media (max-width: 760px) {
             .brands { padding: 28px 0 32px; }

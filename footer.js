@@ -17,7 +17,7 @@
         '.site-footer-name-stack{position:relative;display:inline-block}',
         '.site-footer-name{font-size:clamp(56px,11vw,148px);font-weight:600;letter-spacing:-.045em;line-height:.92;margin:0 0 -.22em;padding:0 0 .22em;font-feature-settings:"ss01";background:linear-gradient(135deg,#FF8C28 0%,#FF7820 50%,#FF6418 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}',
         '.site-footer-name-mask{position:absolute;top:0;left:0;right:0;background:none;-webkit-text-fill-color:#fff;color:#fff;pointer-events:none;-webkit-mask-image:url(#footer-blob-mask);mask-image:url(#footer-blob-mask)}',
-        '.site-footer-tag{font-size:clamp(16px,1.4vw,19px);line-height:1.45;color:rgba(255,255,255,.62);max-width:520px;margin-top:8px}',
+        '.site-footer-tag{font-size:clamp(16px,1.4vw,19px);line-height:1.45;color:rgba(255,255,255,.62);max-width:520px;margin-top:8px;text-wrap:pretty}',
 
         '.site-footer-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;border-top:1px solid rgba(255,255,255,.08);padding-top:42px}',
         '.site-footer-col h4{font-family:' + MONO + ';font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin:0 0 18px;font-weight:500}',
@@ -35,7 +35,7 @@
         '.site-footer-rule{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding-top:28px;border-top:1px solid rgba(255,255,255,.08);font-family:' + MONO + ';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);flex-wrap:wrap}',
         '.site-footer-rule .right{color:rgba(255,255,255,.55)}',
 
-        '@media (max-width:780px){.site-footer-inner{padding:80px 18px 28px;gap:60px}.site-footer-cols{grid-template-columns:1fr 1fr;gap:36px 28px}.site-footer-mark{gap:14px}.site-footer-blob{display:none}.site-footer-name-mask{display:none}}',
+        '@media (max-width:780px){.site-footer-inner{padding:80px 18px 28px;gap:60px}.site-footer-cols{grid-template-columns:1fr 1fr;gap:36px 28px}.site-footer-mark{gap:14px}.site-footer-blob{display:none}.site-footer-name-mask{display:none}.site-footer-tag br{display:none}}',
         '@media (max-width:480px){.site-footer-cols{grid-template-columns:1fr;gap:32px}}'
     ].join('');
 
@@ -85,7 +85,7 @@
                     '<h2 class="site-footer-name">Nico<br>Maggioli</h2>' +
                     '<h2 class="site-footer-name site-footer-name-mask" aria-hidden="true">Nico<br>Maggioli</h2>' +
                 '</div>' +
-                '<p class="site-footer-tag">I build brands and products. Strategy, identity, and manufacturing in one head. The idea you start with<br>is the idea that ships.</p>' +
+                '<p class="site-footer-tag">I build brands and products. Strategy, identity, and manufacturing in one head. The idea you start with <br>is the idea that ships.</p>' +
             '</div>' +
             '<div class="site-footer-cols">' +
                 '<div class="site-footer-col">' +
