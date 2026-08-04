@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index — Nico Maggioli</title>
+<meta name="description" content="Complete index of work by Nico Maggioli — brand design, product design and manufacturing.">
+<link rel="icon" type="image/png" href="/icon.png">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  html{background:#0a0a0a}
+  body{background:#0a0a0a;color:#fff;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  /* header, nav and orbs all come from /css/nm-header.css, which the homepage
+     loads too — that shared file is what keeps the two bars identical. The
+     blurred, bordered, sticky bar that used to be here was the main reason
+     this page felt like a different site. */
+  
+  p{text-wrap:pretty}
+  /* Full bleed. The horizontal padding is gone entirely so the tiles run to
+   both screen edges at every width, matching the homepage grid. Vertical
+   padding stays: the top clears the fixed header, the bottom separates the
+   footer. column-gap is 0 and .tile has no margin, so the columns meet. */
+  .grid{columns:2;column-gap:0;padding:clamp(96px,9vw,132px) 0 clamp(60px,9vw,120px)}
+        /* Explicit counts. `columns:<count> <width>` treats the count as a MAX --
+           used = min(4, floor(width/260)) -- so 768px resolved to 2 columns of
+           384px, wider tiles than a 1440 desktop gets, and the page came out
+           38,623px tall. Three columns did not arrive until 780px and four not
+           until 1040px, which also meant landscape phones got LONGER on rotate. */
+        /* 3 from 600, not 768: a landscape phone (667px) sat on 2 columns of 334px
+           -- larger tiles than a 1440 desktop, and a 33,566px page. Rotating the
+           phone made the page 75% LONGER. 600 puts that band on 222px tiles. */
+        @media(min-width:600px){.grid{columns:3}}
+        /* 4 at 1024, not 1280: at three columns a 1024 viewport gives 341px tiles --
+           the largest on the site, and a 23,200px page, taller than either the
+           768 or the 1280 view. Four columns puts 1024 on 256px tiles, matching
+           768's, and the height curve stops having a bump in the middle. */
+        @media(min-width:1024px){.grid{columns:4}}
+        @media(min-width:1600px){.grid{columns:5}}
+  
+  footer{padding:0 clamp(12px, 7.8px + 1.07vw, 24px);border-top:0;color:rgba(255,255,255,.6)}
+        /* Matched to the homepage footer rather than being its own design: a
+           dashed hairline, the copyright on the left and the email on the
+           right, on ONE row at every width. The old version was a 277px block
+           with its own CTA ("Let's make your vision", which the homepage no
+           longer says) stacked above a second meta row. */
+        .foot-rule{height:.5px;width:100%;
+          background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0px,rgba(255,255,255,.5) 3px,transparent 3px,transparent 6px);
+          background-size:100% .5px;background-repeat:no-repeat;background-position:bottom}
+        /* Geist Sans and font-weight:400, matching the homepage footer exactly.
+           In the mono the email set 201px wide against 163px here, which at
+           375px no longer fit on one line with the copyright. */
+        /* Every value read off the homepage footer rather than guessed:
+           letter-spacing:normal (not .16em -- the tracking made the email 205px
+           against 163px, so at 375px it no longer shared a line with the
+           copyright), line-height:1.1 => 13.2px, and 24px 0 on the inner row,
+           which is what makes both footers exactly 61px tall. */
+        .foot-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+          padding:24px 0;font-size:12px;line-height:1.1;letter-spacing:normal;
+          text-transform:uppercase;font-family:'Geist',system-ui,sans-serif;font-weight:400}
+        .foot-copy{color:rgba(255,255,255,.62)}
+        .foot-mail{color:#fff;text-decoration:none;text-align:right}
+        .foot-mail:hover{color:rgba(255,255,255,.62)}
+        .tile{break-inside:avoid;margin:0;overflow:hidden;background:#141414;border-radius:0}
+  .tile img{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .4s}
+  .tile:hover img{transform:scale(1.035)}
+  @media(max-width:640px){}
+  @media(prefers-reduced-motion:reduce){.tile img{transition:none}}
+</style>
+<link rel="stylesheet" href="/css/nm-header.css"><link rel="stylesheet" href="/css/nm-coord.css"><link rel="stylesheet" href="/css/nm-capsule.css"><script src="/js/nm-navorb.js" defer></script><script src="/js/nm-burger.js" defer></script><script src="/js/nm-coord.js" defer></script></head>
+<body>
+<header class="nm-hdr">
+  <a class="wordmark" href="/" aria-label="Nico Maggioli — Home">
+    <svg viewBox="0 0 220 33" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <text x="1" y="26" textLength="218" lengthAdjust="spacing" fill="currentColor"
+            style="font-family:'Geist', system-ui, sans-serif;font-weight:700;font-size:30px">NICO MAGGIOLI</text>
+    </svg>
+  </a>
+  <ul class="nm-nav"><li><a href="/index/" aria-current="page">index</a></li><li><a href="/#about">about</a></li><li><a href="mailto:nicomaggioli@gmail.com">contact</a></li></ul>
+</header>
+
+<main class="grid">
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/3D_Print_Organic_Vase.webp" alt="3D Print Organic Vase" loading="eager" fetchpriority="high" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/AMEnergy_Mushroom_Packaging.webp" alt="AMEnergy Mushroom Packaging" loading="eager" fetchpriority="high" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Alares_Airfoil_Prototype.webp" alt="Alares Airfoil Prototype" loading="eager" fetchpriority="high" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Alares_Skis_Bindings.webp" alt="Alares Skis Bindings" loading="eager" fetchpriority="high" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Blender_Creature_Fur_Render.webp" alt="Blender Creature Fur Render" loading="eager" fetchpriority="high" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Cognis_Comic_Cover_Print.webp" alt="Cognis Comic Cover Print" loading="eager" fetchpriority="high" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1200/852"><img src="/media/nm-thumb/Cognis_Comic_Trilogy.webp" alt="Cognis Comic Trilogy" loading="eager" fetchpriority="high" decoding="async" width="1200" height="852"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Green_Leather_Wallet_Swatch.webp" alt="Green Leather Wallet Swatch" loading="eager" fetchpriority="high" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Maggioli_Green_Wave_Wallet.webp" alt="Maggioli Green Wave Wallet" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Maggioli_Grey_Spiderweb_Wallet.webp" alt="Maggioli Grey Spiderweb Wallet" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Maggioli_Silver_Wallet.webp" alt="Maggioli Silver Wallet" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Maggioli_Spiderweb_Brown_Wallet.webp" alt="Maggioli Spiderweb Brown Wallet" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1280/1280"><img src="/media/nm-thumb/Mirage_Cybertruck_Vehicle.webp" alt="Mirage Cybertruck Vehicle" loading="lazy" decoding="async" width="1280" height="1280"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Mirage_Nestquest_Packaging.webp" alt="Mirage Nestquest Packaging" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Mirage_VR_Character.webp" alt="Mirage VR Character" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:896/1200"><img src="/media/nm-thumb/Mushroom_Ceramic_Lamp.webp" alt="Mushroom Ceramic Lamp" loading="lazy" decoding="async" width="896" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1200/786"><img src="/media/nm-thumb/Nestquest_Bird_Cards_Foil.webp" alt="Nestquest Bird Cards Foil" loading="lazy" decoding="async" width="1200" height="786"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Nestquest_Bird_Cards_Wood.webp" alt="Nestquest Bird Cards Wood" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:789/789"><img src="/media/nm-thumb/Nestquest_Cards_Workbench.webp" alt="Nestquest Cards Workbench" loading="lazy" decoding="async" width="789" height="789"></figure>
+<figure class="tile" style="aspect-ratio:1200/757"><img src="/media/nm-thumb/Nestquest_Full_Box.webp" alt="Nestquest Full Box" loading="lazy" decoding="async" width="1200" height="757"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Nestquest_Packaging_Blender.webp" alt="Nestquest Packaging Blender" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Nestquest_Packaging_Prototypes.webp" alt="Nestquest Packaging Prototypes" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Oxa_Bus_Stop_Ad.webp" alt="Oxa Bus Stop Ad" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Oxa_Marbled_Voronoi_Sculpture.webp" alt="Oxa Marbled Voronoi Sculpture" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Oxa_Multicolor_Lamp_Shapes.webp" alt="Oxa Multicolor Lamp Shapes" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Oxa_Packaging_Diecut.webp" alt="Oxa Packaging Diecut" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Oxa_Packaging_Series_Display.webp" alt="Oxa Packaging Series Display" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1000"><img src="/media/nm-thumb/Oxa_Packaging_Units.webp" alt="Oxa Packaging Units" loading="lazy" decoding="async" width="1600" height="1000"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Oxa_Purple_Voronoi_Sculpture.webp" alt="Oxa Purple Voronoi Sculpture" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Oxa_Teal_Voronoi_Sculpture.webp" alt="Oxa Teal Voronoi Sculpture" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Oxa_Yellow_Packaging_Prototype.webp" alt="Oxa Yellow Packaging Prototype" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:1179/1179"><img src="/media/nm-thumb/Pawlish_Bottle_Blender.webp" alt="Pawlish Bottle Blender" loading="lazy" decoding="async" width="1179" height="1179"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Pawlish_Kona_Dog_Tag.webp" alt="Pawlish Kona Dog Tag" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/900"><img src="/media/nm-thumb/Pawlish_Nail_Polish_Bottles.webp" alt="Pawlish Nail Polish Bottles" loading="lazy" decoding="async" width="1600" height="900"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Pawlish_Packaging_Dieline.webp" alt="Pawlish Packaging Dieline" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Pawlish_Packaging_Paw_Prototypes.webp" alt="Pawlish Packaging Paw Prototypes" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Pawlish_Packaging_Workspace.webp" alt="Pawlish Packaging Workspace" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1600/1067"><img src="/media/nm-thumb/Peak_Airport_Ad.webp" alt="Peak Airport Ad" loading="lazy" decoding="async" width="1600" height="1067"></figure>
+<figure class="tile" style="aspect-ratio:800/468"><img src="/media/nm-thumb/Peak_Supplement_Display.webp" alt="Peak Supplement Display" loading="lazy" decoding="async" width="800" height="468"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Peak_Troche_Packaging.webp" alt="Peak Troche Packaging" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/PickMeUp_Cocoa_Product.webp" alt="PickMeUp Cocoa Product" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:700/700"><img src="/media/nm-thumb/PickMeUp_Hot_Cocoa.webp" alt="PickMeUp Hot Cocoa" loading="lazy" decoding="async" width="700" height="700"></figure>
+<figure class="tile" style="aspect-ratio:700/700"><img src="/media/nm-thumb/PickMeUp_Warmup_Banner.webp" alt="PickMeUp Warmup Banner" loading="lazy" decoding="async" width="700" height="700"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Puffco_Black_Glass_Vaporizer.webp" alt="Puffco Black Glass Vaporizer" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Puffco_Vaporizer_Flame.webp" alt="Puffco Vaporizer Flame" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Puffco_Vaporizer_Hillside.webp" alt="Puffco Vaporizer Hillside" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Puffco_Vaporizer_Lava.webp" alt="Puffco Vaporizer Lava" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_3D_Print_BambuLab.webp" alt="Ravisauce 3D Print BambuLab" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Acrylic_Stencil.webp" alt="Ravisauce Acrylic Stencil" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:896/1200"><img src="/media/nm-thumb/Ravisauce_Algae_Bioreactor_Sneaker.webp" alt="Ravisauce Algae Bioreactor Sneaker" loading="lazy" decoding="async" width="896" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Astronaut_Moon.webp" alt="Ravisauce Astronaut Moon" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1280/832"><img src="/media/nm-thumb/Ravisauce_Athletic_Sneaker_Foot.webp" alt="Ravisauce Athletic Sneaker Foot" loading="lazy" decoding="async" width="1280" height="832"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Ravisauce_Balance_Style_Ad.webp" alt="Ravisauce Balance Style Ad" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Baymax_Mascot_Figurines.webp" alt="Ravisauce Baymax Mascot Figurines" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Beige_Flare_Jeans.webp" alt="Ravisauce Beige Flare Jeans" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Black_Mascot_Pendant.webp" alt="Ravisauce Black Mascot Pendant" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Black_Puffer_Jacket.webp" alt="Ravisauce Black Puffer Jacket" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Ravisauce_Black_Sneaker_Rock.webp" alt="Ravisauce Black Sneaker Rock" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Black_Zip_Hoodie.webp" alt="Ravisauce Black Zip Hoodie" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Blue_Skate_Sneakers.webp" alt="Ravisauce Blue Skate Sneakers" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Brown_Sweatpants.webp" alt="Ravisauce Brown Sweatpants" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Camo_Sleeve_Tshirt.webp" alt="Ravisauce Camo Sleeve Tshirt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1080/984"><img src="/media/nm-thumb/Ravisauce_Chess_Tshirt.webp" alt="Ravisauce Chess Tshirt" loading="lazy" decoding="async" width="1080" height="984"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_ColorBlock_Sneaker.webp" alt="Ravisauce ColorBlock Sneaker" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1200"><img src="/media/nm-thumb/Ravisauce_Concrete_Anvil_Sculpture.webp" alt="Ravisauce Concrete Anvil Sculpture" loading="lazy" decoding="async" width="1600" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Concrete_Ramp_Wedge.webp" alt="Ravisauce Concrete Ramp Wedge" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Cream_Suede_Sneaker.webp" alt="Ravisauce Cream Suede Sneaker" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1391"><img src="/media/nm-thumb/Ravisauce_Cream_Wave_Wallet.webp" alt="Ravisauce Cream Wave Wallet" loading="lazy" decoding="async" width="1600" height="1391"></figure>
+<figure class="tile" style="aspect-ratio:1600/1391"><img src="/media/nm-thumb/Ravisauce_Cream_Wave_Wallet_Flat.webp" alt="Ravisauce Cream Wave Wallet Flat" loading="lazy" decoding="async" width="1600" height="1391"></figure>
+<figure class="tile" style="aspect-ratio:1600/1391"><img src="/media/nm-thumb/Ravisauce_Cream_Wave_Wallet_Open.webp" alt="Ravisauce Cream Wave Wallet Open" loading="lazy" decoding="async" width="1600" height="1391"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Croc_Wallet_Interior.webp" alt="Ravisauce Croc Wallet Interior" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Deck_Design_Workbench.webp" alt="Ravisauce Deck Design Workbench" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Deck_Print_Macro.webp" alt="Ravisauce Deck Print Macro" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Farfalle_Prototype.webp" alt="Ravisauce Farfalle Prototype" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1066"><img src="/media/nm-thumb/Ravisauce_Fingerboard_Cutmat.webp" alt="Ravisauce Fingerboard Cutmat" loading="lazy" decoding="async" width="1600" height="1066"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Fingerboards_Concrete.webp" alt="Ravisauce Fingerboards Concrete" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Flag_Label_Workshop.webp" alt="Ravisauce Flag Label Workshop" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:480/854"><img src="/media/nm-thumb/Ravisauce_Flame_Figure_BW.webp" alt="Ravisauce Flame Figure BW" loading="lazy" decoding="async" width="480" height="854"></figure>
+<figure class="tile" style="aspect-ratio:1453/1600"><img src="/media/nm-thumb/Ravisauce_Glowing_Mascot_Snake.webp" alt="Ravisauce Glowing Mascot Snake" loading="lazy" decoding="async" width="1453" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Graffiti_Deck.webp" alt="Ravisauce Graffiti Deck" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Graffiti_Fingerboards.webp" alt="Ravisauce Graffiti Fingerboards" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Green_Dial_Watch.webp" alt="Ravisauce Green Dial Watch" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1194"><img src="/media/nm-thumb/Ravisauce_Green_Dial_Watch_Side.webp" alt="Ravisauce Green Dial Watch Side" loading="lazy" decoding="async" width="1600" height="1194"></figure>
+<figure class="tile" style="aspect-ratio:1600/1572"><img src="/media/nm-thumb/Ravisauce_Green_Sleeve_Tshirt.webp" alt="Ravisauce Green Sleeve Tshirt" loading="lazy" decoding="async" width="1600" height="1572"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Green_Wallet_Held.webp" alt="Ravisauce Green Wallet Held" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1561/1600"><img src="/media/nm-thumb/Ravisauce_Green_Wallet_Ravi_Open.webp" alt="Ravisauce Green Wallet Ravi Open" loading="lazy" decoding="async" width="1561" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1024/1024"><img src="/media/nm-thumb/Ravisauce_Green_Wallet_Sand.webp" alt="Ravisauce Green Wallet Sand" loading="lazy" decoding="async" width="1024" height="1024"></figure>
+<figure class="tile" style="aspect-ratio:1024/1024"><img src="/media/nm-thumb/Ravisauce_Green_Wallet_Tin.webp" alt="Ravisauce Green Wallet Tin" loading="lazy" decoding="async" width="1024" height="1024"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Green_Wallet_Wood.webp" alt="Ravisauce Green Wallet Wood" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Ravisauce_Green_Wireframe_Car.webp" alt="Ravisauce Green Wireframe Car" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Grey_Skate_Sneakers.webp" alt="Ravisauce Grey Skate Sneakers" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1208/898"><img src="/media/nm-thumb/Ravisauce_Gum_Sole_Sneaker.webp" alt="Ravisauce Gum Sole Sneaker" loading="lazy" decoding="async" width="1208" height="898"></figure>
+<figure class="tile" style="aspect-ratio:1194/1600"><img src="/media/nm-thumb/Ravisauce_Halftone_Textile.webp" alt="Ravisauce Halftone Textile" loading="lazy" decoding="async" width="1194" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Logo_Grid_Portfolio.webp" alt="Ravisauce Logo Grid Portfolio" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Magenta_Deck_Studio.webp" alt="Ravisauce Magenta Deck Studio" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1269/1600"><img src="/media/nm-thumb/Ravisauce_Mascot_Bust_Sunglasses.webp" alt="Ravisauce Mascot Bust Sunglasses" loading="lazy" decoding="async" width="1269" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Mech_Mascot_Green_Eye.webp" alt="Ravisauce Mech Mascot Green Eye" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Metal_Graphic_Hoodie.webp" alt="Ravisauce Metal Graphic Hoodie" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:768/1376"><img src="/media/nm-thumb/Ravisauce_Mossy_Rocks_Sneaker.webp" alt="Ravisauce Mossy Rocks Sneaker" loading="lazy" decoding="async" width="768" height="1376"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Navy_Zip_Sweatshirt.webp" alt="Ravisauce Navy Zip Sweatshirt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:974/1600"><img src="/media/nm-thumb/Ravisauce_Olive_Button_Down.webp" alt="Ravisauce Olive Button Down" loading="lazy" decoding="async" width="974" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1586/1600"><img src="/media/nm-thumb/Ravisauce_Olive_Skate_Sneaker.webp" alt="Ravisauce Olive Skate Sneaker" loading="lazy" decoding="async" width="1586" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Painting_Canvases_Studio.webp" alt="Ravisauce Painting Canvases Studio" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1194/1600"><img src="/media/nm-thumb/Ravisauce_Plaid_Cropped_Hoodie.webp" alt="Ravisauce Plaid Cropped Hoodie" loading="lazy" decoding="async" width="1194" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Polkadot_Bags.webp" alt="Ravisauce Polkadot Bags" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:800/800"><img src="/media/nm-thumb/Ravisauce_Prints_Drying_Rack.webp" alt="Ravisauce Prints Drying Rack" loading="lazy" decoding="async" width="800" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Ravi_Hoodie.webp" alt="Ravisauce Ravi Hoodie" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1201/1600"><img src="/media/nm-thumb/Ravisauce_Ravi_Waffle_Knit.webp" alt="Ravisauce Ravi Waffle Knit" loading="lazy" decoding="async" width="1201" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1200"><img src="/media/nm-thumb/Ravisauce_Red_Foam_Cutouts.webp" alt="Ravisauce Red Foam Cutouts" loading="lazy" decoding="async" width="1600" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Rockslides_Blender.webp" alt="Ravisauce Rockslides Blender" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/958"><img src="/media/nm-thumb/Ravisauce_Runner_Shadow_BW.webp" alt="Ravisauce Runner Shadow BW" loading="lazy" decoding="async" width="1200" height="958"></figure>
+<figure class="tile" style="aspect-ratio:1600/1545"><img src="/media/nm-thumb/Ravisauce_Sage_Varsity_Hoodie.webp" alt="Ravisauce Sage Varsity Hoodie" loading="lazy" decoding="async" width="1600" height="1545"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Sherpa_Patch_Hoodie.webp" alt="Ravisauce Sherpa Patch Hoodie" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Shoe_Mold_Prototype.webp" alt="Ravisauce Shoe Mold Prototype" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Silkscreen_Frame.webp" alt="Ravisauce Silkscreen Frame" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1317/1600"><img src="/media/nm-thumb/Ravisauce_Silver_Keychain_Tags.webp" alt="Ravisauce Silver Keychain Tags" loading="lazy" decoding="async" width="1317" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Silver_Mascot_Statue.webp" alt="Ravisauce Silver Mascot Statue" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Silver_Pendant_Necklace.webp" alt="Ravisauce Silver Pendant Necklace" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Skull_Sunglasses_Tshirt.webp" alt="Ravisauce Skull Sunglasses Tshirt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Skull_Tshirt_Lifestyle.webp" alt="Ravisauce Skull Tshirt Lifestyle" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Slide_Sandals.webp" alt="Ravisauce Slide Sandals" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:893/1600"><img src="/media/nm-thumb/Ravisauce_Slime_Sneaker.webp" alt="Ravisauce Slime Sneaker" loading="lazy" decoding="async" width="893" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1194/1600"><img src="/media/nm-thumb/Ravisauce_Slime_Step_Sneaker.webp" alt="Ravisauce Slime Step Sneaker" loading="lazy" decoding="async" width="1194" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Snake_Leggings.webp" alt="Ravisauce Snake Leggings" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:843/1264"><img src="/media/nm-thumb/Ravisauce_Snake_Outfit_Front.webp" alt="Ravisauce Snake Outfit Front" loading="lazy" decoding="async" width="843" height="1264"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Snake_Outfit_Grass.webp" alt="Ravisauce Snake Outfit Grass" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:843/1264"><img src="/media/nm-thumb/Ravisauce_Snake_Outfit_Rear.webp" alt="Ravisauce Snake Outfit Rear" loading="lazy" decoding="async" width="843" height="1264"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Snakeskin_Lowtop.webp" alt="Ravisauce Snakeskin Lowtop" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Snakeskin_Sneaker.webp" alt="Ravisauce Snakeskin Sneaker" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Sneaker_Collection.webp" alt="Ravisauce Sneaker Collection" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Sneaker_Prototype_Grass.webp" alt="Ravisauce Sneaker Prototype Grass" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Steel_Watch_Angle.webp" alt="Ravisauce Steel Watch Angle" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Steel_Watch_Red.webp" alt="Ravisauce Steel Watch Red" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:600/800"><img src="/media/nm-thumb/Ravisauce_Stencil_Comic_Collage.webp" alt="Ravisauce Stencil Comic Collage" loading="lazy" decoding="async" width="600" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Stone_Face_Render.webp" alt="Ravisauce Stone Face Render" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Ravisauce_Stone_Mascot_Render.webp" alt="Ravisauce Stone Mascot Render" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1593/1600"><img src="/media/nm-thumb/Ravisauce_Teal_Skate_Shoes.webp" alt="Ravisauce Teal Skate Shoes" loading="lazy" decoding="async" width="1593" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Veneer_Deck_Prototypes.webp" alt="Ravisauce Veneer Deck Prototypes" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Veneer_Marquetry.webp" alt="Ravisauce Veneer Marquetry" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1458"><img src="/media/nm-thumb/Ravisauce_Warped_Graphic_Tshirt.webp" alt="Ravisauce Warped Graphic Tshirt" loading="lazy" decoding="async" width="1600" height="1458"></figure>
+<figure class="tile" style="aspect-ratio:1280/1600"><img src="/media/nm-thumb/Ravisauce_Watch_Charcoal_Stone.webp" alt="Ravisauce Watch Charcoal Stone" loading="lazy" decoding="async" width="1280" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Wave_Eyeglass_Frame.webp" alt="Ravisauce Wave Eyeglass Frame" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Wave_Sunglasses_Hand.webp" alt="Ravisauce Wave Sunglasses Hand" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Wave_Watch_Prototype.webp" alt="Ravisauce Wave Watch Prototype" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1527"><img src="/media/nm-thumb/Ravisauce_White_Bubble_Sneaker.webp" alt="Ravisauce White Bubble Sneaker" loading="lazy" decoding="async" width="1600" height="1527"></figure>
+<figure class="tile" style="aspect-ratio:1600/1290"><img src="/media/nm-thumb/Ravisauce_White_Running_Sneaker.webp" alt="Ravisauce White Running Sneaker" loading="lazy" decoding="async" width="1600" height="1290"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_White_Sneaker_TopDown.webp" alt="Ravisauce White Sneaker TopDown" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_White_Sunglasses.webp" alt="Ravisauce White Sunglasses" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_White_Tennis_Sneaker.webp" alt="Ravisauce White Tennis Sneaker" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/882"><img src="/media/nm-thumb/Ravisauce_White_Translucent_Sneaker.webp" alt="Ravisauce White Translucent Sneaker" loading="lazy" decoding="async" width="1600" height="882"></figure>
+<figure class="tile" style="aspect-ratio:1600/1458"><img src="/media/nm-thumb/Ravisauce_White_Wave_Sneaker.webp" alt="Ravisauce White Wave Sneaker" loading="lazy" decoding="async" width="1600" height="1458"></figure>
+<figure class="tile" style="aspect-ratio:955/1600"><img src="/media/nm-thumb/Ravisauce_Wood_Figurine_Airpods.webp" alt="Ravisauce Wood Figurine Airpods" loading="lazy" decoding="async" width="955" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Wood_Figurine_Grass.webp" alt="Ravisauce Wood Figurine Grass" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Wood_Statue_Figurines.webp" alt="Ravisauce Wood Statue Figurines" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1462/1600"><img src="/media/nm-thumb/Ravisauce_Wordmark_Block.webp" alt="Ravisauce Wordmark Block" loading="lazy" decoding="async" width="1462" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:768/1024"><img src="/media/nm-thumb/Ravisauce_Yellow_Card_Wallet.webp" alt="Ravisauce Yellow Card Wallet" loading="lazy" decoding="async" width="768" height="1024"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/Ravisauce_Yellow_Figurines_Workbench.webp" alt="Ravisauce Yellow Figurines Workbench" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Ravisauce_Yellow_Wall_Clock.webp" alt="Ravisauce Yellow Wall Clock" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Sessio_Great_Wall_Billboard.webp" alt="Sessio Great Wall Billboard" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1599/1600"><img src="/media/nm-thumb/Sessio_Instagram_Colosseum.webp" alt="Sessio Instagram Colosseum" loading="lazy" decoding="async" width="1599" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1067"><img src="/media/nm-thumb/Sessio_Pyramids_Banner.webp" alt="Sessio Pyramids Banner" loading="lazy" decoding="async" width="1600" height="1067"></figure>
+<figure class="tile" style="aspect-ratio:1200/1200"><img src="/media/nm-thumb/Somavedic_Disc_Pond.webp" alt="Somavedic Disc Pond" loading="lazy" decoding="async" width="1200" height="1200"></figure>
+<figure class="tile" style="aspect-ratio:1600/1067"><img src="/media/nm-thumb/Voiage_Website_Laptop.webp" alt="Voiage Website Laptop" loading="lazy" decoding="async" width="1600" height="1067"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Voronoi_Pencil_Holder.webp" alt="Voronoi Pencil Holder" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Zipped_Magazine_Cover_Mockup.webp" alt="Zipped Magazine Cover Mockup" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Zipped_Magazine_Spread_Credits.webp" alt="Zipped Magazine Spread Credits" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Zipped_Magazine_Spread_Skatepark.webp" alt="Zipped Magazine Spread Skatepark" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/Zipped_Pink_Glass_Letters.webp" alt="Zipped Pink Glass Letters" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Zipped_Screen_Printing.webp" alt="Zipped Screen Printing" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:600/800"><img src="/media/nm-thumb/Zipped_Skate_Poster_Workshop.webp" alt="Zipped Skate Poster Workshop" loading="lazy" decoding="async" width="600" height="800"></figure>
+<figure class="tile" style="aspect-ratio:1593/1600"><img src="/media/nm-thumb/green-teal-suede-skate-shoes-pair-product-photo.webp" alt="green teal suede skate shoes pair product photo" loading="lazy" decoding="async" width="1593" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:900/1600"><img src="/media/nm-thumb/ravisauce-all-new-ravi-white-sneaker-tongue-detail-top-down-alt.webp" alt="ravisauce all new ravi white sneaker tongue detail top down alt" loading="lazy" decoding="async" width="900" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1572"><img src="/media/nm-thumb/ravisauce-black-graphic-tshirt-with-green-snake-pattern-sleeves-on-pavement-alt.webp" alt="ravisauce black graphic tshirt with green snake pattern sleeves on pavement alt" loading="lazy" decoding="async" width="1600" height="1572"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/ravisauce-dark-grey-suede-skate-sneakers-pair-top-down-on-concrete-alt.webp" alt="ravisauce dark grey suede skate sneakers pair top down on concrete alt" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/ravisauce-mascot-white-sherpa-patch-on-dark-hoodie-textile-close-up-alt.webp" alt="ravisauce mascot white sherpa patch on dark hoodie textile close up alt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
+<figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/ravisauce-snakeskin-pattern-leather-sneaker-product-photography-side-view.webp" alt="ravisauce snakeskin pattern leather sneaker product photography side view" loading="lazy" decoding="async" width="1600" height="1600"></figure>
+</main>
+<footer><div class="foot-rule" aria-hidden="true"></div><div class="foot-bar"><span class="foot-copy">&copy; Nico Maggioli 2026</span><a class="foot-mail" href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></div></footer>
+<!-- the old magnetic blob lived here; /js/nm-navorb.js drives this nav now -->
+</body>
+</html>
