@@ -1,0 +1,95 @@
+/* ── the capsule system ───────────────────────────────────────────────────
+   The outline around the wordmark, rolled out as a language. One recipe, used
+   everywhere something is a label, a count, a control or a destination — so the
+   page reads as a set of badges on a dark ground rather than as loose text.
+
+   Kept deliberately small: the wordmark, the labels that name a section, and
+   the three controls. Earlier passes put outlines on the service numerals, the
+   live-site arrows and hosts, the footer labels and the mobile menu -- at that
+   point everything on the page was a badge and the device stopped carrying any
+   meaning. Not applied to the nav either; those ovals were pulled.
+
+   The tokens come from the View all button, which was already built this way —
+   1px at 28% white, fully rounded, filling solid on hover. Everything else is
+   brought into line with it rather than inventing a second style. */
+:root{
+  --nm-cap-line:1px solid rgba(255,255,255,.28);
+  --nm-cap-radius:999px;
+  --nm-cap-pad:7px 15px;
+  --nm-cap-ease:background-color .24s ease, color .24s ease, border-color .24s ease;
+}
+
+/* ── section labels ──────────────────────────────────────────────────────
+   .nm-tag carried the page gutter as horizontal padding, so it could not also
+   carry capsule padding. The gutter moves to a margin and the padding becomes
+   the badge. */
+.nm-tag{
+  display:inline-block;
+  margin-inline-start:clamp(1.2rem, .78rem + 1.07vw, 2.4rem) !important;
+  padding:var(--nm-cap-pad) !important;
+  border:var(--nm-cap-line);
+  border-radius:var(--nm-cap-radius);
+  transition:var(--nm-cap-ease);
+}
+
+/* ── the coordinates ─────────────────────────────────────────────────────
+   A control, so it gets the same treatment as the other controls. */
+#nm-coord{
+  padding:var(--nm-cap-pad);
+  border:var(--nm-cap-line);
+  border-radius:var(--nm-cap-radius);
+  height:auto;
+  transition:var(--nm-cap-ease);
+}
+@media (hover:hover){
+  #nm-coord:hover{ background:#fff; color:#0a0a0a; border-color:#fff; }
+  #nm-coord:hover .nm-c-num, #nm-coord:hover .nm-c-name{ color:#0a0a0a; }
+}
+/* the panel's link is a destination */
+.nm-c-p-go{
+  padding:var(--nm-cap-pad);
+  border:var(--nm-cap-line) !important;
+  border-bottom:var(--nm-cap-line) !important;
+  border-radius:var(--nm-cap-radius);
+  transition:var(--nm-cap-ease);
+}
+.nm-c-p-go:hover{ background:#fff; color:#0a0a0a !important; border-color:#fff !important; }
+
+/* ── View all: already this shape, normalised to the shared tokens ───────*/
+#nm-made .idx-view-all{
+  border:var(--nm-cap-line) !important;
+  border-radius:var(--nm-cap-radius) !important;
+  transition:var(--nm-cap-ease) !important;
+}
+
+
+
+
+@media (max-width:767.98px){
+  :root{ --nm-cap-pad:6px 12px; }
+}
+
+/* ── focus ─────────────────────────────────────────────────────────────────
+   There were 33 hover rules on this site and not one :focus-visible. Every
+   custom control had a designed hover state and nothing but the UA default on
+   focus. No border-radius:inherit here -- outline already follows the
+   element's radius, and inheriting corrupts the capsules. */
+:root{ --nm-focus:2px solid #fff; --nm-focus-off:3px; }
+a:focus-visible,
+button:focus-visible{
+  outline:var(--nm-focus); outline-offset:var(--nm-focus-off);
+}
+
+/* The two hover states that carry information rather than decoration, mirrored
+   onto focus. Deliberately OUTSIDE any @media (hover:hover) wrapper -- keyboard
+   users are not hover users. */
+header[class*="z-50"] > a[href="/"]:focus-visible,
+.nm-hdr .wordmark:focus-visible{ background:#fff; color:#0a0a0a; }
+
+#nm-sites .nm-site:focus-visible{ background:rgba(255,255,255,.045); }
+#nm-sites .nm-site:focus-visible .nm-site-name{ transform:translateX(14px); }
+#nm-sites .nm-site:focus-visible .nm-site-host{ color:rgba(255,255,255,.8); }
+#nm-sites .nm-site:focus-visible .nm-site-arrow{ color:#fff; transform:translate(4px,-4px); }
+
+/* the archive marks its own nav item but nothing styled it */
+[aria-current="page"]{ color:#fff; }

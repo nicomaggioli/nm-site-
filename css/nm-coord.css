@@ -1,0 +1,100 @@
+/* ── header coordinates widget ────────────────────────────────────────────
+   Shared by the homepage and /index/. A place that changes once a day —
+   wonders, ruins, things nobody has found, and a few that are off this
+   planet. Click drops a panel with a fact about it. */
+#nm-coord{
+  display:none; align-items:center; margin-left:auto;
+  background:none; border:0; padding:0; -webkit-appearance:none; appearance:none;
+  font-family:'Geist',system-ui,sans-serif; font-size:12px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.6);
+  white-space:nowrap; opacity:0; transition:opacity .5s ease;
+  text-decoration:none; cursor:pointer;
+}
+@media (min-width:768px){ #nm-coord{ display:flex; } }
+#nm-coord.is-in{ opacity:1; }
+
+/* ── the fact panel ──────────────────────────────────────────────────────
+   A sibling of the widget rather than a child: the widget is uppercase and
+   letterspaced, and prose has to get out from under that. Anchored to the
+   header's right edge so it can never push the layout around, and it opens
+   downward from the top-right corner it came from. */
+.nm-c-panel{
+  /* fixed, and on <body> — see nm-coord.js. `top` is written by JS at open
+     time because a fixed element has no header box to measure against, and the
+     header's height changes with the wordmark capsule across breakpoints. */
+  position:fixed; top:111px;
+  right:clamp(1.2rem, .78rem + 1.07vw, 2.4rem);
+  width:min(360px, calc(100vw - 2.4rem));
+  background:#101010; border:1px solid rgba(255,255,255,.14);
+  padding:20px 22px 18px; z-index:120;
+  font-family:'Geist',system-ui,sans-serif;
+  text-transform:none; letter-spacing:normal; text-align:left;
+  opacity:0; visibility:hidden;
+  transform:translateY(-8px) scale(.985); transform-origin:top right;
+  transition:opacity .22s ease, transform .3s cubic-bezier(.22,1,.36,1),
+             visibility 0s linear .3s;
+  box-shadow:0 24px 64px rgba(0,0,0,.55);
+  pointer-events:none;
+}
+.nm-c-panel.is-open{
+  opacity:1; visibility:visible; transform:translateY(0) scale(1);
+  transition:opacity .22s ease, transform .3s cubic-bezier(.22,1,.36,1),
+             visibility 0s linear 0s;
+  pointer-events:auto;
+}
+.nm-c-p-name{ font-size:19px; font-weight:700; letter-spacing:-.015em;
+  line-height:1.2; color:#fff; margin:0 0 6px; }
+.nm-c-p-co{ font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:rgba(255,255,255,.45); font-variant-numeric:tabular-nums; margin:0 0 14px; }
+.nm-c-p-fact{ font-size:14px; line-height:1.62; color:rgba(255,255,255,.74);
+  margin:0 0 16px; }
+.nm-c-p-go{ display:inline-block; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(255,255,255,.55); text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:2px;
+  transition:color .2s ease, border-color .2s ease; }
+.nm-c-p-go:hover{ color:#fff; border-color:#fff; }
+
+/* on a phone the widget is hidden, so the panel must be too */
+@media (max-width:767.98px){ .nm-c-panel{ display:none; } }
+
+/* Label type. Lives here rather than in the homepage's sheet so the archive's
+   copy of the widget is set the same way. */
+#nm-coord, .nm-c-p-co{
+  font-family:'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight:500;
+}
+/* same reason as the nav: the two pages inherit different line-heights, so
+   the widget measured 18px tall on one and 16px on the other and the flex
+   centring put it on a different row. */
+#nm-coord{ line-height:16px; height:16px; }
+
+#nm-coord:hover{ color:rgba(255,255,255,.85); }
+
+/* Both faces occupy the SAME grid cell, so the box is as wide as the wider of
+   the two and the header never reflows when they swap. */
+#nm-coord .nm-c-face{ display:grid; }
+#nm-coord .nm-c-face > span{
+  grid-area:1 / 1; transition:opacity .26s ease, transform .34s cubic-bezier(.22,.9,.28,1); }
+#nm-coord .nm-c-num{ color:#fff; font-variant-numeric:tabular-nums; }
+#nm-coord .nm-c-name{ opacity:0; transform:translateY(4px); color:#fff; }
+@media (hover:hover){
+  #nm-coord:hover .nm-c-num{ opacity:0; transform:translateY(-4px); }
+  #nm-coord:hover .nm-c-name{ opacity:1; transform:translateY(0); }
+}
+
+/* ── the mid-width collision ──────────────────────────────────────────────
+   .nm-c-face stacks both faces in one grid cell so the pill never reflows on
+   hover -- but that also means it is always as wide as the LONGER face, the
+   place name, even at opacity:0. The longest of the 44 entries ("The tiger
+   stripes of Enceladus, Saturn's moon") is 45 chars; in Geist Mono at 12px
+   with .16em tracking that is ~410px of text plus 32px of capsule = 442px.
+   The nav is absolutely centred, so between 768px and ~1160px the pill ran
+   underneath it -- at 768px, 197px of overlap, with the nav's li{z-index:1}
+   painting CONTACT on top of the coordinate digits.
+
+   display:none, not visibility:hidden -- it has to leave the grid cell to stop
+   contributing width. The full name is still one tap away in the panel. */
+@media (min-width:768px) and (max-width:1279.98px){
+  #nm-coord .nm-c-name{ display:none; }
+  #nm-coord:hover .nm-c-num{ opacity:1; transform:none; }
+}
