@@ -1,0 +1,68 @@
+/* ── archive lightbox ─────────────────────────────────────────────────────
+   Tiles are 512px thumbnails; the full-size original for each lives at the
+   same filename under /media/nm-work/. Clicking a tile opens it there. */
+.nm-lb{
+  position:fixed; inset:0; z-index:200;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,10,.94);
+  opacity:0; visibility:hidden;
+  transition:opacity .22s ease, visibility 0s linear .22s;
+  padding:clamp(16px, 4vw, 64px);
+}
+.nm-lb.is-open{
+  opacity:1; visibility:visible;
+  transition:opacity .22s ease, visibility 0s linear 0s;
+}
+.nm-lb figure{ margin:0; max-width:100%; max-height:100%;
+  display:flex; flex-direction:column; align-items:center; gap:14px; }
+.nm-lb img{
+  max-width:100%; max-height:82vh; width:auto; height:auto;
+  display:block; object-fit:contain;
+  opacity:0; transition:opacity .2s ease;
+}
+.nm-lb img.is-ready{ opacity:1; }
+.nm-lb figcaption{
+  font-family:'Geist Mono', ui-monospace, monospace;
+  font-size:max(12px, 0.625vw); letter-spacing:.14em; text-transform:uppercase;
+  color:rgba(255,255,255,.55); text-align:center;
+}
+
+/* controls */
+.nm-lb button{
+  position:absolute; background:none; border:0; padding:0; cursor:pointer;
+  color:#fff; font-family:'Geist Mono', ui-monospace, monospace;
+  display:flex; align-items:center; justify-content:center;
+  width:56px; height:56px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.28);
+  transition:background-color .2s ease, color .2s ease, border-color .2s ease;
+  -webkit-appearance:none; appearance:none;
+}
+@media (hover:hover){
+  .nm-lb button:hover{
+    background:var(--nm-orange, #FF7820); color:#0a0a0a; border-color:transparent;
+  }
+}
+.nm-lb button:focus-visible{ outline:2px solid #fff; outline-offset:3px; }
+.nm-lb-close{ top:clamp(12px,2vw,28px); right:clamp(12px,2vw,28px); font-size:20px; }
+.nm-lb-prev { left:clamp(12px,2vw,28px);  top:50%; margin-top:-28px; font-size:22px; }
+.nm-lb-next { right:clamp(12px,2vw,28px); top:50%; margin-top:-28px; font-size:22px; }
+
+/* the tiles become obviously interactive */
+.grid .tile{ cursor:zoom-in; position:relative; }
+.grid .tile:focus-visible{ outline:2px solid #fff; outline-offset:-4px; }
+@media (hover:hover){
+  .grid .tile img{ transition:opacity .2s ease; }
+  .grid .tile:hover img{ opacity:.82; }
+}
+
+html.nm-lb-open, html.nm-lb-open body{ overflow:hidden !important; }
+
+@media (max-width:767.98px){
+  .nm-lb{ padding:12px; }
+  .nm-lb button{ width:48px; height:48px; }
+  .nm-lb-prev{ left:8px; }  .nm-lb-next{ right:8px; }
+  .nm-lb img{ max-height:74vh; }
+}
+@media (prefers-reduced-motion:reduce){
+  .nm-lb, .nm-lb img{ transition:none; }
+}
