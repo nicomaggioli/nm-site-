@@ -1,3 +1,15 @@
+/* ── brand ────────────────────────────────────────────────────────────────
+   Recovered from the previous site (commit d7bf9a8). Defined HERE, not only in
+   the homepage's inline <style>, because the archive loads just the shared
+   stylesheets. When that var was missing the browser dropped ONLY the
+   background declaration and still applied the rule's color:#0a0a0a -- black
+   text, no fill, the button appeared to vanish. Every use also carries a
+   literal fallback so that cannot recur. */
+:root{
+  --nm-orange:#FF7820;
+  --nm-orange-grad:linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+}
+
 /* ── shared header + nav ──────────────────────────────────────────────────
    Loaded by BOTH the homepage and /index/. The two pages have different DOM
    (the homepage header is Tailwind-classed and React-rendered, the archive's
@@ -59,7 +71,7 @@ header[class*="z-50"] > a[href="/"] svg,
 /* fills on hover, the way a badge does */
 @media (hover:hover){
   header[class*="z-50"] > a[href="/"]:hover,
-  .nm-hdr .wordmark:hover{ background:var(--nm-orange-grad); color:#0a0a0a; border-color:transparent; }
+  .nm-hdr .wordmark:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
 }
 
 /* ── the nav rail ────────────────────────────────────────────────────────

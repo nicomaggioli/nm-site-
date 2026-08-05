@@ -129,7 +129,7 @@ div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
   background:transparent; color:#fff; border:1px solid rgba(255,255,255,.28); border-radius:999px;
   text-decoration:none; transition:background .2s ease,color .2s ease,border-color .2s ease;
 }
-#nm-made .idx-view-all:hover{ background:var(--nm-orange-grad); color:#0a0a0a; border-color:transparent; }
+#nm-made .idx-view-all:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
 
 @media (max-width:767.98px){
   #nm-made{ padding:0 0 64px; }
@@ -726,8 +726,8 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
 @media (hover:hover){
   /* hovering pulls the name flush and lights the rail */
   #nm-services .nm-svc-row:hover .nm-svc-name{ -webkit-text-fill-color:transparent; }
-  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:var(--nm-orange); }
-  #nm-services .nm-svc-row:hover .nm-svc-num{ color:var(--nm-orange); transform:scale(1.18); }
+  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:var(--nm-orange, #FF7820); }
+  #nm-services .nm-svc-row:hover .nm-svc-num{ color:var(--nm-orange, #FF7820); transform:scale(1.18); }
   #nm-services .nm-svc-row:hover{ background:rgba(255,133,32,.05); }
 }
 
@@ -814,7 +814,7 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
   #nm-sites .nm-site:hover .nm-site-num{ color:#fff; transform:scale(1.18); }
   #nm-sites .nm-site:hover .nm-site-name{ transform:translateX(14px); }
   #nm-sites .nm-site:hover .nm-site-host{ color:rgba(255,255,255,.8); }
-  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange); transform:translate(4px,-4px); }
+  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange, #FF7820); transform:translate(4px,-4px); }
 }
 
 /* the panel that rides the cursor. Fixed-positioned on <body>, outside the
