@@ -25,7 +25,7 @@
    the badge. */
 .nm-tag{
   display:inline-block;
-  margin-inline-start:clamp(1.2rem, .78rem + 1.07vw, 2.4rem) !important;
+  margin-inline-start:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw) !important;
   padding:var(--nm-cap-pad) !important;
   border:var(--nm-cap-line);
   border-radius:var(--nm-cap-radius);

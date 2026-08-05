@@ -5,7 +5,7 @@
 #nm-coord{
   display:none; align-items:center; margin-left:auto;
   background:none; border:0; padding:0; -webkit-appearance:none; appearance:none;
-  font-family:'Geist',system-ui,sans-serif; font-size:12px; font-weight:500;
+  font-family:'Geist',system-ui,sans-serif; font-size:max(12px,0.625vw); font-weight:500;
   letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.6);
   white-space:nowrap; opacity:0; transition:opacity .5s ease;
   text-decoration:none; cursor:pointer;
@@ -23,7 +23,7 @@
      time because a fixed element has no header box to measure against, and the
      header's height changes with the wordmark capsule across breakpoints. */
   position:fixed; top:111px;
-  right:clamp(1.2rem, .78rem + 1.07vw, 2.4rem);
+  right:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
   width:min(360px, calc(100vw - 2.4rem));
   background:#101010; border:1px solid rgba(255,255,255,.14);
   padding:20px 22px 18px; z-index:120;

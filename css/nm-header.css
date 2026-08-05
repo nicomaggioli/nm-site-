@@ -47,7 +47,7 @@ header[class*="z-50"] > a[href="/"],
 .nm-hdr .wordmark{
   display:block; color:#fff;
   box-sizing:content-box;
-  width:clamp(126px, 12.5vw, 180px);
+  width:max(clamp(126px, 12.5vw, 180px), 9.375vw);
   padding:clamp(7px, .7vw, 10px) clamp(14px, 1.5vw, 22px);
   border:2px solid currentColor;
   border-radius:999px;
@@ -101,7 +101,7 @@ header[class*="z-50"] nav ul li > *,
 .nm-hdr .nm-nav li > a{
   position:relative; display:inline-block; isolation:isolate;
   font-family:'Geist', system-ui, sans-serif;
-  font-weight:700; font-size:14px; line-height:14px;
+  font-weight:700; font-size:max(14px,0.7292vw); line-height:max(14px,0.7292vw);
   letter-spacing:-.42px; text-transform:uppercase;
   color:#fff; text-decoration:none; white-space:nowrap;
   background:none; border:0; padding:0; cursor:pointer;
