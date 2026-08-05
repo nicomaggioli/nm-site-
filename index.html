@@ -424,8 +424,12 @@ div.pt-ww-carousel-top{ display:none !important; }
    the shader (uColorBeige), so the logo keeps its lighter surround while every
    part of the page that paints no background of its own stays black. */
 :root{ --nm-bg:#0a0a0a; }
-/* --nm-orange / --nm-orange-grad live in /css/nm-header.css, which both
-   pages load. */
+/* Recovered from the previous site (commit d7bf9a8). One token, so every
+   hover fill on the site is the same orange. */
+:root{
+  --nm-orange:#FF7820;
+  --nm-orange-grad:linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+}
 /* ── scaling past 1920 ────────────────────────────────────────────────────
    The design is drawn for 1920. Above that every fixed px value froze while
    the viewport kept growing, so 2560 rendered the same layout 25% smaller
@@ -1262,4 +1266,4 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
   });
 })();
 </script>
-<script src="/js/nm-gust.js" defer></script></body></html>
+</body></html>
