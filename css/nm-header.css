@@ -63,7 +63,7 @@ header[class*="z-50"] > a[href="/"],
   padding:max(clamp(7px, .7vw, 10px), 0.5208vw) max(clamp(14px, 1.5vw, 22px), 1.1458vw);
   border:max(2px, 0.1042vw) solid currentColor;
   border-radius:999px;
-  transition:background-color .24s ease, color .24s ease;
+  transition:border-color .24s ease;
 }
 header[class*="z-50"] > a[href="/"] svg,
 .nm-hdr .wordmark svg{ display:block; width:100%; height:auto; }

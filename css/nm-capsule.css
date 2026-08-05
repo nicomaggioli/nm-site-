@@ -16,7 +16,10 @@
   --nm-cap-line:1px solid rgba(255,255,255,.28);
   --nm-cap-radius:999px;
   --nm-cap-pad:7px 15px;
-  --nm-cap-ease:background-color .24s ease, color .24s ease, border-color .24s ease;
+  /* border-color only. The fill is a gradient (background-image), which cannot
+     be transitioned -- so it snapped while the text colour kept fading, leaving
+     near-black text on the black page for ~0.24s on every hover-out. */
+  --nm-cap-ease:border-color .24s ease;
 }
 
 /* ── section labels ──────────────────────────────────────────────────────
