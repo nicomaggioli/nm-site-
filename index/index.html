@@ -58,8 +58,24 @@
           padding:max(24px,1.25vw) 0;font-size:max(12px,0.625vw);line-height:1.1;letter-spacing:normal;
           text-transform:uppercase;font-family:'Geist',system-ui,sans-serif;font-weight:400}
         .foot-copy{color:rgba(255,255,255,.62)}
-        .foot-mail{color:#fff;text-decoration:none;text-align:right}
-        .foot-mail:hover{color:rgba(255,255,255,.62)}
+        /* The homepage closes on a centred call to action; this page closed on a
+       utility bar, so navigating between them changed the ending. Same copy,
+       same treatment, same fluid size curve. */
+    .foot-cta{text-align:center;padding:clamp(56px,7vw,120px) 0 clamp(24px,3vw,48px)}
+    .foot-cta p{margin:0;font-family:'Geist',system-ui,sans-serif;font-weight:700;
+      text-transform:uppercase;letter-spacing:-.02em;line-height:1.08;color:#fff;
+      font-size:max(min(54px, 6.2vw), 2.8125vw);white-space:nowrap}
+    .foot-cta a{color:inherit;text-decoration:underline;text-underline-offset:.12em;
+      white-space:nowrap;transition:color .2s ease}
+    @media (hover:hover){.foot-cta a:hover{color:var(--nm-orange, #FF7820)}}
+    .foot-cta a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+    /* was #fff with a hover that DIMMED it -- backwards, and brighter than the
+       homepage's 62% equivalent */
+    .foot-mail{color:rgba(255,255,255,.62);text-decoration:none;text-align:right;
+      /* 13px of text is not a tap target; padding grows it and the negative
+         margin keeps the bar exactly the same height */
+      padding:15px 0;margin:-15px 0;transition:color .2s ease}
+        .foot-mail:hover{color:#fff}
         .tile{break-inside:avoid;margin:0;overflow:hidden;background:#141414;border-radius:0}
   .tile img{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .4s}
   .tile:hover img{transform:scale(1.035)}
@@ -256,6 +272,6 @@
 <figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/ravisauce-mascot-white-sherpa-patch-on-dark-hoodie-textile-close-up-alt.webp" alt="ravisauce mascot white sherpa patch on dark hoodie textile close up alt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
 <figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/ravisauce-snakeskin-pattern-leather-sneaker-product-photography-side-view.webp" alt="ravisauce snakeskin pattern leather sneaker product photography side view" loading="lazy" decoding="async" width="1600" height="1600"></figure>
 </main>
-<footer><div class="foot-rule" aria-hidden="true"></div><div class="foot-bar"><span class="foot-copy">&copy; Nico Maggioli 2026</span><a class="foot-mail" href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></div></footer>
+<footer><div class="foot-rule" aria-hidden="true"></div><div class="foot-cta"><p>Where visions come true<br><a href="mailto:nicomaggioli@gmail.com">Work with me</a></p></div><div class="foot-bar"><span class="foot-copy">&copy; Nico Maggioli 2026</span><a class="foot-mail" href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></div></footer>
 <script src="/js/nm-lightbox.js" defer></script></body>
 </html>
