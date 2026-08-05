@@ -1,3 +1,14 @@
+/* ── brand ────────────────────────────────────────────────────────────────
+   Recovered from the previous site (commit d7bf9a8). Defined HERE, not in the
+   homepage's inline <style>, because the archive loads these three shared
+   stylesheets and nothing else -- with the token scoped to the homepage every
+   orange hover on /index/ resolved to an undefined var and silently did
+   nothing. */
+:root{
+  --nm-orange:#FF7820;
+  --nm-orange-grad:linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+}
+
 /* ── shared header + nav ──────────────────────────────────────────────────
    Loaded by BOTH the homepage and /index/. The two pages have different DOM
    (the homepage header is Tailwind-classed and React-rendered, the archive's
@@ -257,4 +268,26 @@ header[class*="z-50"]::after,
   backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
   -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
           mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
+}
+
+/* ── nav hover ────────────────────────────────────────────────────────────
+   The nav items had no hover state of any kind on either page. Colour only:
+   no transform, no box, nothing that moves -- the last thing to move here
+   cached its geometry across scroll and stuck. */
+header[class*="z-50"] nav ul li > *,
+.nm-hdr .nm-nav li > a{ transition:color .2s ease; }
+@media (hover:hover){
+  header[class*="z-50"] nav ul li > *:hover,
+  .nm-hdr .nm-nav li > a:hover{ color:var(--nm-orange); }
+}
+header[class*="z-50"] nav ul li > *:focus-visible,
+.nm-hdr .nm-nav li > a:focus-visible{ color:var(--nm-orange); }
+
+/* the burger too, so the mobile control matches */
+@media (hover:hover){
+  .nm-burger:hover span{ background:var(--nm-orange); }
+}
+.nm-burger-panel a{ transition:color .2s ease; }
+@media (hover:hover){
+  .nm-burger-panel a:hover{ color:var(--nm-orange); border-color:var(--nm-orange); }
 }
