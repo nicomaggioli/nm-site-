@@ -129,7 +129,7 @@ div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
   background:transparent; color:#fff; border:1px solid rgba(255,255,255,.28); border-radius:999px;
   text-decoration:none; transition:background .2s ease,color .2s ease,border-color .2s ease;
 }
-#nm-made .idx-view-all:hover{ background:#fff; color:#000; border-color:#fff; }
+#nm-made .idx-view-all:hover{ background:var(--nm-orange-grad); color:#0a0a0a; border-color:transparent; }
 
 @media (max-width:767.98px){
   #nm-made{ padding:0 0 64px; }
@@ -424,6 +424,22 @@ div.pt-ww-carousel-top{ display:none !important; }
    the shader (uColorBeige), so the logo keeps its lighter surround while every
    part of the page that paints no background of its own stays black. */
 :root{ --nm-bg:#0a0a0a; }
+/* Recovered from the previous site (commit d7bf9a8). One token, so every
+   hover fill on the site is the same orange. */
+:root{
+  --nm-orange:#FF7820;
+  --nm-orange-grad:linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+}
+/* ── scaling past 1920 ────────────────────────────────────────────────────
+   The design is drawn for 1920. Above that every fixed px value froze while
+   the viewport kept growing, so 2560 rendered the same layout 25% smaller
+   relative to the screen. Each value V designed at 1920 becomes
+   max(V, (V/19.2)vw): at and below 1920 the max resolves to V and nothing
+   changes, above it the vw term takes over and everything grows together.
+
+   This one is the build's own token, which the homepage header and several
+   of its components read. */
+:root{ --spacing-grid-margin:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw) !important; }
 /* Background goes on <html> ONLY. Painting order in the root stacking context is
    html background -> negative z-index children -> in-flow content. <body> is
    in-flow, so a background on it paints OVER the z-index:-1 section sitting
@@ -710,9 +726,9 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
 @media (hover:hover){
   /* hovering pulls the name flush and lights the rail */
   #nm-services .nm-svc-row:hover .nm-svc-name{ -webkit-text-fill-color:transparent; }
-  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:#fff; }
-  #nm-services .nm-svc-row:hover .nm-svc-num{ color:#fff; transform:scale(1.18); }
-  #nm-services .nm-svc-row:hover{ background:rgba(255,255,255,.045); }
+  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:var(--nm-orange); }
+  #nm-services .nm-svc-row:hover .nm-svc-num{ color:var(--nm-orange); transform:scale(1.18); }
+  #nm-services .nm-svc-row:hover{ background:rgba(255,133,32,.05); }
 }
 
 @media (max-width:767.98px){
@@ -794,11 +810,11 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
   transition:color .2s ease, transform .28s cubic-bezier(.22,.9,.28,1); }
 
 @media (hover:hover){
-  #nm-sites .nm-site:hover{ background:rgba(255,255,255,.045); }
+  #nm-sites .nm-site:hover{ background:rgba(255,133,32,.05); }
   #nm-sites .nm-site:hover .nm-site-num{ color:#fff; transform:scale(1.18); }
   #nm-sites .nm-site:hover .nm-site-name{ transform:translateX(14px); }
   #nm-sites .nm-site:hover .nm-site-host{ color:rgba(255,255,255,.8); }
-  #nm-sites .nm-site:hover .nm-site-arrow{ color:#fff; transform:translate(4px,-4px); }
+  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange); transform:translate(4px,-4px); }
 }
 
 /* the panel that rides the cursor. Fixed-positioned on <body>, outside the

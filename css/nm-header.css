@@ -29,7 +29,7 @@
      16px default, so a rem clamp resolved to 23.2px on one page and 27.9px
      on the other -- the bar visibly jumped on navigation. These are the
      px equivalents of the build's own grid-margin curve at a 10px root. */
-  padding:clamp(12px, 7.8px + 1.07vw, 24px);
+  padding:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
   background:transparent; border-bottom:0;
   color:#fff;
 }
@@ -48,8 +48,8 @@ header[class*="z-50"] > a[href="/"],
   display:block; color:#fff;
   box-sizing:content-box;
   width:max(clamp(126px, 12.5vw, 180px), 9.375vw);
-  padding:clamp(7px, .7vw, 10px) clamp(14px, 1.5vw, 22px);
-  border:2px solid currentColor;
+  padding:max(clamp(7px, .7vw, 10px), 0.5208vw) max(clamp(14px, 1.5vw, 22px), 1.1458vw);
+  border:max(2px, 0.1042vw) solid currentColor;
   border-radius:999px;
   transition:background-color .24s ease, color .24s ease;
 }
@@ -59,7 +59,7 @@ header[class*="z-50"] > a[href="/"] svg,
 /* fills on hover, the way a badge does */
 @media (hover:hover){
   header[class*="z-50"] > a[href="/"]:hover,
-  .nm-hdr .wordmark:hover{ background:#fff; color:#0a0a0a; }
+  .nm-hdr .wordmark:hover{ background:var(--nm-orange-grad); color:#0a0a0a; border-color:transparent; }
 }
 
 /* ── the nav rail ────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ header[class*="z-50"] nav ul li:first-child{ display:none !important; }
 .nm-burger-panel{
   position:fixed; inset:0; z-index:55; background:#0a0a0a;
   display:flex; flex-direction:column; justify-content:center;
-  padding:0 clamp(12px, 7.8px + 1.07vw, 24px);
+  padding:0 max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
   opacity:0; visibility:hidden; transform:translateY(-8px);
   transition:opacity .26s ease, transform .34s cubic-bezier(.22,1,.36,1),
              visibility 0s linear .34s;
