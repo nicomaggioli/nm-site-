@@ -96,3 +96,11 @@ header[class*="z-50"] > a[href="/"]:focus-visible,
 
 /* the archive marks its own nav item but nothing styled it */
 [aria-current="page"]{ color:#fff; }
+
+/* Same fringe fix as the wordmark: a background is sized to the padding box but
+   painted across the border box, so a transparent border ring shows the
+   gradient's tiled edge as a pale band. Applies to every capsule that fills. */
+#nm-coord, .nm-c-p-go, #nm-made .idx-view-all{
+  background-origin:border-box;
+  background-repeat:no-repeat;
+}
