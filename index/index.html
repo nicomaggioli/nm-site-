@@ -38,14 +38,25 @@
         @media(min-width:1600px){.grid{columns:5}}
   
   footer{padding:0 max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);border-top:0;color:rgba(255,255,255,.6)}
-        /* Matched to the homepage footer rather than being its own design: a
-           dashed hairline, the copyright on the left and the email on the
-           right, on ONE row at every width. The old version was a 277px block
-           with its own CTA ("Let's make your vision", which the homepage no
-           longer says) stacked above a second meta row. */
-        .foot-rule{height:.5px;width:100%;
-          background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0px,rgba(255,255,255,.5) 3px,transparent 3px,transparent 6px);
-          background-size:100% .5px;background-repeat:no-repeat;background-position:bottom}
+        /* The homepage closes on the NM point cloud, then the CTA, then this
+           meta row. The dashed hairline that used to sit here was on neither
+           page -- it was this page's own invention, and it made the two
+           endings look unrelated. js/nm-footmark.js fills the block.
+
+           Sized off the homepage: its mark measures 426px wide on a 1463px
+           viewport. min() shrinks it on phones, and the 22.1875vw arm is the
+           site's max(V, (V/19.2)vw) convention -- a no-op at or below 1920,
+           exactly 1.333x at 2560, so it scales with the type around it.
+
+           min-height reserves the box before the texture loads, so the CTA
+           does not jump; the aspect is the mark's own 406:202. */
+        .foot-mark{display:flex;justify-content:center;align-items:center;
+          padding:clamp(56px,7vw,120px) 0 clamp(40px,5vw,88px);
+          min-height:calc(max(min(426px,62vw),22.1875vw) / 2.01)}
+        .foot-mark canvas{display:block;width:100%;height:auto;
+          max-width:max(min(426px,62vw),22.1875vw);
+          opacity:0;transition:opacity .6s ease}
+        .foot-mark.is-ready canvas{opacity:1}
         /* Geist Sans and font-weight:400, matching the homepage footer exactly.
            In the mono the email set 201px wide against 163px here, which at
            375px no longer fit on one line with the copyright. */
@@ -69,13 +80,16 @@
       white-space:nowrap;transition:color .2s ease}
     @media (hover:hover){.foot-cta a:hover{color:var(--nm-orange, #FF7820)}}
     .foot-cta a:focus-visible{outline:2px solid #fff;outline-offset:3px}
-    /* was #fff with a hover that DIMMED it -- backwards, and brighter than the
-       homepage's 62% equivalent */
-    .foot-mail{color:rgba(255,255,255,.62);text-decoration:none;text-align:right;
+    /* Full white, NOT 62%: measured off the rendered homepage, where the
+       copyright is rgba(255,255,255,.62) and the email is rgb(255,255,255) --
+       the email is the brighter of the two. It had been dimmed to match a
+       "62% equivalent" that does not exist. Hover goes orange, the same
+       direction as every other link on the site. */
+    .foot-mail{color:#fff;text-decoration:none;text-align:right;
       /* 13px of text is not a tap target; padding grows it and the negative
          margin keeps the bar exactly the same height */
       padding:15px 0;margin:-15px 0;transition:color .2s ease}
-        .foot-mail:hover{color:#fff}
+        @media (hover:hover){.foot-mail:hover{color:var(--nm-orange, #FF7820)}}
         .tile{break-inside:avoid;margin:0;overflow:hidden;background:#141414;border-radius:0}
   .tile img{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .4s}
   .tile:hover img{transform:scale(1.035)}
@@ -272,6 +286,7 @@
 <figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/ravisauce-mascot-white-sherpa-patch-on-dark-hoodie-textile-close-up-alt.webp" alt="ravisauce mascot white sherpa patch on dark hoodie textile close up alt" loading="lazy" decoding="async" width="1200" height="1600"></figure>
 <figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/ravisauce-snakeskin-pattern-leather-sneaker-product-photography-side-view.webp" alt="ravisauce snakeskin pattern leather sneaker product photography side view" loading="lazy" decoding="async" width="1600" height="1600"></figure>
 </main>
-<footer><div class="foot-rule" aria-hidden="true"></div><div class="foot-cta"><p>Where visions come true<br><a href="mailto:nicomaggioli@gmail.com">Work with me</a></p></div><div class="foot-bar"><span class="foot-copy">&copy; Nico Maggioli 2026</span><a class="foot-mail" href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></div></footer>
-<script src="/js/nm-lightbox.js" defer></script></body>
+<footer><div class="foot-mark" aria-hidden="true"></div><div class="foot-cta"><p>Where visions come true<br><a href="mailto:nicomaggioli@gmail.com">Work with me</a></p></div><div class="foot-bar"><span class="foot-copy">&copy; Nico Maggioli 2026</span><a class="foot-mail" href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></div></footer>
+<script src="/js/nm-lightbox.js" defer></script>
+<script src="/js/nm-footmark.js" defer></script></body>
 </html>
