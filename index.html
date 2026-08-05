@@ -39,7 +39,7 @@ $RC=function(a,b){if(b=document.getElementById(b))(a=document.getElementById(a))
 /* the mosaic is gone, so its 200svh of fly-through scroll is dead space */
 div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
 
-#nm-made{ background:#0a0a0a; color:#fff; padding:0 0 64px; position:relative;
+#nm-made{ background:#0a0a0a; color:#fff; padding:0 0 max(64px,3.3333vw); position:relative;
   z-index:-1;   /* BELOW the fixed scene canvas (z-index:0) so the hero mask
                    paints over it and the logo aperture reveals it */
   font-family:'Geist',system-ui,sans-serif;
@@ -123,7 +123,7 @@ div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
    what makes justify-content:center actually mean the middle. */
 #nm-made .index-feature-foot{ grid-column:1 / -1;
   display:flex; justify-content:center; align-items:center;
-  margin-top:24px; padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+  margin-top:max(24px,1.25vw); padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
 #nm-made .idx-view-all{
   /* size the fill to the border box and stop it repeating, or the 1px ring
      shows the gradient's tiled edge as a pale band (same as the wordmark) */
@@ -402,7 +402,7 @@ svg text{ font-family:'Geist', system-ui, sans-serif !important; }
    keeps it inside 92vw at every width, and min() means the desktop size is
    untouched. */
 div[class*="text-footer-tagline"]{
-  width:auto !important; max-width:min(92vw, 1200px) !important;
+  width:auto !important; max-width:max(min(92vw, 1200px), 62.5vw) !important;
 }
 div[class*="text-footer-tagline"] p{
   white-space:nowrap;
@@ -411,7 +411,7 @@ div[class*="text-footer-tagline"] p{
      same string about 25% wider -- at 375px the line ran 424px and the page
      could be panned sideways. Geist measures ~14.1x its own font-size here,
      so 6.2vw keeps it inside 92vw at every width. Desktop is unchanged. */
-  font-size:min(54px, 6.2vw);
+  font-size:max(min(54px, 6.2vw), 2.8125vw);
 }
 
 
@@ -573,24 +573,24 @@ canvas, img, video{ filter:none !important; }
 /* The explainer's ground. It carried no background of its own -- the page grey
    showed through -- so black has to be set here, not only on the blocks below. */
 main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
-  padding:132px 0 40px !important; }
+  padding:max(132px,6.875vw) 0 max(40px,2.0833vw) !important; }
 
 #nm-brands, #nm-services{ background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif; }
 #nm-brands{ padding:max(104px,5.4167vw) 0 max(104px,5.4167vw); overflow:hidden; position:relative; }
 .nm-tag{ font-size:max(12px,0.625vw); line-height:1.5; letter-spacing:.16em;
   font-weight:500; color:rgba(255,255,255,.6) !important; text-transform:uppercase;
-  padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); margin:0 0 36px; }
+  padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); margin:0 0 max(36px,1.875vw); }
 
 /* "Available Worldwide" */
 #about .text-body-sm{ display:none !important; }
 
-#nm-brands .nm-brands-marquee{ overflow:hidden; padding:10px 0;
+#nm-brands .nm-brands-marquee{ overflow:hidden; padding:max(10px,0.5208vw) 0;
   /* fade both ends so logos enter and leave rather than popping at the edge */
   -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 9%,#000 91%,transparent 100%);
           mask-image:linear-gradient(to right,transparent 0%,#000 9%,#000 91%,transparent 100%); }
 #nm-brands .nm-brands-track{ display:flex; align-items:center; width:max-content;
   animation:nmBrandsScroll 38s linear infinite; will-change:transform; }
-#nm-brands .nm-brand{ margin-right:84px; display:inline-flex; align-items:center; }
+#nm-brands .nm-brand{ margin-right:max(84px,4.375vw); display:inline-flex; align-items:center; }
 #nm-brands .nm-brand img{ height:100%; width:auto; display:block;
   /* !important is load-bearing: the theme reset has `img{filter:none !important}`
      (there to stop it tinting the work media) and it was cancelling this. */
@@ -607,16 +607,16 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
      which does not take hover, so the gaps between logos do not trigger it. */
   #nm-brands .nm-brands-track:has(.nm-brand:hover){ animation-play-state:paused; }
 }
-#nm-brands .nm-b-staples{ height:32px; }
-#nm-brands .nm-b-seagate{ height:40px; }
-#nm-brands .nm-b-bose{ height:26px; }
-#nm-brands .nm-b-alares{ height:40px; }
-#nm-brands .nm-b-ua{ height:42px; }
-#nm-brands .nm-b-kohler{ height:30px; }
-#nm-brands .nm-b-ravisauce{ height:44px; }
-#nm-brands .nm-b-puffco{ height:40px; }
-#nm-brands .nm-b-pawsta{ height:44px; }
-#nm-brands .nm-b-ravi{ height:26px; }
+#nm-brands .nm-b-staples{ height:max(32px,1.6666vw); }
+#nm-brands .nm-b-seagate{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-bose{ height:max(26px,1.3541vw); }
+#nm-brands .nm-b-alares{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-ua{ height:max(42px,2.1875vw); }
+#nm-brands .nm-b-kohler{ height:max(30px,1.5625vw); }
+#nm-brands .nm-b-ravisauce{ height:max(44px,2.2916vw); }
+#nm-brands .nm-b-puffco{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-pawsta{ height:max(44px,2.2916vw); }
+#nm-brands .nm-b-ravi{ height:max(26px,1.3541vw); }
 /* 4 identical sets in the track, so travelling exactly -25% lands set 2 where
    set 1 began -- the loop point is invisible. */
 @keyframes nmBrandsScroll{ from{ transform:translateX(0); } to{ transform:translateX(-25%); } }
@@ -657,7 +657,7 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
 #nm-services .nm-svc-grid{ display:flex; flex-direction:column; padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
 #nm-services .nm-svc-row{
   position:relative;
-  display:grid; grid-template-columns:repeat(12,1fr); column-gap:24px;
+  display:grid; grid-template-columns:repeat(12,1fr); column-gap:max(24px,1.25vw);
   align-items:start; padding:max(38px,1.9792vw) max(16px,0.8333vw); margin:0;
   transition:background .2s ease, color .2s ease;
 }
@@ -780,20 +780,20 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
    the payoff is a screenshot that tracks the cursor. Rows stay quiet so the
    panel is the only thing that moves. */
 #nm-sites{ background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif;
-  padding:0 0 128px; }
+  padding:0 0 max(128px,6.6667vw); }
 #nm-sites .nm-sites-grid{
-  margin-top:40px;
+  margin-top:max(40px,2.0833vw);
   padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
   border-top:1px solid rgba(255,255,255,.13); }
 #nm-sites .nm-site{
   position:relative; display:grid;
-  grid-template-columns:repeat(12,1fr); column-gap:24px; align-items:baseline;
-  padding:30px 16px; text-decoration:none; color:inherit;
+  grid-template-columns:repeat(12,1fr); column-gap:max(24px,1.25vw); align-items:baseline;
+  padding:max(30px,1.5625vw) max(16px,0.8333vw); text-decoration:none; color:inherit;
   border-bottom:1px solid rgba(255,255,255,.13);
   transition:background .22s ease; }
 #nm-sites .nm-site-num{
   grid-column:1 / span 1;
-  font-size:clamp(1.8rem,2.2vw,2.8rem); font-weight:700; line-height:1;
+  font-size:max(clamp(1.8rem,2.2vw,2.8rem), 1.4583vw); font-weight:700; line-height:1;
   letter-spacing:-.02em; color:rgba(255,255,255,.42);
   transform-origin:left center;
   transition:color .2s ease, transform .34s cubic-bezier(.22,.9,.28,1); }
@@ -808,25 +808,25 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
   color:rgba(255,255,255,.5); transition:color .2s ease; }
 #nm-sites .nm-site-arrow{
   grid-column:12 / span 1; justify-self:end;
-  font-size:clamp(1.6rem,2vw,2.2rem); line-height:1;
+  font-size:max(clamp(1.6rem,2vw,2.2rem), 1.1458vw); line-height:1;
   color:rgba(255,255,255,.35);
   transition:color .2s ease, transform .28s cubic-bezier(.22,.9,.28,1); }
 
 @media (hover:hover){
   #nm-sites .nm-site:hover{ background:rgba(255,133,32,.05); }
   #nm-sites .nm-site:hover .nm-site-num{ color:#fff; transform:scale(1.18); }
-  #nm-sites .nm-site:hover .nm-site-name{ transform:translateX(14px); }
+  #nm-sites .nm-site:hover .nm-site-name{ transform:translateX(max(14px,0.7292vw)); }
   #nm-sites .nm-site:hover .nm-site-host{ color:rgba(255,255,255,.8); }
-  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange, #FF7820); transform:translate(4px,-4px); }
+  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange, #FF7820); transform:translate(max(4px,0.2083vw),min(-4px,-0.2083vw)); }
 }
 
 /* the panel that rides the cursor. Fixed-positioned on <body>, outside the
    section, so no ancestor transform can capture it. */
 .nm-site-peek{
-  position:fixed; top:0; left:0; width:380px; aspect-ratio:16 / 10;
+  position:fixed; top:0; left:0; width:max(380px,19.7916vw); aspect-ratio:16 / 10;
   overflow:hidden; background:#0a0a0a;
   border:1px solid rgba(255,255,255,.16);
-  box-shadow:0 24px 64px rgba(0,0,0,.6);
+  box-shadow:0 max(24px,1.25vw) max(64px,3.3333vw) rgba(0,0,0,.6);
   pointer-events:none; opacity:0; transform:scale(.96);
   transition:opacity .18s ease, transform .26s cubic-bezier(.22,1,.36,1);
   z-index:9000; will-change:transform, opacity, left, top; }
@@ -840,7 +840,7 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
   font-family:'Geist',system-ui,sans-serif;
   font-size:11px; letter-spacing:.16em; text-transform:uppercase;
   color:rgba(255,255,255,.85); display:flex; justify-content:space-between; gap:10px; }
-.nm-site-peek .dot{ display:inline-block; width:6px; height:6px; border-radius:50%;
+.nm-site-peek .dot{ display:inline-block; width:max(6px,0.3125vw); height:max(6px,0.3125vw); border-radius:50%;
   background:#fff; margin-right:7px; transform:translateY(-1px); }
 
 @media (hover:none),(max-width:767.98px){ .nm-site-peek{ display:none; } }
@@ -1211,6 +1211,8 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
     raf = 0;
     if (!peek) return;
     var vw = innerWidth, vh = innerHeight;
+    /* the panel scales with the page above 1920, so its metrics must too */
+    PW = Math.max(380, vw * 380 / 1920); PH = PW * 10 / 16; PAD = Math.max(24, vw * 24 / 1920);
     var x = px + PAD;
     if (x + PW > vw - 16) x = px - PAD - PW;        // flip to the left of the cursor
     x = Math.max(12, Math.min(x, vw - PW - 12));

@@ -94,7 +94,7 @@ header[class*="z-50"] nav,
 }
 header[class*="z-50"] nav ul,
 .nm-hdr .nm-nav{
-  display:flex; align-items:center; gap:46px;
+  display:flex; align-items:center; gap:max(46px, 2.3958vw);
   list-style:none; margin:0; padding:0;
 }
 /* flex + fixed height, so the item's position inside the row is not decided by
@@ -103,7 +103,7 @@ header[class*="z-50"] nav ul,
 header[class*="z-50"] nav ul li,
 .nm-hdr .nm-nav li{
   position:relative; z-index:1; list-style:none;
-  display:flex; align-items:center; height:16px; line-height:15px;
+  display:flex; align-items:center; height:max(16px,0.8333vw); line-height:max(15px,0.7812vw);
 }
 /* Explicit, because the archive's list inherited `normal` and the homepage's
    inherited 15px: a 20.5px line box against a 16px one, which is exactly the
@@ -113,18 +113,18 @@ header[class*="z-50"] nav ul li,
    16px and 15px and the items landed 2px apart. Fixing the height makes the
    nesting irrelevant: both boxes are 16px, both centre on the same pixel. */
 header[class*="z-50"] nav ul,
-.nm-hdr .nm-nav{ line-height:15px; height:16px; }
+.nm-hdr .nm-nav{ line-height:max(15px,0.7812vw); height:max(16px,0.8333vw); }
 
 header[class*="z-50"] nav ul li > *,
 .nm-hdr .nm-nav li > a{
   position:relative; display:inline-block; isolation:isolate;
   font-family:'Geist', system-ui, sans-serif;
   font-weight:700; font-size:max(14px,0.7292vw); line-height:max(14px,0.7292vw);
-  letter-spacing:-.42px; text-transform:uppercase;
+  letter-spacing:-.03em; text-transform:uppercase;
   color:#fff; text-decoration:none; white-space:nowrap;
   background:none; border:0; padding:0; cursor:pointer;
   -webkit-appearance:none; appearance:none;
-  height:14px;
+  height:max(14px,0.7292vw);
 }
 /* The homepage's nav labels are wrapped in spans by the build's text-splitter,
    which sets font-kerning:none and text-rendering:optimizeSpeed on each one.

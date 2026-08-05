@@ -22,9 +22,9 @@
   /* fixed, and on <body> — see nm-coord.js. `top` is written by JS at open
      time because a fixed element has no header box to measure against, and the
      header's height changes with the wordmark capsule across breakpoints. */
-  position:fixed; top:111px;
+  position:fixed; top:max(111px, 5.78125vw);
   right:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
-  width:min(360px, calc(100vw - 2.4rem));
+  width:min(max(360px, 18.75vw), calc(100vw - 2.4rem));
   background:#101010; border:1px solid rgba(255,255,255,.14);
   padding:20px 22px 18px; z-index:120;
   font-family:'Geist',system-ui,sans-serif;
@@ -43,12 +43,12 @@
   pointer-events:auto;
 }
 .nm-c-p-name{ font-size:19px; font-weight:700; letter-spacing:-.015em;
-  line-height:1.2; color:#fff; margin:0 0 6px; }
+  line-height:1.2; color:#fff; margin:0 0 max(6px, 0.3125vw); }
 .nm-c-p-co{ font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-  color:rgba(255,255,255,.45); font-variant-numeric:tabular-nums; margin:0 0 14px; }
+  color:rgba(255,255,255,.45); font-variant-numeric:tabular-nums; margin:0 0 max(14px, 0.7292vw); }
 .nm-c-p-fact{ font-size:14px; line-height:1.62; color:rgba(255,255,255,.74);
-  margin:0 0 16px; }
-.nm-c-p-go{ display:inline-block; font-size:11px; letter-spacing:.14em;
+  margin:0 0 max(16px, 0.8333vw); }
+.nm-c-p-go{ display:inline-block; font-size:max(11px, 0.5729vw); letter-spacing:.14em;
   text-transform:uppercase; color:rgba(255,255,255,.55); text-decoration:none;
   border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:2px;
   transition:color .2s ease, border-color .2s ease; }
@@ -66,7 +66,7 @@
 /* same reason as the nav: the two pages inherit different line-heights, so
    the widget measured 18px tall on one and 16px on the other and the flex
    centring put it on a different row. */
-#nm-coord{ line-height:16px; height:16px; }
+#nm-coord{ line-height:max(16px, 0.8333vw); height:max(16px, 0.8333vw); }
 
 #nm-coord:hover{ color:rgba(255,255,255,.85); }
 

@@ -15,7 +15,7 @@
 :root{
   --nm-cap-line:1px solid rgba(255,255,255,.28);
   --nm-cap-radius:999px;
-  --nm-cap-pad:7px 15px;
+  --nm-cap-pad:max(7px,0.3645vw) max(15px,0.78125vw);
   /* border-color only. The fill is a gradient (background-image), which cannot
      be transitioned -- so it snapped while the text colour kept fading, leaving
      near-black text on the black page for ~0.24s on every hover-out. */
@@ -77,7 +77,7 @@
    custom control had a designed hover state and nothing but the UA default on
    focus. No border-radius:inherit here -- outline already follows the
    element's radius, and inheriting corrupts the capsules. */
-:root{ --nm-focus:2px solid #fff; --nm-focus-off:3px; }
+:root{ --nm-focus:max(2px, 0.10416vw) solid #fff; --nm-focus-off:max(3px, 0.15625vw); }
 a:focus-visible,
 button:focus-visible{
   outline:var(--nm-focus); outline-offset:var(--nm-focus-off);
@@ -90,9 +90,9 @@ header[class*="z-50"] > a[href="/"]:focus-visible,
 .nm-hdr .wordmark:focus-visible{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; }
 
 #nm-sites .nm-site:focus-visible{ background:rgba(255,133,32,.05); }
-#nm-sites .nm-site:focus-visible .nm-site-name{ transform:translateX(14px); }
+#nm-sites .nm-site:focus-visible .nm-site-name{ transform:translateX(max(14px,0.7292vw)); }
 #nm-sites .nm-site:focus-visible .nm-site-host{ color:rgba(255,255,255,.8); }
-#nm-sites .nm-site:focus-visible .nm-site-arrow{ color:#fff; transform:translate(4px,-4px); }
+#nm-sites .nm-site:focus-visible .nm-site-arrow{ color:#fff; transform:translate(max(4px,0.2083vw),min(-4px,-0.2083vw)); }
 
 /* the archive marks its own nav item but nothing styled it */
 [aria-current="page"]{ color:#fff; }

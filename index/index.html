@@ -20,7 +20,7 @@
    both screen edges at every width, matching the homepage grid. Vertical
    padding stays: the top clears the fixed header, the bottom separates the
    footer. column-gap is 0 and .tile has no margin, so the columns meet. */
-  .grid{columns:2;column-gap:0;padding:clamp(96px,9vw,132px) 0 clamp(60px,9vw,120px)}
+  .grid{columns:2;column-gap:0;padding:max(clamp(96px,9vw,132px),6.875vw) 0 max(clamp(60px,9vw,120px),6.25vw)}
         /* Explicit counts. `columns:<count> <width>` treats the count as a MAX --
            used = min(4, floor(width/260)) -- so 768px resolved to 2 columns of
            384px, wider tiles than a 1440 desktop gets, and the page came out
@@ -37,7 +37,7 @@
         @media(min-width:1024px){.grid{columns:4}}
         @media(min-width:1600px){.grid{columns:5}}
   
-  footer{padding:0 clamp(12px, 7.8px + 1.07vw, 24px);border-top:0;color:rgba(255,255,255,.6)}
+  footer{padding:0 max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);border-top:0;color:rgba(255,255,255,.6)}
         /* Matched to the homepage footer rather than being its own design: a
            dashed hairline, the copyright on the left and the email on the
            right, on ONE row at every width. The old version was a 277px block
@@ -54,8 +54,8 @@
            against 163px, so at 375px it no longer shared a line with the
            copyright), line-height:1.1 => 13.2px, and 24px 0 on the inner row,
            which is what makes both footers exactly 61px tall. */
-        .foot-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;
-          padding:24px 0;font-size:12px;line-height:1.1;letter-spacing:normal;
+        .foot-bar{display:flex;align-items:center;justify-content:space-between;gap:max(16px,0.8333vw);
+          padding:max(24px,1.25vw) 0;font-size:max(12px,0.625vw);line-height:1.1;letter-spacing:normal;
           text-transform:uppercase;font-family:'Geist',system-ui,sans-serif;font-weight:400}
         .foot-copy{color:rgba(255,255,255,.62)}
         .foot-mail{color:#fff;text-decoration:none;text-align:right}
