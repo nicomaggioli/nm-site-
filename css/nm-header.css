@@ -59,6 +59,12 @@ header[class*="z-50"] > a[href="/"],
 .nm-hdr .wordmark{
   display:block; color:#fff;
   box-sizing:content-box;
+  /* Size the gradient to the BORDER box and stop it repeating. By default a
+     background is sized to the padding box but painted across the border box,
+     so the 2px ring showed the gradient's tiled edge -- its lightest stop
+     reappearing as a pale band down the left and right of the capsule. */
+  background-origin:border-box;
+  background-repeat:no-repeat;
   width:max(clamp(126px, 12.5vw, 180px), 9.375vw);
   padding:max(clamp(7px, .7vw, 10px), 0.5208vw) max(clamp(14px, 1.5vw, 22px), 1.1458vw);
   border:max(2px, 0.1042vw) solid currentColor;
