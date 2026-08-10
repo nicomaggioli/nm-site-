@@ -61,8 +61,18 @@
       document.body.appendChild(panel);
     }
 
-    var cur = h.querySelector('.nm-burger');
-    if (cur) { btn = cur; return; }
+    /* Document-wide, NOT h.querySelector — same trap as nm-coord. React swaps
+       the homepage header wholesale, so scoping the "already built?" check to
+       the header we happen to have picked this pass builds a SECOND burger
+       every time that pick changes. Find the one we have and move it. */
+    var cur = document.querySelector('.nm-burger');
+    if (cur) {
+      btn = cur;
+      if (cur.parentNode !== h) h.appendChild(cur);
+      var dupes = document.querySelectorAll('.nm-burger');
+      for (var d = 0; d < dupes.length; d++) if (dupes[d] !== btn) dupes[d].remove();
+      return;
+    }
     btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'nm-burger';
@@ -114,10 +124,10 @@
   }, { passive: true });
 
   build();
-  document.addEventListener('DOMContentLoaded', build);
-  window.addEventListener('load', build);
-  new MutationObserver((function () {
-    var p = 0;
-    return function () { if (p) return; p = setTimeout(function () { p = 0; build(); }, 60); };
-  })()).observe(document.documentElement, { childList: true, subtree: true });
+  /* Shared observer — see js/nm-sync.js. build() appends a button to the
+     header and a panel to <body>, so its own writes used to re-trigger it and
+     the four other document-wide observers. __nmSync also re-runs it on
+     DOMContentLoaded and load. */
+  if (window.__nmSync) window.__nmSync(build);
+  else { document.addEventListener('DOMContentLoaded', build); window.addEventListener('load', build); }
 })();

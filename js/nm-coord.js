@@ -123,7 +123,16 @@
   function mount() {
     var h = header();
     if (!h) return;
-    var found = h.querySelector('#nm-coord');
+    /* Document-wide, NOT h.querySelector. React swaps the homepage header
+       wholesale, and rendered() can disagree about which header is live for a
+       frame or two during that swap. Looking only inside the header we just
+       picked meant "not found" whenever we picked a different one -- so this
+       built a SECOND button instead of finding the first. Two buttons in the
+       same corner is exactly the observed damage: one showing the coordinates
+       and one showing the place name, superimposed; or the empty one on top,
+       because a node adopted from the other header never had its guts painted
+       (cur still matched the day index, so paint() skipped the write). */
+    var found = document.getElementById('nm-coord');
     if (!found) {
       found = document.createElement('button');
       found.id = 'nm-coord';
@@ -131,8 +140,16 @@
       found.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
       h.appendChild(found);
       cur = -1;                       // fresh node: force a repaint of its guts
+    } else if (found.parentNode !== h) {
+      /* it exists but React re-parented it, or the live header changed: MOVE
+         the one we have. Never create a second. */
+      h.appendChild(found);
     }
+    /* Belt and braces: if a duplicate ever does appear, keep the one we own. */
+    var all = document.querySelectorAll('#nm-coord');
+    for (var i = 0; i < all.length; i++) if (all[i] !== found) all[i].remove();
     el = found;
+    if (!el.querySelector('.nm-c-num')) cur = -1;   // adopted empty shell
     paint();
   }
   mount();
@@ -149,9 +166,12 @@
     var pan = panel();
     if (pan && pan.classList.contains('is-open')) place();
   }, { passive: true });
-  document.addEventListener('DOMContentLoaded', mount);
-  window.addEventListener('load', mount);
   /* roll over for anyone who leaves the tab open past midnight */
   setInterval(paint, 5 * 60 * 1000);
-  new MutationObserver((function(){var _p=0,_f=mount;return function(){if(_p)return;_p=setTimeout(function(){_p=0;_f();},40);};})()).observe(document.documentElement, { childList: true, subtree: true });
+  /* Shared with every other nm-* widget — see js/nm-sync.js. This used to be
+     its own document-wide observer, and mount() appends to the header while
+     paint() swaps a panel on <body>, so it re-triggered itself and the other
+     four. __nmSync also re-runs it on DOMContentLoaded and load. */
+  if (window.__nmSync) window.__nmSync(mount);
+  else { document.addEventListener('DOMContentLoaded', mount); window.addEventListener('load', mount); }
 })();
