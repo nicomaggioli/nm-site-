@@ -11,7 +11,7 @@
    initial load. */
 (function () {
   var TH = '/media/nm-thumb/', FULL = '/media/nm-work/';
-  var lb = null, imgEl = null, capEl = null;
+  var lb = null, imgEl = null;
   var tiles = [], idx = -1, lastFocus = null;
 
   function full(src) { return src.indexOf(TH) === 0 ? FULL + src.slice(TH.length) : src; }
@@ -32,10 +32,9 @@
       '<button class="nm-lb-close" type="button" aria-label="Close">✕</button>' +
       '<button class="nm-lb-prev"  type="button" aria-label="Previous image">←</button>' +
       '<button class="nm-lb-next"  type="button" aria-label="Next image">→</button>' +
-      '<figure><img alt=""><figcaption></figcaption></figure>';
+      '<figure><img alt=""></figure>';
     document.body.appendChild(lb);
     imgEl = lb.querySelector('img');
-    capEl = lb.querySelector('figcaption');
     return lb;
   }
 
@@ -53,7 +52,6 @@
     imgEl.onload = function () { imgEl.classList.add('is-ready'); };
     imgEl.src = full(t.getAttribute('src'));
     imgEl.alt = t.getAttribute('alt') || '';
-    capEl.textContent = (t.getAttribute('alt') || '') + '  ·  ' + (i + 1) + ' / ' + tiles.length;
     /* neighbours only, so paging is instant without a 25MB preload */
     preload(i - 1); preload(i + 1);
   }

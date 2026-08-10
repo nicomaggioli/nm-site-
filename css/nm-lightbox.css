@@ -21,11 +21,8 @@
   opacity:0; transition:opacity .2s ease;
 }
 .nm-lb img.is-ready{ opacity:1; }
-.nm-lb figcaption{
-  font-family:'Geist Mono', ui-monospace, monospace;
-  font-size:max(12px, 0.625vw); letter-spacing:.14em; text-transform:uppercase;
-  color:rgba(255,255,255,.55); text-align:center;
-}
+/* No caption. The filename and the 135/176 counter were scaffolding, not
+   something a viewer needs; the img keeps its alt for screen readers. */
 
 /* controls */
 .nm-lb button{

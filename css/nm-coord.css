@@ -26,7 +26,13 @@
   right:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
   width:min(max(360px, 18.75vw), calc(100vw - 2.4rem));
   background:#101010; border:1px solid rgba(255,255,255,.14);
-  padding:20px 22px 18px; z-index:120;
+  /* 300, not 120. The homepage stacks two full-viewport page-transition veils
+     at z-[200] (one black, one white). They are pointer-events:none and sit at
+     opacity 0 almost always -- but they are ABOVE 120, so any moment one is
+     left visible the panel opens underneath it and reads as "clicking does
+     nothing", then appears the instant the veil clears. A panel the visitor
+     deliberately opened outranks a decorative veil. */
+  padding:20px 22px 18px; z-index:300;
   font-family:'Geist',system-ui,sans-serif;
   text-transform:none; letter-spacing:normal; text-align:left;
   opacity:0; visibility:hidden;

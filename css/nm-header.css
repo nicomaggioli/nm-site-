@@ -74,10 +74,18 @@ header[class*="z-50"] > a[href="/"],
 header[class*="z-50"] > a[href="/"] svg,
 .nm-hdr .wordmark svg{ display:block; width:100%; height:auto; }
 .nm-hdr .wordmark svg text{ font-family:'Geist', system-ui, sans-serif; }
-/* fills on hover, the way a badge does */
+/* fills on hover, the way a badge does.
+
+   background-IMAGE, not the `background` shorthand. The shorthand resets every
+   background-* longhand it does not name, which silently threw away the
+   background-origin:border-box and background-repeat:no-repeat set above -- so
+   the fringe fix was inert at exactly the moment the gradient got painted. The
+   gradient went back to being sized to the padding box and tiled across the
+   border box, and with border-color:transparent that 2px ring showed the
+   tiled edge as a pale band down the left and right of the capsule. */
 @media (hover:hover){
   header[class*="z-50"] > a[href="/"]:hover,
-  .nm-hdr .wordmark:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
+  .nm-hdr .wordmark:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
 }
 
 /* ── the nav rail ────────────────────────────────────────────────────────

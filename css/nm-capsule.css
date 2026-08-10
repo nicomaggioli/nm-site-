@@ -45,7 +45,7 @@
   transition:var(--nm-cap-ease);
 }
 @media (hover:hover){
-  #nm-coord:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
+  #nm-coord:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
   #nm-coord:hover .nm-c-num, #nm-coord:hover .nm-c-name{ color:#0a0a0a; }
 }
 /* the panel's link is a destination */
@@ -56,7 +56,7 @@
   border-radius:var(--nm-cap-radius);
   transition:var(--nm-cap-ease);
 }
-.nm-c-p-go:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a !important; border-color:transparent !important; }
+.nm-c-p-go:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a !important; border-color:transparent !important; }
 
 /* ── View all: already this shape, normalised to the shared tokens ───────*/
 #nm-made .idx-view-all{
@@ -87,7 +87,7 @@ button:focus-visible{
    onto focus. Deliberately OUTSIDE any @media (hover:hover) wrapper -- keyboard
    users are not hover users. */
 header[class*="z-50"] > a[href="/"]:focus-visible,
-.nm-hdr .wordmark:focus-visible{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; }
+.nm-hdr .wordmark:focus-visible{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; }
 
 #nm-sites .nm-site:focus-visible{ background:rgba(255,133,32,.05); }
 #nm-sites .nm-site:focus-visible .nm-site-name{ transform:translateX(max(14px,0.7292vw)); }
@@ -104,3 +104,7 @@ header[class*="z-50"] > a[href="/"]:focus-visible,
   background-origin:border-box;
   background-repeat:no-repeat;
 }
+/* These two only survive if the fill rules use background-IMAGE. The
+   `background` shorthand resets every longhand it does not name, so writing
+   `background:<gradient>` on :hover threw both of them away and put the fringe
+   straight back. Every rule above sets background-image for that reason. */
