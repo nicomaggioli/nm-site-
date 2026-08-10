@@ -23,6 +23,12 @@
   var host = document.querySelector('.foot-mark');
   if (!host || !window.requestAnimationFrame) return;
 
+  /* Not on phones. 5,500 sprites at 30fps on top of a 176-image grid is real
+     work for no return, and the homepage drops its own footer cloud at the
+     same breakpoint -- so the two pages still end the same way. The CSS
+     collapses .foot-mark to nothing here, so there is no gap left behind. */
+  try { if (window.matchMedia('(max-width:767px)').matches) return; } catch (e) {}
+
   var cv = document.createElement('canvas');
   cv.setAttribute('role', 'img');
   cv.setAttribute('aria-label', 'Nico Maggioli');

@@ -57,6 +57,12 @@
           max-width:max(min(426px,62vw),22.1875vw);
           opacity:0;transition:opacity .6s ease}
         .foot-mark.is-ready canvas{opacity:1}
+        /* The mark is off on phones (js/nm-footmark.js), so the reserved box
+           has to collapse with it or it leaves exactly the empty band it was
+           holding space for. The CTA above already carries its own padding. */
+        @media (max-width:767px){
+          .foot-mark{display:none; min-height:0; padding:0}
+        }
         /* Geist Sans and font-weight:400, matching the homepage footer exactly.
            In the mono the email set 201px wide against 163px here, which at
            375px no longer fit on one line with the copyright. */

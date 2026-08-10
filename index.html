@@ -573,6 +573,25 @@ a[href=""]:empty, a[href=""]{ display:none !important; }
 
 /* leave the work itself alone */
 canvas, img, video{ filter:none !important; }
+
+/* ── mobile: the footer without the cloud ────────────────────────────────
+   The NM point cloud is skipped at this breakpoint (see the nmNoMark() guard
+   in the scene chunk), and it was the only thing that needed a screen-tall
+   closing section. Left alone, the section keeps its 100lvh and the CTA keeps
+   sitting at 67% of it, so the cloud's slot stays behind as ~490px of empty
+   black above "Where visions come true".
+
+   So the box shrinks with its contents. The meta row is pinned to the section
+   bottom by items-end and follows on its own; min-height keeps the CTA and
+   that row from colliding on very short phones. */
+@media (max-width:767px){
+  main > section.h-lvh{ height:46svh !important; min-height:340px !important; }
+  main > section.h-lvh [class*="top-[67%]"]{ top:32% !important; }
+  /* the list's own trailing padding stacks on top of the section's lead-in --
+     72 + 200 read as a third of a phone screen of nothing between the last
+     site and the call to action */
+  #nm-sites{ padding-bottom:40px !important; }
+}
 </style>
 <style id="nm-brands-css">
 /* The explainer's ground. It carried no background of its own -- the page grey
