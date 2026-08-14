@@ -284,3 +284,33 @@ header[class*="z-50"]::after,
   -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
           mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
 }
+
+/* ── phones: no live blur behind the header ───────────────────────────────
+   The bar carries two stacked backdrop-filter layers, blur(6px) and
+   blur(18px), each full width and each with its own gradient mask. A
+   backdrop-filter has to capture whatever is behind the element, blur it and
+   composite it -- and because the backdrop changes on every scroll frame,
+   both blurs are recomputed continuously for the whole scroll. On a phone
+   that is expensive enough to show up as scroll jank, and it is also why
+   large type tears and shimmers as it passes underneath the bar.
+
+   The blur is doing very little work at this size anyway; the legibility
+   comes from the dark gradient. So phones keep the gradient -- slightly
+   deeper, to make up for the blur that is gone -- and drop both filters.
+   Desktop is untouched. */
+@media (max-width:767px){
+  header[class*="z-50"]::before,
+  .nm-hdr::before{
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    background:linear-gradient(to bottom,
+      rgba(10,10,10,.88) 0%, rgba(10,10,10,.58) 58%, rgba(10,10,10,0) 100%);
+  }
+  header[class*="z-50"]::after,
+  .nm-hdr::after{
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    /* the second layer existed only to carry the heavier blur; with no filter
+       left it has nothing to draw, and an empty masked layer is still a
+       composited layer the phone has to manage every frame */
+    display:none;
+  }
+}
