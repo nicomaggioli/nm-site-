@@ -592,6 +592,18 @@ canvas, img, video{ filter:none !important; }
      site and the call to action */
   #nm-sites{ padding-bottom:40px !important; }
 }
+
+/* ── the about copy is prose now, so stop justifying it ──────────────────
+   The old line was a three-line statement and justified cleanly. The new copy
+   runs ten lines of 80px display type and carries short words plus a
+   colon-separated list, which justification cannot absorb: measured word
+   spaces ran from 18.3px to 327.3px, a 17.9x spread, i.e. rivers straight
+   down the block.
+
+   Ragged right is the correct setting for this. Phones were already left
+   aligned (there is a rule for that in the brands sheet); this brings every
+   width into line rather than leaving desktop as the odd one out. */
+#about .text-heading-xl{ text-align:left !important; }
 </style>
 <style id="nm-brands-css">
 /* The explainer's ground. It carried no background of its own -- the page grey
@@ -887,6 +899,7 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
 <script id="nm-coord-js" src="/js/nm-coord.js" defer></script>
 <script src="/js/nm-herolabels.js" defer></script>
 <script src="/js/nm-video.js" defer></script>
+<script src="/js/nm-about.js" defer></script>
 <script id="nm-navact-js">
 /* The build renders "about" and "contact" as <button>s wired to its own
    hash-scroll helper, which never found a target -- the ids it looks for are
