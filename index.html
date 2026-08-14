@@ -604,6 +604,19 @@ canvas, img, video{ filter:none !important; }
    aligned (there is a rule for that in the brands sheet); this brings every
    width into line rather than leaving desktop as the odd one out. */
 #about .text-heading-xl{ text-align:left !important; }
+/* balance, not the `pretty` this block inherits from the widow-control rule
+   above. pretty only protects against a single word on the last line and it
+   did not fire here -- it broke the copy as
+
+     I make what I can't find. / Positioning, identity, / packaging, web.
+     Make it / real and make it make / sense.
+
+   leaving "sense." alone at 80px. balance evens all five lines instead and
+   ends on "make it make sense.", same five lines, same 360px, no orphan.
+   Chrome caps balance at ~6 lines, so phones (more lines at 24px) fall back
+   to normal wrapping, which is fine -- the orphan is only ugly at display
+   size. */
+#about .text-heading-xl p{ text-wrap:balance; }
 </style>
 <style id="nm-brands-css">
 /* The explainer's ground. It carried no background of its own -- the page grey

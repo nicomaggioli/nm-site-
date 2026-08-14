@@ -16,11 +16,12 @@
    while the old copy came back. Comparing content means a replaced node is
    rewritten and an untouched one is left alone. */
 (function () {
+  /* Straight apostrophe, not a curly one -- the rest of the site's copy uses
+     straight ("I don't", "it's", "I've") and a lone typographic quote here
+     would sit differently in Geist. */
   var TEXT =
-    'I make things because I go looking for them and cannot find them. ' +
-    'I do the same job for brands that are trying to become something ' +
-    'specific: positioning, identity, packaging, web. Make it real and ' +
-    'make it make sense.';
+    "I make what I can't find. Positioning, identity, packaging, web. " +
+    'Make it real and make it make sense.';
 
   function esc(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
