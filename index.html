@@ -617,6 +617,23 @@ canvas, img, video{ filter:none !important; }
    to normal wrapping, which is fine -- the orphan is only ugly at display
    size. */
 #about .text-heading-xl p{ text-wrap:balance; }
+
+/* ── phones: the about block was mostly air ──────────────────────────────
+   Measured at 375: the section carried 132px of top padding and the grid
+   inside it another 24px of margin -- 156px of empty space above a text
+   block only 108px tall. More gap than copy. And at 24px the statement read
+   as body text rather than as the one thing the section is there to say.
+
+   Padding comes down to 64px, the grid's own margin to 12px, and the type
+   goes to 34px. Desktop keeps its own scale untouched. */
+@media (max-width:767px){
+  #about{ padding-top:64px !important; }
+  #about .grid-layout.mt-gap-lg{ margin-top:12px !important; }
+  /* font-size lives on the clamp floor in the brands sheet, not here -- that
+     rule is !important at the same specificity and comes LATER in document
+     order, so any size set here is dead on arrival. Leading only. */
+  #about .text-heading-xl{ line-height:1.06 !important; }
+}
 </style>
 <style id="nm-brands-css">
 /* The explainer's ground. It carried no background of its own -- the page grey
@@ -685,7 +702,18 @@ main > section:has(.bg-whatwedo-client){ background:#0a0a0a !important;
      and at 1920 a 92px cap breaks 6/6/4 with gaps of 21-68px (3.2x) while 88px
      breaks 7/7/2 with gaps of 20-24px (1.2x). Four pixels is the difference
      between a river and none. */
-  font-size:max(clamp(2.4rem, 5.55vw, 8.8rem), 4.5833vw) !important;
+  /* 3.0rem floor, not 2.4rem. The floor only binds below ~540px, so this is a
+     phone-only change and every width above still resolves to the same 5.55vw
+     as before. At 375 the statement was setting 24px and reading as body copy
+     rather than as the one line the section exists to deliver.
+
+     3.0rem and not larger because of where the copy breaks. Measured at 375:
+     26 and 28px give five lines, 30px six, and both end on a full phrase --
+     but 32px and 34px push it to seven and eight lines and strand "sense."
+     alone, because Chrome stops applying text-wrap:balance past about six
+     lines. 30px is the largest size that still reads as a statement without
+     leaving a one-word line. */
+  font-size:max(clamp(3.0rem, 5.55vw, 8.8rem), 4.5833vw) !important;
   overflow-wrap:break-word; word-break:normal; hyphens:none;
 }
 @media (max-width:767.98px){
