@@ -42,7 +42,12 @@
   border:var(--nm-cap-line);
   border-radius:var(--nm-cap-radius);
   height:auto;
-  transition:var(--nm-cap-ease);
+  /* opacity is carried alongside the border token, not replaced by it.
+     nm-coord.js polls the wordmark's opacity so the pill can arrive WITH the
+     header rather than a second early -- but this rule was overriding the
+     .5s fade in nm-coord.css with border-color only, so it appeared in a
+     single frame next to a wordmark still fading in. */
+  transition:opacity .5s ease, var(--nm-cap-ease);
 }
 @media (hover:hover){
   #nm-coord:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
@@ -62,7 +67,19 @@
 #nm-made .idx-view-all{
   border:var(--nm-cap-line) !important;
   border-radius:var(--nm-cap-radius) !important;
-  transition:var(--nm-cap-ease) !important;
+  /* The button sets border-color:transparent on hover, but `border:` above is
+     !important and re-asserts the 1px ring over the orange fill -- the only
+     capsule on the site that keeps its outline when filled. border-color is
+     split out so the hover can win it.
+
+     And the transition must NOT be the border-only token here: this button
+     animates its background and text colour too, and !important replaced its
+     whole list with border-color alone, so the fill snapped while everything
+     else eased. */
+  transition:background-color .24s ease, color .24s ease, border-color .24s ease !important;
+}
+@media (hover:hover){
+  #nm-made .idx-view-all:hover{ border-color:transparent !important; }
 }
 
 

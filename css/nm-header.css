@@ -41,7 +41,15 @@
      16px default, so a rem clamp resolved to 23.2px on one page and 27.9px
      on the other -- the bar visibly jumped on navigation. These are the
      px equivalents of the build's own grid-margin curve at a 10px root. */
-  padding:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
+  /* Asymmetric, because the homepage's is. Measured on the build at 2560:
+     padding-top 24px, padding-left 32px -- `pt-header-pad-top` caps at 24
+     while `p-grid-margin` carries the 1.25vw arm. This rule used the side
+     curve on all four edges, so above 1920 the archive's bar sat 8px lower
+     than the homepage's and the whole header jumped on navigation. At 1440
+     and 375 both resolve identically, which is why it never showed until the
+     2560 pass. Top curve has no vw arm; sides keep it. */
+  padding:clamp(12px, 7.8px + 1.07vw, 24px)
+          max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
   background:transparent; border-bottom:0;
   color:#fff;
 }

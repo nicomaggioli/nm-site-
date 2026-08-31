@@ -44,11 +44,33 @@
     p.innerHTML = html;
   }
 
-  apply();
+  /* The page had no <h1> at all, and its three section titles are styled by
+     class rather than marked up as headings, so a screen-reader rotor showed
+     an empty heading list for the whole site. The titles are now <h2> (class
+     styling, so nothing moved); this supplies the <h1> they sit under.
+
+     Visually hidden, because the design's own top-level statement is the
+     wordmark and the masked NM logo -- there is no place for a visible page
+     title without changing the design. */
+  function heading() {
+    if (document.querySelector('h1')) return;
+    var m = document.querySelector('main');
+    if (!m) return;
+    var h = document.createElement('h1');
+    h.textContent = 'Nico Maggioli — brand design, product design and manufacturing';
+    h.style.cssText = 'position:absolute;width:1px;height:1px;margin:-1px;' +
+                      'padding:0;overflow:hidden;clip:rect(0 0 0 0);' +
+                      'clip-path:inset(50%);white-space:nowrap;border:0';
+    m.insertBefore(h, m.firstChild);
+  }
+
+  function run() { apply(); heading(); }
+
+  run();
   /* re-applied after every React re-render -- see js/nm-sync.js */
-  if (window.__nmSync) window.__nmSync(apply);
+  if (window.__nmSync) window.__nmSync(run);
   else {
-    document.addEventListener('DOMContentLoaded', apply);
-    window.addEventListener('load', apply);
+    document.addEventListener('DOMContentLoaded', run);
+    window.addEventListener('load', run);
   }
 })();

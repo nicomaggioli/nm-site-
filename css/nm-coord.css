@@ -23,8 +23,12 @@
      time because a fixed element has no header box to measure against, and the
      header's height changes with the wordmark capsule across breakpoints. */
   position:fixed; top:max(111px, 5.78125vw);
-  right:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
-  width:min(max(360px, 18.75vw), calc(100vw - 2.4rem));
+  /* px, NOT rem. The homepage sets a 10px root and the archive uses the 16px
+     default, so 2.4rem resolved to 24px on one page and 38.4px on the other --
+     the panel sat 5-9px inboard of the pill it drops from, on the archive
+     only. Same px curve the header already uses (css/nm-header.css:44). */
+  right:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
+  width:min(max(360px, 18.75vw), calc(100vw - 24px));
   background:#101010; border:1px solid rgba(255,255,255,.14);
   /* 300, not 120. The homepage stacks two full-viewport page-transition veils
      at z-[200] (one black, one white). They are pointer-events:none and sit at

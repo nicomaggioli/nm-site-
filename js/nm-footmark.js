@@ -23,11 +23,20 @@
   var host = document.querySelector('.foot-mark');
   if (!host || !window.requestAnimationFrame) return;
 
-  /* Not on phones. 5,500 sprites at 30fps on top of a 176-image grid is real
-     work for no return, and the homepage drops its own footer cloud at the
-     same breakpoint -- so the two pages still end the same way. The CSS
-     collapses .foot-mark to nothing here, so there is no gap left behind. */
-  try { if (window.matchMedia('(max-width:767px)').matches) return; } catch (e) {}
+  /* Not DRAWN on phones -- 5,500 sprites at 30fps over a 176-image grid is
+     real work for no return, and the homepage drops its own footer cloud at
+     the same breakpoint, so both pages end the same way.
+
+     But the check cannot be an early return. It used to be, and that made it
+     a one-shot decision taken at load, while the CSS that collapses
+     .foot-mark is a live media query. Load the archive in portrait and rotate
+     to landscape -- 844-932pt on any recent iPhone -- and the box came back
+     at its ~212px min-height with nothing inside it, which is exactly the gap
+     that CSS exists to remove. So the canvas is always built and only the
+     animation is gated, re-evaluated every time start() runs. */
+  function phoneNow() {
+    try { return window.matchMedia('(max-width:767px)').matches; } catch (e) { return false; }
+  }
 
   var cv = document.createElement('canvas');
   cv.setAttribute('role', 'img');
@@ -158,7 +167,9 @@
   function start() {
     if (running || !pts) return;
     if (!resize()) return;
-    if (reduce) { draw(performance.now()); return; }
+    /* re-checked on every start, so a rotation into landscape gets a drawn
+       mark and a rotation back into portrait stops paying for one */
+    if (phoneNow() || reduce) { draw(performance.now()); return; }
     running = true;
     t0 = t0 || performance.now();
     last = 0;
