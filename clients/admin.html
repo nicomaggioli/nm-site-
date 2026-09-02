@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Proposals — admin</title>
+<link rel="icon" href="/icon.svg?nm1" sizes="any" type="image/svg+xml">
+<script src="/js/nm-sync.js"></script>
+<link rel="stylesheet" href="/css/nm-header.css">
+<link rel="stylesheet" href="/css/nm-capsule.css">
+<link rel="stylesheet" href="/css/nm-proposal.css">
+<script src="/js/nm-burger.js" defer></script>
+<script src="/js/nm-trap.js" defer></script>
+</head>
+<body>
+<header class="nm-hdr">
+  <a class="wordmark" href="/" aria-label="Nico Maggioli — Home">
+    <svg viewBox="0 0 220 33" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <text x="1" y="26" textLength="218" lengthAdjust="spacing" fill="currentColor"
+            style="font-family:'Geist', system-ui, sans-serif;font-weight:700;font-size:30px">NICO MAGGIOLI</text>
+    </svg>
+  </a>
+  <ul class="nm-nav"><li><a href="/index/">index</a></li><li><a href="/#about">about</a></li><li><a href="mailto:nicomaggioli@gmail.com">contact</a></li></ul>
+</header>
+
+<main class="pp-wrap">
+  <div class="pa-top">
+    <div>
+      <span class="pp-eye">Internal</span>
+      <h1 class="pp-title">Proposals</h1>
+      <p class="pp-sub">Each one is encrypted with its own passcode. Saving here commits <code>clients.json</code> straight to GitHub; the site redeploys in about a minute.</p>
+    </div>
+    <div class="pa-actions">
+      <span class="pa-status" id="status"></span>
+      <button class="pp-btn sm" type="button" id="btn-token">Token</button>
+      <button class="pp-btn pri sm" type="button" id="btn-new">+ New</button>
+    </div>
+  </div>
+  <div class="pa-list" id="list" hidden></div>
+  <footer class="pp-foot"><span>&copy; Nico Maggioli 2026</span><a href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></footer>
+</main>
+
+<div class="pa-modal pp-hidden" id="token-modal" role="dialog" aria-modal="true" aria-labelledby="token-h">
+  <div class="pa-card">
+    <button class="pa-close" type="button" id="token-close" aria-label="Close">✕</button>
+    <span class="pp-eye">GitHub</span>
+    <h2 class="pp-title" id="token-h" style="font-size:max(26px,1.354vw)">Personal access token</h2>
+    <p class="pp-sub">Needs the <code>repo</code> scope. It stays in this browser's localStorage and is only ever sent to api.github.com.</p>
+    <div class="pp-field"><label for="token-input">Token</label><input id="token-input" type="password" autocomplete="off" placeholder="ghp_…"></div>
+    <div class="pa-form-actions"><span></span><button class="pp-btn pri" type="button" id="token-save">Connect</button></div>
+  </div>
+</div>
+
+<div class="pa-modal pp-hidden" id="editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-title">
+  <div class="pa-card">
+    <button class="pa-close" type="button" id="editor-close" aria-label="Close">✕</button>
+    <span class="pp-eye">Proposal</span>
+    <h2 class="pp-title" id="editor-title" style="font-size:max(26px,1.354vw)">Edit</h2>
+
+    <div id="passcode-step" hidden>
+      <p class="pp-sub">Enter the passcode for <strong id="ps-slug"></strong> to unlock and edit it.</p>
+      <div class="pp-field"><label for="ps-input">Passcode</label><input id="ps-input" type="password" autocomplete="off"></div>
+      <div class="pa-form-actions">
+        <button class="pp-btn sm danger" type="button" id="ps-delete">Delete this proposal</button>
+        <div class="pa-right"><button class="pp-btn pri" type="button" id="ps-unlock">Unlock</button></div>
+      </div>
+      <div class="pp-err" id="ps-err" role="alert"></div>
+    </div>
+
+    <form id="ed-form" hidden novalidate>
+      <div class="pa-grid">
+        <div class="pp-field"><label for="ed-slug">Slug (the URL: /clients/slug)</label><input id="ed-slug" required autocapitalize="none" spellcheck="false"></div>
+        <div class="pp-field"><label for="ed-pw">Passcode</label><input id="ed-pw" type="text" autocomplete="off"></div>
+        <div class="pp-field"><label for="ed-client">Client name</label><input id="ed-client"></div>
+        <div class="pp-field"><label for="ed-title">Browser title</label><input id="ed-title"></div>
+        <div class="pp-field"><label for="ed-stripe">Stripe payment link</label><input id="ed-stripe" placeholder="https://buy.stripe.com/…" spellcheck="false"></div>
+        <div class="pp-field"><label for="ed-paylabel">Pay button label</label><input id="ed-paylabel" placeholder="Pay deposit · $2,900"></div>
+      </div>
+      <div class="pp-field"><label for="ed-body">Body — markdown, tables supported</label><textarea id="ed-body" rows="22"></textarea></div>
+      <div class="pa-form-actions">
+        <button class="pp-btn sm danger" type="button" id="ed-delete">Delete</button>
+        <div class="pa-right">
+          <button class="pp-btn" type="button" id="ed-cancel">Cancel</button>
+          <button class="pp-btn pri" type="submit" id="ed-save">Save &amp; commit</button>
+        </div>
+      </div>
+      <div class="pp-err" id="ed-err" role="alert"></div>
+    </form>
+  </div>
+</div>
+<div class="pa-toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var REPO = 'nicomaggioli/nm-site-', FILE = 'clients.json', BASE = 'https://api.github.com';
+  var token = localStorage.getItem('clients-admin-token') || '';
+  var allData = {}, fileSha = '', editingSlug = null, unlockedPw = null;
+  var $ = function (id) { return document.getElementById(id); };
+  var status = function (m) { $('status').textContent = m || ''; };
+  var toast = function (m, kind) {
+    var t = $('toast'); t.textContent = m; t.className = 'pa-toast show ' + (kind || '');
+    setTimeout(function () { t.className = 'pa-toast ' + (kind || ''); }, 2200);
+  };
+  var show = function (el) { el.classList.remove('pp-hidden'); };
+  var hide = function (el) { el.classList.add('pp-hidden'); };
+
+  /* ── crypto: identical to the client page and to the old site ── */
+  var b64e = function (buf) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); };
+  var b64d = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
+  async function deriveKey(pw, salt, usage) {
+    var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 250000, hash: 'SHA-256' }, base,
+      { name: 'AES-GCM', length: 256 }, false, [usage]);
+  }
+  async function decrypt(p, pw) {
+    var key = await deriveKey(pw, b64d(p.salt), 'decrypt');
+    var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(p.iv) }, key, b64d(p.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function encrypt(payload, pw) {
+    var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    var key = await deriveKey(pw, salt, 'encrypt');
+    var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(JSON.stringify(payload)));
+    return { salt: b64e(salt), iv: b64e(iv), ct: b64e(ct) };
+  }
+
+  /* ── GitHub Contents API ── */
+  async function gh(method, path, body) {
+    var r = await fetch(BASE + '/repos/' + REPO + '/' + path, {
+      method: method,
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!r.ok) { var e = await r.json().catch(function () { return {}; }); throw new Error(e.message || r.statusText); }
+    return r.json();
+  }
+  async function loadFile() {
+    if (!token) { openToken(); return; }
+    status('Loading…');
+    try {
+      var data = await gh('GET', 'contents/' + FILE);
+      fileSha = data.sha;
+      allData = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, '')))));
+      renderList();
+      $('list').hidden = false;
+      status(Object.keys(allData).length + ' proposal' + (Object.keys(allData).length === 1 ? '' : 's'));
+    } catch (e) {
+      status('Error: ' + e.message);
+      if (/credentials|Not Found|Bad/i.test(e.message)) openToken(); else toast('Load failed: ' + e.message, 'err');
+    }
+  }
+  async function saveFile(message) {
+    status('Saving…');
+    var json = JSON.stringify(allData, null, 2) + '\n';
+    var content = btoa(unescape(encodeURIComponent(json)));
+    var data = await gh('PUT', 'contents/' + FILE, { message: message, content: content, sha: fileSha });
+    fileSha = data.content.sha;
+    status('Saved');
+  }
+
+  /* ── token ── */
+  function openToken() { $('token-input').value = token; show($('token-modal')); setTimeout(function () { $('token-input').focus(); }, 50); }
+  function closeToken() { hide($('token-modal')); }
+  $('btn-token').addEventListener('click', openToken);
+  $('token-close').addEventListener('click', closeToken);
+  $('token-save').addEventListener('click', function () {
+    token = $('token-input').value.trim();
+    localStorage.setItem('clients-admin-token', token);
+    closeToken(); loadFile();
+  });
+
+  /* ── list ── */
+  function renderList() {
+    var list = $('list'); list.innerHTML = '';
+    var slugs = Object.keys(allData).sort();
+    if (!slugs.length) { list.innerHTML = '<div class="pa-empty">No proposals yet.</div>'; return; }
+    slugs.forEach(function (slug) {
+      var row = document.createElement('div'); row.className = 'pa-row';
+      row.innerHTML = '<div><div class="slug"></div><div class="meta">nicomaggioli.com/clients/' + slug + '</div></div>' +
+        '<div class="pa-actions"><a class="pp-btn sm" target="_blank" rel="noopener" href="/clients/?c=' + encodeURIComponent(slug) + '">View</a>' +
+        '<button class="pp-btn sm" type="button" data-edit="' + slug + '">Edit</button></div>';
+      row.querySelector('.slug').textContent = slug;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { openEditor(b.dataset.edit); }); });
+  }
+
+  /* ── editor ── */
+  function fillForm(p) {
+    $('ed-slug').value = editingSlug || '';
+    $('ed-pw').value = '';
+    $('ed-pw').placeholder = editingSlug ? 'leave blank to keep the current passcode' : 'set a passcode';
+    $('ed-client').value = p.client || ''; $('ed-title').value = p.title || '';
+    $('ed-stripe').value = p.stripeLink || ''; $('ed-paylabel').value = p.payLabel || '';
+    $('ed-body').value = p.body || '';
+  }
+  function openEditor(slug) {
+    editingSlug = slug; unlockedPw = null;
+    $('ed-err').textContent = ''; $('ps-err').textContent = '';
+    $('editor-title').textContent = slug ? 'Edit “' + slug + '”' : 'New proposal';
+    show($('editor-modal'));
+    if (slug) {
+      $('passcode-step').hidden = false; $('ed-form').hidden = true;
+      $('ps-slug').textContent = slug; $('ps-input').value = '';
+      setTimeout(function () { $('ps-input').focus(); }, 50);
+    } else {
+      $('passcode-step').hidden = true; $('ed-form').hidden = false;
+      fillForm({}); setTimeout(function () { $('ed-slug').focus(); }, 50);
+    }
+  }
+  function closeEditor() { hide($('editor-modal')); editingSlug = null; unlockedPw = null; }
+  async function unlockEntry() {
+    var pw = $('ps-input').value; $('ps-err').textContent = '';
+    try {
+      var payload = await decrypt(allData[editingSlug], pw);
+      unlockedPw = pw; $('passcode-step').hidden = true; $('ed-form').hidden = false; fillForm(payload);
+    } catch (e) { $('ps-err').textContent = 'Wrong passcode.'; }
+  }
+  async function saveEntry(ev) {
+    ev.preventDefault();
+    var slug = $('ed-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '');
+    var newPw = $('ed-pw').value; $('ed-err').textContent = '';
+    if (!slug) { $('ed-err').textContent = 'A slug is required.'; return; }
+    if (!editingSlug && !newPw) { $('ed-err').textContent = 'New proposals need a passcode.'; return; }
+    var pw = newPw || unlockedPw;
+    if (!pw) { $('ed-err').textContent = 'No passcode — fill the passcode field.'; return; }
+    var payload = { client: $('ed-client').value.trim(), title: $('ed-title').value.trim(), body: $('ed-body').value,
+                    stripeLink: $('ed-stripe').value.trim(), payLabel: $('ed-paylabel').value.trim() };
+    $('ed-save').disabled = true;
+    try {
+      var enc = await encrypt(payload, pw);
+      if (editingSlug && editingSlug !== slug) delete allData[editingSlug];
+      allData[slug] = enc;
+      await saveFile(editingSlug ? 'Update proposal: ' + slug : 'Add proposal: ' + slug);
+      renderList(); toast('Saved — live in about a minute'); closeEditor();
+    } catch (e) { $('ed-err').textContent = 'Save failed: ' + e.message; toast('Save failed', 'err'); }
+    finally { $('ed-save').disabled = false; }
+  }
+  async function deleteEntry() {
+    if (!editingSlug) { closeEditor(); return; }
+    if (!confirm('Delete “' + editingSlug + '”? This cannot be undone.')) return;
+    try { delete allData[editingSlug]; await saveFile('Delete proposal: ' + editingSlug); renderList(); toast('Deleted'); closeEditor(); }
+    catch (e) { toast('Delete failed: ' + e.message, 'err'); }
+  }
+  $('btn-new').addEventListener('click', function () { openEditor(null); });
+  $('editor-close').addEventListener('click', closeEditor);
+  $('ed-cancel').addEventListener('click', closeEditor);
+  $('ps-unlock').addEventListener('click', unlockEntry);
+  $('ps-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); unlockEntry(); } });
+  $('ps-delete').addEventListener('click', deleteEntry);
+  $('ed-delete').addEventListener('click', deleteEntry);
+  $('ed-form').addEventListener('submit', saveEntry);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeToken(); closeEditor(); } });
+
+  loadFile();
+})();
+</script>
+</body>
+</html>

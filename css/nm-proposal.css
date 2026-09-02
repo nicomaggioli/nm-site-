@@ -1,0 +1,145 @@
+/* ── proposals ─────────────────────────────────────────────────────────────
+   The client-facing proposal page and its admin. Same tokens as the rest of
+   the site: #0a0a0a ground, Geist for copy, Geist Mono for the tracked
+   uppercase labels, the capsule recipe from nm-capsule.css for every control,
+   the orange gradient for the one action that matters (pay).
+
+   The header, fonts, capsule and coordinate widget all come from the shared
+   sheets and scripts, which is what makes this read as the same site rather
+   than a form bolted onto it. */
+:root{ --pp-muted:rgba(255,255,255,.62); --pp-line:rgba(255,255,255,.14); --pp-surface:#101010; }
+html{ background:#0a0a0a; }
+body{ margin:0; background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100svh; }
+
+.pp-wrap{ max-width:min(760px, calc(100vw - 2*max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw)));
+          margin:0 auto; padding:max(clamp(120px,12vw,168px),8.75vw) 0 max(clamp(60px,9vw,120px),6.25vw); }
+
+/* eyebrow: the tracked mono label the whole site uses for section names */
+.pp-eye{ display:inline-flex; align-items:center; gap:10px;
+         font-family:'Geist Mono',ui-monospace,monospace; font-size:max(12px,0.625vw);
+         letter-spacing:.14em; text-transform:uppercase; color:var(--pp-muted); }
+.pp-eye::before{ content:""; width:8px; height:8px; border-radius:50%;
+                 background:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418)); }
+
+.pp-title{ margin:18px 0 8px; font-weight:700; letter-spacing:-.02em; line-height:1.02;
+           font-size:max(clamp(34px, 4.2vw, 64px), 3.333vw); text-wrap:balance; }
+.pp-sub{ margin:0; color:var(--pp-muted); font-size:max(15px,0.78vw); line-height:1.55; max-width:52ch; }
+
+/* fields */
+.pp-field{ display:flex; flex-direction:column; gap:8px; margin-top:26px; }
+.pp-field label{ font-family:'Geist Mono',ui-monospace,monospace; font-size:max(11px,0.573vw);
+                 letter-spacing:.14em; text-transform:uppercase; color:var(--pp-muted); }
+.pp-field input,.pp-field textarea{
+  background:transparent; color:#fff; font:inherit; font-size:max(16px,0.833vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; outline:none;
+  padding:max(12px,0.625vw) max(18px,0.9375vw); transition:border-color .24s ease; }
+.pp-field textarea{ border-radius:20px; min-height:120px; resize:vertical; line-height:1.5;
+  font-family:'Geist Mono',ui-monospace,monospace; font-size:max(13px,0.677vw); }
+.pp-field input:focus,.pp-field textarea:focus{ border-color:#fff; }
+.pp-field input:focus-visible,.pp-field textarea:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off,3px); }
+
+/* capsule buttons -- nm-capsule's recipe, filled orange for the primary */
+.pp-btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  min-height:max(46px,2.4vw); padding:0 max(22px,1.146vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; background:transparent;
+  color:#fff; font:inherit; font-weight:700; font-size:max(14px,0.7292vw);
+  letter-spacing:-.02em; text-transform:uppercase; text-decoration:none; cursor:pointer;
+  background-origin:border-box; background-repeat:no-repeat;
+  transition:border-color .24s ease, color .24s ease, opacity .24s ease; }
+.pp-btn:disabled{ opacity:.4; cursor:not-allowed; }
+@media (hover:hover){ .pp-btn:not(:disabled):hover{
+  background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418));
+  color:#0a0a0a; border-color:transparent; } }
+.pp-btn.pri{ background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418));
+  color:#0a0a0a; border-color:transparent; }
+@media (hover:hover){ .pp-btn.pri:not(:disabled):hover{ opacity:.88; } }
+.pp-btn.wide{ width:100%; margin-top:22px; }
+.pp-btn:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off,3px); }
+
+.pp-err{ margin-top:12px; min-height:18px; font-size:max(13px,0.677vw); color:#FF7820; }
+.pp-hidden{ display:none !important; }
+
+/* the proposal body (markdown) */
+.pp-body{ margin-top:28px; font-size:max(17px,0.885vw); line-height:1.6; color:rgba(255,255,255,.88); }
+.pp-body h1{ font-size:max(clamp(30px,3.6vw,56px),2.9166vw); font-weight:700; letter-spacing:-.02em; line-height:1.05; margin:6px 0 18px; text-wrap:balance; color:#fff; }
+.pp-body h2{ font-size:max(22px,1.146vw); font-weight:700; letter-spacing:-.02em; margin:38px 0 10px; color:#fff; }
+.pp-body h3{ font-size:max(17px,0.885vw); font-weight:700; margin:24px 0 8px; color:#fff; }
+.pp-body p{ margin:12px 0; }
+.pp-body ul,.pp-body ol{ margin:12px 0 12px 22px; }
+.pp-body li{ margin:6px 0; }
+.pp-body strong{ color:#fff; }
+.pp-body hr{ border:0; border-top:1px solid var(--pp-line); margin:30px 0; }
+.pp-body a{ color:#fff; text-decoration:underline; text-underline-offset:.15em; }
+@media (hover:hover){ .pp-body a:hover{ color:var(--nm-orange,#FF7820); } }
+.pp-body code{ font-family:'Geist Mono',ui-monospace,monospace; font-size:.9em;
+  background:rgba(255,255,255,.06); padding:2px 6px; border-radius:6px; }
+.pp-body blockquote{ margin:16px 0; padding-left:16px; border-left:2px solid var(--nm-orange,#FF7820); color:var(--pp-muted); }
+.pp-body table{ width:100%; border-collapse:collapse; margin:18px 0; font-size:max(15px,0.78vw); }
+.pp-body th,.pp-body td{ padding:12px 12px; border-bottom:1px solid var(--pp-line); text-align:left; vertical-align:top; }
+.pp-body th{ font-family:'Geist Mono',ui-monospace,monospace; font-weight:500; font-size:max(11px,0.573vw);
+  letter-spacing:.14em; text-transform:uppercase; color:var(--pp-muted); }
+.pp-body td:last-child,.pp-body th:last-child{ text-align:right; white-space:nowrap; }
+/* A ledger written as `| | |` so it has no header still gets a <thead> from the
+   markdown parser -- an empty 25px row with a rule under it. Collapse a head
+   whose cells are all empty; the body rows carry their own rules. */
+.pp-body thead tr:has(> th:empty:first-child + th:empty:last-child){ display:none; }
+.pp-body thead:has(> tr > th:empty:first-child + th:empty:last-child) + tbody tr:first-child td{ border-top:1px solid var(--pp-line); }
+/* tables stay tables (display:block dropped width:100% and collapsed them to
+   their content); a wrapper does the horizontal scrolling on narrow screens */
+.pp-tablewrap{ overflow-x:auto; margin:18px 0; -webkit-overflow-scrolling:touch; }
+.pp-tablewrap table{ margin:0; min-width:min(100%, 420px); }
+
+.pp-pay{ margin-top:34px; }
+
+/* accept & sign */
+.pp-sign{ margin-top:48px; padding-top:32px; border-top:1px solid var(--pp-line); }
+.pp-sign .pp-eye{ margin-bottom:6px; }
+.pp-agree{ display:flex; gap:12px; align-items:flex-start; margin-top:22px; cursor:pointer;
+  font-size:max(15px,0.78vw); line-height:1.5; color:rgba(255,255,255,.88); user-select:none; }
+.pp-agree input{ margin-top:3px; width:18px; height:18px; flex:none; accent-color:#FF7820; cursor:pointer; }
+.pp-ok{ margin-top:22px; padding:20px 22px; border:1px solid var(--pp-line); border-radius:20px; background:var(--pp-surface); }
+.pp-ok h3{ margin:0 0 6px; font-size:max(17px,0.885vw); }
+.pp-ok p{ margin:0; color:var(--pp-muted); font-size:max(15px,0.78vw); line-height:1.5; }
+.pp-ok details{ margin-top:12px; font-size:max(13px,0.677vw); color:var(--pp-muted); }
+.pp-ok summary{ cursor:pointer; }
+.pp-ok pre{ margin-top:10px; padding:12px; white-space:pre-wrap; word-break:break-word; border:1px solid var(--pp-line);
+  border-radius:12px; font-family:'Geist Mono',ui-monospace,monospace; font-size:12px; color:rgba(255,255,255,.8); }
+
+/* footer meta row, identical to the archive's */
+.pp-foot{ display:flex; align-items:center; justify-content:space-between; gap:max(16px,0.8333vw);
+  margin-top:64px; padding:max(24px,1.25vw) 0; font-size:max(12px,0.625vw); line-height:1.1;
+  text-transform:uppercase; color:rgba(255,255,255,.62); }
+.pp-foot a{ color:#fff; text-decoration:none; padding:15px 0; margin:-15px 0; transition:color .2s ease; }
+@media (hover:hover){ .pp-foot a:hover{ color:var(--nm-orange,#FF7820); } }
+
+/* ── admin only ───────────────────────────────────────────────────────────*/
+.pa-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.pa-status{ font-family:'Geist Mono',ui-monospace,monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--pp-muted); }
+.pa-list{ margin-top:28px; border-top:1px solid var(--pp-line); }
+.pa-row{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:16px;
+  padding:max(18px,0.9375vw) 0; border-bottom:1px solid var(--pp-line); }
+.pa-row .slug{ font-weight:700; font-size:max(22px,1.146vw); letter-spacing:-.02em; }
+.pa-row .meta{ font-family:'Geist Mono',ui-monospace,monospace; font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--pp-muted); margin-top:4px; }
+.pa-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+.pp-btn.sm{ min-height:36px; padding:0 16px; font-size:12px; }
+.pp-btn.danger{ border-color:rgba(255,120,32,.5); color:#FF7820; }
+@media (hover:hover){ .pp-btn.danger:hover{ background-image:none; background:#FF7820; color:#0a0a0a; border-color:transparent; } }
+.pa-empty{ padding:40px 0; color:var(--pp-muted); }
+.pa-modal{ position:fixed; inset:0; z-index:300; display:flex; align-items:flex-start; justify-content:center;
+  padding:max(clamp(96px,10vw,140px),7.3vw) max(clamp(12px,7.8px + 1.07vw,24px),1.25vw) 40px;
+  background:rgba(10,10,10,.86); overflow:auto; }
+.pa-card{ width:min(760px,100%); background:var(--pp-surface); border:1px solid var(--pp-line); border-radius:24px;
+  padding:max(28px,1.458vw) max(30px,1.5625vw); position:relative; }
+.pa-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.28); background:none; color:#fff; cursor:pointer; font-size:18px; line-height:1; }
+.pa-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+@media (max-width:640px){ .pa-grid{ grid-template-columns:1fr; } }
+.pa-form-actions{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:26px; flex-wrap:wrap; }
+.pa-right{ display:flex; gap:10px; margin-left:auto; }
+.pa-toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,16px); opacity:0; z-index:400;
+  padding:12px 18px; border-radius:999px; background:#fff; color:#0a0a0a; font-weight:700; font-size:14px;
+  transition:opacity .2s ease, transform .2s ease; pointer-events:none; }
+.pa-toast.show{ opacity:1; transform:translate(-50%,0); }
+.pa-toast.err{ background:#FF7820; }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Nico Maggioli</title>
+<script>
+/* GitHub Pages serves this for any path that is not a file. The only clean
+   URLs the site hands out are /clients/SLUG, which resolve to the proposal
+   page with the slug as a query -- so a client's link reads as a real page
+   while the host stays static. Everything else goes home. */
+(function () {
+  var m = location.pathname.match(/^\/clients\/([^/?#]+)\/?$/);
+  if (m && m[1].toLowerCase() !== 'admin.html') {
+    location.replace('/clients/?c=' + encodeURIComponent(m[1]) + location.hash);
+  } else {
+    location.replace('/');
+  }
+})();
+</script>
+</head>
+<body></body>
+</html>

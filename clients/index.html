@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Proposal — Nico Maggioli</title>
+<link rel="icon" href="/icon.svg?nm1" sizes="any" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico?nm1" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.png?nm1" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-icon.png?nm1" sizes="180x180" type="image/png">
+<script src="/js/nm-sync.js"></script>
+<link rel="stylesheet" href="/css/nm-header.css">
+<link rel="stylesheet" href="/css/nm-coord.css">
+<link rel="stylesheet" href="/css/nm-capsule.css">
+<link rel="stylesheet" href="/css/nm-proposal.css">
+<script src="/js/nm-burger.js" defer></script>
+<script src="/js/nm-coord.js" defer></script>
+<script src="/js/nm-trap.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.0/marked.min.js"></script>
+</head>
+<body>
+<header class="nm-hdr">
+  <a class="wordmark" href="/" aria-label="Nico Maggioli — Home">
+    <svg viewBox="0 0 220 33" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <text x="1" y="26" textLength="218" lengthAdjust="spacing" fill="currentColor"
+            style="font-family:'Geist', system-ui, sans-serif;font-weight:700;font-size:30px">NICO MAGGIOLI</text>
+    </svg>
+  </a>
+  <ul class="nm-nav"><li><a href="/index/">index</a></li><li><a href="/#about">about</a></li><li><a href="mailto:nicomaggioli@gmail.com">contact</a></li></ul>
+</header>
+
+<main class="pp-wrap">
+  <section id="gate" aria-labelledby="gate-h">
+    <span class="pp-eye">Private proposal</span>
+    <h1 class="pp-title" id="gate-h">Enter your passcode</h1>
+    <p class="pp-sub">This page was made for you. The passcode was sent to you separately.</p>
+    <form id="gate-form" novalidate>
+      <div class="pp-field">
+        <label for="pw">Passcode</label>
+        <input id="pw" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+      </div>
+      <button class="pp-btn pri wide" type="submit" id="unlock">Unlock</button>
+      <div class="pp-err" id="err" role="alert" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <section id="view" class="pp-hidden" aria-labelledby="view-tag">
+    <span class="pp-eye" id="view-tag">Proposal</span>
+    <div class="pp-body" id="t-body"></div>
+    <a id="t-pay" class="pp-btn pri wide pp-pay" target="_blank" rel="noopener">Pay now</a>
+
+    <div class="pp-sign" id="sign-section">
+      <span class="pp-eye">Accept &amp; sign</span>
+      <h2 class="pp-title" style="font-size:max(26px,1.354vw);margin-top:10px">Sign this proposal</h2>
+      <p class="pp-sub">Type your full name and email. Your mail app opens with a pre-filled message to me — hit send and it's done.</p>
+      <form id="sign-form" novalidate>
+        <div class="pp-field"><label for="sign-name">Full legal name</label><input id="sign-name" type="text" autocomplete="name" required></div>
+        <div class="pp-field"><label for="sign-email">Email</label><input id="sign-email" type="email" autocomplete="email" required></div>
+        <label class="pp-agree"><input id="sign-agree" type="checkbox" required><span>I have read and agree to the terms of this proposal.</span></label>
+        <button class="pp-btn wide" type="submit" id="sign-submit">Sign and send</button>
+        <div class="pp-err" id="sign-err" role="alert" aria-live="polite"></div>
+      </form>
+      <div id="sign-success" class="pp-ok" hidden>
+        <h3>Signed.</h3>
+        <p id="sign-success-msg"></p>
+        <details><summary>Email didn't open? A copy you can paste.</summary><pre id="sign-fallback"></pre></details>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pp-foot"><span>&copy; Nico Maggioli 2026</span><a href="mailto:nicomaggioli@gmail.com">nicomaggioli@gmail.com</a></footer>
+</main>
+
+<script>
+(function () {
+  /* /clients/SLUG is turned into ?c=SLUG by /404.html on GitHub Pages;
+     both forms are accepted here so links sent from the old site still work */
+  var pathMatch = location.pathname.match(/^\/clients\/([^/?#]+)\/?$/);
+  var slug = pathMatch ? decodeURIComponent(pathMatch[1]) : new URLSearchParams(location.search).get('c');
+  var $ = function (id) { return document.getElementById(id); };
+  var err = $('err'), gate = $('gate'), view = $('view');
+
+  var b64d = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
+
+  /* AES-GCM-256, key from PBKDF2-SHA256 at 250,000 rounds. Identical to the
+     old site's scheme, so every proposal already in clients.json still opens
+     with the passcode the client already has. */
+  async function decrypt(p, pw) {
+    var salt = b64d(p.salt), iv = b64d(p.iv), ct = b64d(p.ct);
+    var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 250000, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  function render(d) {
+    document.title = (d.title || 'Proposal') + ' — Nico Maggioli';
+    $('view-tag').textContent = d.client ? 'For ' + d.client : 'Proposal';
+    $('t-body').innerHTML = marked.parse(d.body || '', { breaks: false, gfm: true });
+    /* wrap each table so it can scroll sideways on a phone without shrinking */
+    $('t-body').querySelectorAll('table').forEach(function (t) {
+      var w = document.createElement('div'); w.className = 'pp-tablewrap';
+      t.parentNode.insertBefore(w, t); w.appendChild(t);
+    });
+    var pay = $('t-pay');
+    if (d.stripeLink) { pay.href = d.stripeLink; pay.textContent = d.payLabel || 'Pay now'; }
+    else pay.classList.add('pp-hidden');
+    gate.classList.add('pp-hidden');
+    view.classList.remove('pp-hidden');
+    view.querySelector('.pp-eye').setAttribute('tabindex', '-1');
+    view.querySelector('.pp-eye').focus();
+    window.scrollTo(0, 0);
+  }
+
+  async function loadEntry() {
+    if (!slug) throw new Error('This link is missing its client code.');
+    var r = await fetch('/clients.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error('Could not load the proposal right now.');
+    var all = await r.json();
+    var e = all[slug];
+    if (!e) throw new Error('No proposal at this link.');
+    return e;
+  }
+
+  var entry = null;
+  loadEntry().then(function (e) { entry = e; })
+    .catch(function (e) { err.textContent = e.message; $('unlock').disabled = true; });
+
+  $('gate-form').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    err.textContent = '';
+    var btn = $('unlock');
+    if (!entry) { err.textContent = 'Still loading — try again in a second.'; return; }
+    btn.disabled = true; btn.textContent = 'Unlocking…';
+    try { render(await decrypt(entry, $('pw').value)); }
+    catch (e) { err.textContent = 'Wrong passcode. Try again.'; btn.disabled = false; btn.textContent = 'Unlock'; $('pw').select(); }
+  });
+
+  $('sign-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var name = $('sign-name').value.trim(), email = $('sign-email').value.trim();
+    var serr = $('sign-err'); serr.textContent = '';
+    if (!name || !email) { serr.textContent = 'Name and email are both needed.'; return; }
+    if (!$('sign-agree').checked) { serr.textContent = 'Tick the box to confirm you agree.'; return; }
+    var date = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+    var title = $('view-tag').textContent;
+    var subject = 'Signed proposal: ' + name + ' (' + slug + ')';
+    var body = 'I, ' + name + ' (' + email + '), have read and agree to the terms of the proposal "' + title + '".\n\n' +
+               'Signed: ' + date + '\nPage: ' + location.href + '\nSlug: ' + slug + '\n\n' + name;
+    location.href = 'mailto:nicomaggioli@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    $('sign-form').classList.add('pp-hidden');
+    $('sign-success-msg').textContent = 'Your mail app should have opened with a message to Nico. Hit send to complete signing.';
+    $('sign-fallback').textContent = 'To: nicomaggioli@gmail.com\nSubject: ' + subject + '\n\n' + body;
+    $('sign-success').hidden = false;
+    $('sign-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+})();
+</script>
+</body>
+</html>
