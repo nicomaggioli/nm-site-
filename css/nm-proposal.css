@@ -143,3 +143,31 @@ body{ margin:0; background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sa
   transition:opacity .2s ease, transform .2s ease; pointer-events:none; }
 .pa-toast.show{ opacity:1; transform:translate(-50%,0); }
 .pa-toast.err{ background:#FF7820; }
+
+/* ── print ────────────────────────────────────────────────────────────────
+   A proposal gets printed, forwarded and saved as a PDF — that is what
+   happens to this kind of document, and on a black background it would come
+   out as a solid slab of toner. So print inverts to paper: black on white,
+   the site chrome and every control dropped, and only the proposal itself
+   left. Tables and their headings are kept off page breaks so a fee table
+   never splits across two sheets. */
+@media print{
+  html,body{ background:#fff !important; color:#000 !important; }
+  .nm-hdr,.nm-burger,.nm-burger-panel,#nm-coord,.nm-c-panel,
+  .pp-foot,.pp-pay,.pp-sign,#gate{ display:none !important; }
+  .pp-wrap{ max-width:none; margin:0; padding:0; }
+  .pp-body{ color:#000; font-size:11pt; line-height:1.5; }
+  .pp-body h1,.pp-body h2,.pp-body h3{ color:#000; break-after:avoid; page-break-after:avoid; }
+  .pp-body h1{ font-size:22pt; } .pp-body h2{ font-size:14pt; margin-top:20pt; } .pp-body h3{ font-size:11pt; }
+  .pp-body a{ color:#000; text-decoration:underline; }
+  .pp-body hr{ border-top:1px solid #ccc; }
+  .pp-body blockquote{ border-left:2px solid #000; color:#333; }
+  .pp-body code{ background:#f2f2f2; }
+  .pp-eye{ color:#555; }
+  .pp-eye::before{ background:#000 !important; }
+  .pp-tablewrap,.pp-body table{ overflow:visible !important; break-inside:avoid; page-break-inside:avoid; }
+  .pp-body th,.pp-body td{ border-bottom:1px solid #ccc; color:#000; }
+  .pp-body th{ color:#555; }
+  /* the URL is worth having on a printed copy */
+  .pp-body h1::after{ content:""; }
+}

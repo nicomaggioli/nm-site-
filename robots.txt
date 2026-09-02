@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+# Client proposals are private. The pages carry noindex themselves;
+# clients.json is a JSON file and cannot, so it is named here — it is
+# only ciphertext, but the slug list should not be crawlable either.
+Disallow: /clients/
+Disallow: /clients.json
+Disallow: /clients.html
+
 Sitemap: https://nicomaggioli.com/sitemap.xml

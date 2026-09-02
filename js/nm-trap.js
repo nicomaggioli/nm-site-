@@ -75,12 +75,14 @@
     lastFocus = null;
   }
 
-  /* Both overlays signal their state with a class, and both are re-created by
-     their own scripts, so watch the state rather than hook their functions. */
+  /* Every overlay on the site signals its state with a class, and each is
+     re-created by its own script, so watch the state rather than hook their
+     functions. .pa-modal is the proposals admin, whose token and editor
+     dialogs have the same aria-modal claim and the same need. */
   function poll() {
-    var burger = document.querySelector('.nm-burger-panel.is-open');
-    var lb = document.querySelector('.nm-lb.is-open');
-    var want = burger || lb || null;
+    var want = document.querySelector('.nm-burger-panel.is-open') ||
+               document.querySelector('.nm-lb.is-open') ||
+               document.querySelector('.pa-modal:not(.pp-hidden)') || null;
     if (want && want !== open) capture(want);
     else if (!want && open) release();
   }

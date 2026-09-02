@@ -95,6 +95,27 @@
     return JSON.parse(new TextDecoder().decode(pt));
   }
 
+  /* A passcode gets sent in a text and typed back on a phone, so it arrives
+     with a capital the sender never used, or a space the keyboard added.
+     Only the exact string derives the right key, so instead of weakening the
+     scheme, try the obvious human variants of what was typed and stop at the
+     first that opens. An attacker still needs the passcode; this only forgives
+     the ways a real person mistypes one they were legitimately given. */
+  function variants(pw) {
+    var t = pw.trim(), out = [pw];
+    [t, t.toLowerCase(), t.charAt(0).toUpperCase() + t.slice(1).toLowerCase(), t.toUpperCase()]
+      .forEach(function (v) { if (v && out.indexOf(v) < 0) out.push(v); });
+    return out;
+  }
+  async function tryDecrypt(entry, pw) {
+    var list = variants(pw), lastErr = null;
+    for (var i = 0; i < list.length; i++) {
+      try { return { data: await decrypt(entry, list[i]), pw: list[i] }; }
+      catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('bad passcode');
+  }
+
   function render(d) {
     document.title = (d.title || 'Proposal') + ' — Nico Maggioli';
     $('view-tag').textContent = d.client ? 'For ' + d.client : 'Proposal';
@@ -134,7 +155,7 @@
     var btn = $('unlock');
     if (!entry) { err.textContent = 'Still loading — try again in a second.'; return; }
     btn.disabled = true; btn.textContent = 'Unlocking…';
-    try { render(await decrypt(entry, $('pw').value)); }
+    try { render((await tryDecrypt(entry, $('pw').value)).data); }
     catch (e) { err.textContent = 'Wrong passcode. Try again.'; btn.disabled = false; btn.textContent = 'Unlock'; $('pw').select(); }
   });
 
