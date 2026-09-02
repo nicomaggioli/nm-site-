@@ -77,6 +77,11 @@
         <div class="pp-field"><label for="ed-stripe">Stripe payment link</label><input id="ed-stripe" placeholder="https://buy.stripe.com/…" spellcheck="false"></div>
         <div class="pp-field"><label for="ed-paylabel">Pay button label</label><input id="ed-paylabel" placeholder="Pay deposit · $2,900"></div>
       </div>
+      <!-- Shown when there is no Stripe link, so a proposal settled by bank
+           transfer still ends on payment terms instead of on nothing. Never
+           put an account or routing number in here: clients.json is committed
+           and served publicly, and the passcodes are client names. -->
+      <div class="pp-field"><label for="ed-paynote">Payment terms — markdown, shown when there is no Stripe link. No account numbers.</label><textarea id="ed-paynote" rows="6" placeholder="Half on signature, half on sample approval. An invoice with transfer details follows by email."></textarea></div>
       <div class="pp-field"><label for="ed-body">Body — markdown, tables supported</label><textarea id="ed-body" rows="22"></textarea></div>
       <div class="pa-form-actions">
         <button class="pp-btn sm danger" type="button" id="ed-delete">Delete</button>
@@ -214,6 +219,7 @@
     $('ed-pw').placeholder = editingSlug ? 'leave blank to keep the current passcode' : 'set a passcode';
     $('ed-client').value = p.client || ''; $('ed-title').value = p.title || '';
     $('ed-stripe').value = p.stripeLink || ''; $('ed-paylabel').value = p.payLabel || '';
+    $('ed-paynote').value = p.payNote || '';
     $('ed-body').value = p.body || '';
   }
   function openEditor(slug) {
@@ -249,7 +255,8 @@
     var pw = newPw || unlockedPw;
     if (!pw) { $('ed-err').textContent = 'No passcode — fill the passcode field.'; return; }
     var payload = { client: $('ed-client').value.trim(), title: $('ed-title').value.trim(), body: $('ed-body').value,
-                    stripeLink: $('ed-stripe').value.trim(), payLabel: $('ed-paylabel').value.trim() };
+                    stripeLink: $('ed-stripe').value.trim(), payLabel: $('ed-paylabel').value.trim(),
+                    payNote: $('ed-paynote').value.trim() };
     $('ed-save').disabled = true;
     try {
       var enc = await encrypt(payload, pw);

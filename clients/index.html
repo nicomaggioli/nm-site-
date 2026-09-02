@@ -49,6 +49,10 @@
     <span class="pp-eye" id="view-tag">Proposal</span>
     <div class="pp-body" id="t-body"></div>
     <a id="t-pay" class="pp-btn pri wide pp-pay" target="_blank" rel="noopener">Pay now</a>
+    <div id="t-payinfo" class="pp-payinfo pp-hidden">
+      <span class="pp-eye">Payment</span>
+      <div id="t-payinfo-body"></div>
+    </div>
 
     <div class="pp-sign" id="sign-section">
       <span class="pp-eye">Accept &amp; sign</span>
@@ -125,9 +129,18 @@
       var w = document.createElement('div'); w.className = 'pp-tablewrap';
       t.parentNode.insertBefore(w, t); w.appendChild(t);
     });
+    /* Two ways to close: a hosted checkout link, or written instructions.
+       Account and routing numbers are deliberately NOT a field here. This
+       file ships as public ciphertext on GitHub Pages and the passcodes are
+       client names, so anything inside it is only as private as a guess --
+       the note explains how payment works and the numbers go by email. */
     var pay = $('t-pay');
     if (d.stripeLink) { pay.href = d.stripeLink; pay.textContent = d.payLabel || 'Pay now'; }
     else pay.classList.add('pp-hidden');
+    if (d.payNote) {
+      $('t-payinfo-body').innerHTML = marked.parse(d.payNote, { breaks: false, gfm: true });
+      $('t-payinfo').classList.remove('pp-hidden');
+    }
     gate.classList.add('pp-hidden');
     view.classList.remove('pp-hidden');
     view.querySelector('.pp-eye').setAttribute('tabindex', '-1');

@@ -92,6 +92,26 @@ body{ margin:0; background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sa
 
 .pp-pay{ margin-top:34px; }
 
+/* payment: either the hosted-checkout button above, or -- when the money is
+   settled off-platform -- this panel, which states the terms and says the
+   account details follow by email rather than carrying them itself. Same
+   surface and radius as the signed-confirmation box, so a proposal that ends
+   in a panel and one that ends in a button still read as the same document.
+
+   Unlike the button, this PRINTS. A control on paper is dead ink, but payment
+   terms are the part someone forwards to their bookkeeper, so on paper the
+   panel drops its box and becomes a ruled section of the document. */
+.pp-payinfo{ margin-top:34px; padding:22px 24px; border:1px solid var(--pp-line);
+             border-radius:20px; background:var(--pp-surface); }
+.pp-payinfo .pp-eye{ margin-bottom:14px; }
+.pp-payinfo p,.pp-payinfo ul{ margin:0 0 10px; color:var(--pp-muted);
+                              font-size:max(15px,0.78vw); line-height:1.55; }
+.pp-payinfo ul{ padding-left:1.1em; }
+.pp-payinfo li{ margin-bottom:6px; }
+.pp-payinfo > div > :last-child,.pp-payinfo li:last-child{ margin-bottom:0; }
+.pp-payinfo strong{ color:#fff; font-weight:600; }
+.pp-payinfo a{ color:#fff; }
+
 /* accept & sign */
 .pp-sign{ margin-top:48px; padding-top:32px; border-top:1px solid var(--pp-line); }
 .pp-sign .pp-eye{ margin-bottom:6px; }
@@ -163,6 +183,10 @@ body{ margin:0; background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sa
   .pp-body hr{ border-top:1px solid #ccc; }
   .pp-body blockquote{ border-left:2px solid #000; color:#333; }
   .pp-body code{ background:#f2f2f2; }
+  .pp-payinfo{ margin-top:22pt; padding:14pt 0 0; background:none !important;
+               border:0; border-top:1px solid #ccc; border-radius:0;
+               break-inside:avoid; page-break-inside:avoid; }
+  .pp-payinfo p,.pp-payinfo ul,.pp-payinfo li,.pp-payinfo strong,.pp-payinfo a{ color:#000; font-size:11pt; }
   .pp-eye{ color:#555; }
   .pp-eye::before{ background:#000 !important; }
   .pp-tablewrap,.pp-body table{ overflow:visible !important; break-inside:avoid; page-break-inside:avoid; }
