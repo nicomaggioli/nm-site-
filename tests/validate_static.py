@@ -39,6 +39,8 @@ for block in re.findall(r'<script>(.*?)</script>',home,re.S):
         data=json.loads(record.split(':',1)[1])
         server_header=re.search(r'<header.*?</header>',home,re.S)[0]
         assert 'href="/index/"' in server_header, 'Index must render before hydration'
+        mobile_menu=re.search(r'id="mobile-menu".*?</div>',home,re.S)[0]
+        assert 'href="/index/"' in mobile_menu, 'Both exported menus must match the shared navigation payload'
         nav=data[0][3]['navigation']['headerNavigation']
         assert [item['url'] for item in nav] == ['#work','/index/','#about','#contact']
         assert 'opacity:0' not in server_header, 'Header must be visible on first paint'
