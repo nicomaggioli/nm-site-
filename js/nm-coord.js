@@ -78,24 +78,8 @@
     revealWithHeader();
   }
 
-  /* The build reveals the wordmark and the nav together at ~1.5s by writing an
-     inline opacity onto them. This widget mounts and shows itself at ~230ms, so
-     the coordinates sat alone in an otherwise empty bar for over a second.
-     Wait for the wordmark to land, then arrive with it. */
   function revealWithHeader() {
-    if (!el || el.classList.contains('is-in')) return;
-    var h = header();
-    var wm = h && h.querySelector('a[href="/"], .wordmark');
-    if (!wm) { el.classList.add('is-in'); return; }
-    var show = function () {
-      if (parseFloat(getComputedStyle(wm).opacity) < 1) return false;
-      el.classList.add('is-in');
-      return true;
-    };
-    if (show()) return;
-    var iv = setInterval(function () { if (show()) clearInterval(iv); }, 60);
-    /* never strand it if the build's reveal never fires */
-    setTimeout(function () { clearInterval(iv); if (el) el.classList.add('is-in'); }, 6000);
+    if (el) el.classList.add('is-in');
   }
 
   function panel() { return document.querySelector('.nm-c-panel'); }

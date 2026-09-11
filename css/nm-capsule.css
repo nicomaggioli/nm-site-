@@ -42,12 +42,8 @@
   border:var(--nm-cap-line);
   border-radius:var(--nm-cap-radius);
   height:auto;
-  /* opacity is carried alongside the border token, not replaced by it.
-     nm-coord.js polls the wordmark's opacity so the pill can arrive WITH the
-     header rather than a second early -- but this rule was overriding the
-     .5s fade in nm-coord.css with border-color only, so it appeared in a
-     single frame next to a wordmark still fading in. */
-  transition:opacity .5s ease, var(--nm-cap-ease);
+  /* Header controls are visible immediately; only their borders transition. */
+  transition:var(--nm-cap-ease);
 }
 @media (hover:hover){
   #nm-coord:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }

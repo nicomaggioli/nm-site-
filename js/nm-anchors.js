@@ -31,29 +31,6 @@
       el.id = id;
     });
   }
-  /* "index" is a page, not an anchor. The build's nav renders <button>s that
-     smooth-scroll to a hash, so a real <a> is spliced in after "work" rather
-     than added to the payload's navigation array. */
-  function navIndex() {
-    var main = liveMain();
-    if (!main) return;
-    var hdr = document.querySelector('header[class*="z-50"]');
-    if (!hdr) return;
-    var ul = hdr.querySelector('nav ul');
-    if (!ul || ul.querySelector('[data-nm-index]')) return;
-    var items = ul.querySelectorAll('li');
-    if (!items.length) return;
-    var li = document.createElement('li');
-    var a = document.createElement('a');
-    a.href = '/index/';
-    a.className = (items[0].querySelector('button') || {}).className || 'text-nav cursor-pointer';
-    a.setAttribute('data-nm-index', '1');
-    a.style.color = '#fff';   /* .text-nav is 62% white; the real nav items get
-                                 #fff from the blanket span rule, a bare link does not */
-    a.textContent = 'index';
-    li.appendChild(a);
-    items[0].parentNode.insertBefore(li, items[0].nextSibling);   /* work · index · about · contact */
-  }
   /* The footer email is centred by Tailwind's `md:!absolute`, which lives in
      @layer utilities. Cascade layers REVERSE for !important declarations: a
      layered !important beats an unlayered one, whatever the specificity. So no
@@ -105,11 +82,11 @@
     var b = m.querySelector('footer .text-label[class*="absolute"]');
     if (b) { delete b.dataset.nmPinned; footerEmail(); }
   }, { passive: true });
-  go(); navIndex(); footerEmail();
-  document.addEventListener('DOMContentLoaded', function(){ go(); navIndex(); footerEmail(); });
-  window.addEventListener('load', function(){ go(); navIndex(); footerEmail(); });
+  go(); footerEmail();
+  document.addEventListener('DOMContentLoaded', function(){ go(); footerEmail(); });
+  window.addEventListener('load', function(){ go(); footerEmail(); });
   /* One idempotent pass allows the other extensions to finish mounting. */
-  if (window.__nmSync) window.__nmSync(function () { go(); navIndex(); footerEmail(); });
+  if (window.__nmSync) window.__nmSync(function () { go(); footerEmail(); });
 })();
 
 });

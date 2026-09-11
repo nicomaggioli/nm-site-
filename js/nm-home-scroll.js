@@ -24,6 +24,8 @@
     var next = y < hold;
     if (next !== pinned) {
       pinned = next;
+      section.dataset.nmPinned = String(pinned);
+      document.documentElement.classList.toggle('nm-past-hero', !pinned);
       section.style.position = pinned ? 'fixed' : 'relative';
       section.style.top = '0';
       section.style.left = pinned ? '0' : '';
@@ -41,8 +43,8 @@
       return;
     }
     var scale = reduce.matches ? 1 : .12 + .88 * progress;
-    grid.style.transform = 'translateZ(' + (900 * (1 - 1 / scale)).toFixed(1) + 'px)';
-    section.style.perspectiveOrigin = '50% ' + (hold / 2) + 'px';
+    grid.style.transform = 'scale(' + scale.toFixed(5) + ')';
+    grid.style.transformOrigin = '50% ' + (hold / 2) + 'px';
     if (ring) {
       ring.style.display = reduce.matches ? 'none' : '';
       ring.style.opacity = String(Math.max(0, Math.min(1, ( .98 - progress) / .16)));

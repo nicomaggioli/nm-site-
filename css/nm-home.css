@@ -1,3 +1,6 @@
+/* Never expose the unmasked mosaic while the first scene frame is compiling. */
+html[data-nm-mask-gate]:not(.nm-scene-ready) #nm-made[data-nm-pinned="true"]{visibility:hidden}
+html.nm-past-hero [data-nm-hero-caption]{visibility:hidden}
 
 /* the mosaic is gone, so its 200svh of fly-through scroll is dead space */
 div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
@@ -6,11 +9,9 @@ div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
   z-index:-1;   /* BELOW the fixed scene canvas (z-index:0) so the hero mask
                    paints over it and the logo aperture reveals it */
   font-family:'Geist',system-ui,sans-serif;
-  /* Wide-angle FOV. This is what produces the fisheye: a real perspective
-     projection, so tiles away from the vanishing point splay outward as they
-     approach the camera. perspective-origin is set to the logo aperture at
-     runtime, so the zoom radiates from whatever the logo is showing. */
-  perspective:900px; }
+  /* All tiles share a plane: a 2D scale reproduces the projection without
+     allocating a large perspective layer behind the fixed header. */
+  overflow:clip; }
 
 #nm-made .shop-hd-count{ font-size:9px; color:rgba(255,255,255,.6); letter-spacing:.18em; }
 

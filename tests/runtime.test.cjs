@@ -95,3 +95,37 @@ test('responsive menu updates keep the game dialog isolated and restore prior fo
   window.__nmDialog.release(dialog);
   assert.equal(page.inert,false);assert.equal(document.activeElement,trigger);
 });
+
+
+test('repeated gallery scroll cycles preserve page height and restore the initial projection', () => {
+  const window = new EventTarget(), tasks = new Map(), reduce = new EventTarget();
+  let id = 0, measurements = 0;
+  window.scrollY = 0; reduce.matches = false;
+  const hero = {get offsetHeight(){measurements++; return 900;}};
+  const grid = {style:{}}, ring = {style:{}}, spacer = {style:{},dataset:{},setAttribute(){}};
+  const section = {style:{},dataset:{},get offsetHeight(){measurements++;return 1500;},
+    before(){},querySelector:s=>s==='.index-feature'?grid:ring};
+  const rootClasses = new Set();
+  const document = {documentElement:{classList:{toggle:(name,on)=>on?rootClasses.add(name):rootClasses.delete(name)}},
+    getElementById:()=>section,querySelector:()=>hero,createElement:()=>spacer};
+  vm.runInNewContext(script('nm-home-scroll.js'), {window,document,matchMedia:()=>reduce,
+    requestAnimationFrame:fn=>{tasks.set(++id,fn);return id;}});
+  const flush=()=>{const pending=[...tasks.values()];tasks.clear();pending.forEach(fn=>fn());};
+  const initialTransform=grid.style.transform;
+  for(let cycle=0;cycle<4;cycle++)for(const y of [450,899,900,5370,900,899,450,0]){
+    window.scrollY=y;window.dispatchEvent(new Event('scroll'));flush();
+    const pinned=y<900;
+    assert.equal(section.dataset.nmPinned,String(pinned));
+    assert.equal(rootClasses.has('nm-past-hero'),!pinned,'hero captions must stay out of later sections');
+    const flowHeight=pinned?parseFloat(spacer.style.height):section.offsetHeight;
+    assert.equal(flowHeight,1500,'pinning must preserve space in the document');
+    assert.equal(ring.style.display,pinned?'':'none');
+    if(y===0)assert.equal(grid.style.transform,initialTransform);
+  }
+  const before=measurements;
+  window.scrollY=400;window.dispatchEvent(new Event('scroll'));flush();
+  assert.equal(measurements,before,'scrolling must not remeasure layout');
+  reduce.matches=true;reduce.dispatchEvent(new Event('change'));flush();
+  assert.equal(grid.style.transform,'scale(1.00000)');assert.equal(ring.style.display,'none');
+  assert.equal(spacer.style.height,'1500px');
+});
