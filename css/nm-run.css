@@ -1,0 +1,106 @@
+/* ── sketch to shelf ──────────────────────────────────────────────────────
+   The footer easter egg: a pixel runner. The strip is a canvas a few hundred
+   logical pixels wide, scaled up by an integer with image-rendering:
+   pixelated, sat in the middle of a black full-viewport layer. Around it,
+   the site's own vocabulary -- Geist for the one headline, Geist Mono for
+   every label, the capsule for every control, orange for the one action. */
+.nm-run{
+  position:fixed; inset:0; z-index:400;
+  background:#0a0a0a; color:#fff;
+  font-family:'Geist',system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+  padding:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
+  opacity:0; transition:opacity .35s ease;
+  user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+  touch-action:none; overscroll-behavior:contain;
+}
+.nm-run.is-in{ opacity:1; }
+html.nm-run-open, html.nm-run-open body{ overflow:hidden !important; }
+
+.nm-run canvas{
+  display:block; max-width:100%;
+  image-rendering:pixelated; image-rendering:crisp-edges;
+}
+
+.nm-run-title{
+  margin:0; font-weight:700; letter-spacing:-.025em; line-height:.98; text-align:center;
+  font-size:max(clamp(34px, 5vw, 64px), 3.333vw); text-wrap:balance;
+}
+
+/* the mono label, the site's recipe */
+.nm-run-lbl{
+  font-family:'Geist Mono',ui-monospace,monospace;
+  font-size:max(12px,0.625vw); letter-spacing:.14em; text-transform:uppercase;
+  line-height:1.4; color:rgba(255,255,255,.62); text-align:center;
+}
+.nm-run-hint{ max-width:min(92vw, 720px); }
+
+/* the capsule, nm-capsule's tokens */
+.nm-run-btn{
+  appearance:none; -webkit-appearance:none; background:transparent; color:#fff;
+  font-family:'Geist Mono',ui-monospace,monospace; font-size:max(12px,0.625vw);
+  letter-spacing:.14em; text-transform:uppercase; line-height:1;
+  padding:max(11px,0.5729vw) max(18px,0.9375vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; cursor:pointer;
+  transition:var(--nm-cap-ease, border-color .24s ease);
+  background-origin:border-box; background-repeat:no-repeat;
+  text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+}
+@media (hover:hover){
+  .nm-run-btn:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418)); color:#0a0a0a; border-color:transparent; }
+  .nm-run-btn.pri:hover{ opacity:.88; }
+}
+.nm-run-btn:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off, 3px); }
+.nm-run-btn.pri{ background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418)); color:#0a0a0a; border-color:transparent; }
+.nm-run-btn[disabled]{ opacity:.5; cursor:default; }
+.nm-run-leave{ position:absolute; right:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw); top:clamp(12px, 7.8px + 1.07vw, 24px); }
+
+/* ── the card ────────────────────────────────────────────────────────── */
+.nm-run-card{
+  position:absolute; left:50%; top:50%;
+  width:min(92vw, 560px); max-height:calc(100vh - 48px); max-height:calc(100svh - 48px);
+  overflow-y:auto; overscroll-behavior:contain;
+  padding:26px 26px 22px; text-align:left;
+  background:#101010; border:1px solid rgba(255,255,255,.14); border-radius:24px;
+  opacity:0; transform:translate(-50%,-48%); transition:opacity .35s ease, transform .35s ease;
+}
+.nm-run-card.is-on{ opacity:1; transform:translate(-50%,-50%); }
+@media (max-width:767px){ .nm-run-card{ padding:22px 18px 18px; border-radius:20px; } }
+.nm-run-card .nm-run-lbl{ text-align:left; display:inline-flex; align-items:center; gap:10px; }
+.nm-run-eye::before{ content:""; width:8px; height:8px; border-radius:50%; flex:none;
+  background:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418)); }
+.nm-run-card h2{ margin:12px 0 4px; font-weight:700; letter-spacing:-.025em; line-height:1;
+  font-size:max(clamp(40px, 5.4vw, 72px), 3.75vw); font-variant-numeric:tabular-nums; }
+.nm-run-sub{ margin:0; color:rgba(255,255,255,.62); font-size:max(15px,0.78vw); line-height:1.55; }
+.nm-run-sub b{ color:#fff; font-weight:500; }
+.nm-run-best{ display:block; margin-top:10px; }
+.nm-run-best.is-new{ color:#FF7820; }
+.nm-run-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+.nm-run-share{ margin-top:16px; display:none; }
+.nm-run-share.is-on{ display:block; }
+.nm-run-share img{ display:block; width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,.14); image-rendering:auto; }
+
+/* ── the ask ─────────────────────────────────────────────────────────── */
+.nm-run-ask{ margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.14); }
+.nm-run-ask h3{ margin:8px 0 6px; font-size:max(20px,1.04vw); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+.nm-run-ask p{ margin:0; color:rgba(255,255,255,.62); font-size:max(14px,0.73vw); line-height:1.55; }
+.nm-run-form{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+.nm-run-form input{
+  width:100%; box-sizing:border-box; background:transparent; color:#fff; font:inherit; font-size:max(16px,0.833vw);
+  padding:max(11px,0.5729vw) max(18px,0.9375vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; outline:none; transition:border-color .24s ease;
+}
+.nm-run-form input::placeholder{ color:rgba(255,255,255,.38); }
+.nm-run-form input:focus{ border-color:rgba(255,255,255,.7); }
+.nm-run-form input:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off, 3px); }
+.nm-run-form .nm-run-btn{ align-self:flex-start; }
+.nm-run-fine{ margin-top:10px !important; font-size:max(12px,0.625vw) !important; color:rgba(255,255,255,.5) !important; }
+.nm-run-ok{ display:none; margin-top:12px; color:#fff; font-size:max(15px,0.78vw); }
+.nm-run-ok.is-on{ display:block; }
+.nm-run-err{ display:none; margin-top:10px; color:#FF7820; font-size:max(13px,0.677vw); }
+.nm-run-err.is-on{ display:block; }
+
+/* the copyright line is a door: a long press must not select or summon */
+.nm-run-door{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+
+@media (prefers-reduced-motion: reduce){ .nm-run, .nm-run-card{ transition:none; } }
