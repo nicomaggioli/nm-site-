@@ -1,6 +1,6 @@
-import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=5d858d2b17';
+import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=37da8af237';
 
-import {RUN_FRAME_COUNT,runFrame,drawStar} from './nm-run-motion.mjs?v=472a03126a';
+import {RUN_FRAME_COUNT,runFrame,drawStar} from './nm-run-motion.mjs?v=aef6e20195';
 
 const RUN_SHEET='/media/runner/runner-stills.png?v=8cfa26d5fe';
 const CHARACTER='/media/runner/runner-character-v2.png?v=1f0cad7cbd';
@@ -56,7 +56,7 @@ function loadArt(){
     }
     // All poses retain one scale. Registration moves the whole still only.
     const scale=60/Math.max(...frames.map(frame=>frame.height));
-    const lift=[0,0,0,2,3,2,0,0,0,2,3,1];
+    const lift=[0,0,1,2,0,0,0,0,0,1,2,0];
     frames.forEach((frame,i)=>{result['run'+(i+1)]={...frame,pivot:frame.headX,baseline:frame.top+frame.height,scale,lift:lift[i]};});
     sprites=result;
   }).catch(error=>{artPromise=null;throw error;});return artPromise;
@@ -69,7 +69,7 @@ function sync(){
   put(bestLabel,String(Math.max(best,game.score)).padStart(5,'0'));put(starLabel,game.stars);
   const state=game.state;panel.hidden=state==='running'||state==='hit';pauseButton.hidden=state==='ready'||state==='over'||state==='hit';
   put(pauseButton,state==='paused'?'Resume':'Pause');
-  if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump low. Duck high. Catch stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
+  if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump low birds. Duck high birds for stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
   if(state==='paused'){heading.textContent='Paused.';description.textContent='Catch your breath up here.';action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
   if(state==='over'){saveBest();heading.textContent='One more run?';description.textContent=`${game.score} points · ${game.stars} stars · best ${best}`;action.textContent='Run again';action.disabled=false;say(`Run over. ${game.score} points. ${game.stars} stars. Best ${best}.`);}
 }

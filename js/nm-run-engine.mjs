@@ -6,7 +6,7 @@ export const DUCK_HEIGHT = 36;
 // Both encounters use the same bird artwork. Height makes the choice readable.
 export const KINDS = {
   bird_low:{w:46,h:28,clearance:34},
-  bird_high:{w:46,h:28,clearance:54}
+  bird_high:{w:46,h:28,clearance:58}
 };
 export function overlaps(a,b) {
   return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
@@ -51,12 +51,16 @@ export class Runner {
     if(this.next<=0) {
       const pool=this.distance>650?Object.keys(KINDS):['bird_low'];
       const kind=pool[Math.floor(this.random()*pool.length)];const o=this.spawn(kind);
-      if(kind==='bird_low'&&this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-82,collected:false});
+      const duckStar=kind==='bird_high';
+      if(duckStar||this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-(duckStar?24:82),duck:duckStar,collected:false});
       this.next=(o.w+80)/this.speed+.95+this.random()*.45;
     }
     const p=this.playerBox();
     for(const o of this.obstacles){o.x-=dx;if(overlaps(p,this.obstacleBox(o))){this.state='hit';this.deadTime=0;}}
-    for(const star of this.tokens){star.x-=dx;if(!star.collected&&overlaps(p,{x:star.x-9,y:star.y-10,w:18,h:20})){star.collected=true;this.stars++;}}
+    for(const star of this.tokens){
+      star.x-=dx;
+      if(this.state==='running'&&!star.collected&&(!star.duck||(this.duck&&this.y===0))&&overlaps(p,{x:star.x-9,y:star.y-10,w:18,h:20})){star.collected=true;this.stars++;}
+    }
     this.obstacles=this.obstacles.filter(o=>o.x+o.w>-10);
     this.tokens=this.tokens.filter(c=>c.x>-20&&!c.collected);
   }

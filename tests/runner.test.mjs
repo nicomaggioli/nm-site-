@@ -16,3 +16,21 @@ test('the encounter pool contains only birds and introduces high birds later',()
   const low=new Runner({random:()=>.99});low.start();advance(low,2);assert.equal(low.obstacles[0].kind,'bird_low');
   const high=fresh();high.distance=700;high.random=()=>.99;high.next=0;high.update(1/120);assert.equal(high.obstacles[0].kind,'bird_high');
 });
+
+test('a high bird carries a star underneath that the ducking player collects safely',()=>{
+  const g=fresh();g.distance=700;g.random=()=>.99;g.next=0;g.update(1/120);
+  const bird=g.obstacles[0],star=g.tokens[0];
+  assert.equal(bird.kind,'bird_high');assert.equal(star.duck,true);
+  assert.ok(star.y-12>g.obstacleBox(bird).y+g.obstacleBox(bird).h);
+  const shift=bird.x-(PLAYER_X+100);bird.x-=shift;star.x-=shift;
+  g.next=100;g.setDuck(true);advance(g,.8);
+  assert.equal(g.state,'running');assert.equal(g.stars,1);assert.equal(g.tokens.length,0);
+});
+
+test('duck stars reward crouching, and a bird hit cannot award a star',()=>{
+  for(const collide of [false,true]){
+    const g=fresh();g.tokens.push({x:PLAYER_X+22,y:GROUND-24,duck:true,collected:false});
+    if(collide)g.spawn('bird_high').x=PLAYER_X;
+    g.update(1/120);assert.equal(g.stars,0);assert.equal(g.state,collide?'hit':'running');
+  }
+});

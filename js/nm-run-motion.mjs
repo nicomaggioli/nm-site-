@@ -1,6 +1,9 @@
 // Complete illustrated poses advance in order; no body-part assembly.
 export const RUN_FRAME_COUNT=12;
-export const runFrame=distance=>1+Math.floor(distance*RUN_FRAME_COUNT/112)%RUN_FRAME_COUNT;
+// Two balanced steps: contact, compression, passing, flight.
+// Skip the repeated wide kicks and the twisted, overlapping-foot pose.
+export const RUN_SEQUENCE=[1,2,3,4,8,7,10,11];
+export const runFrame=distance=>RUN_SEQUENCE[Math.floor(distance*RUN_SEQUENCE.length/140)%RUN_SEQUENCE.length];
 
 // A constant collection area, with a visual turn around the star's vertical axis.
 export function drawStar(ctx,art,x,y,time) {
