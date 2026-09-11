@@ -1,3 +1,4 @@
+(window.__nmReady || function (fn) { fn(); })(function () {
 /* ── mobile menu ──────────────────────────────────────────────────────────
    One hamburger for both pages. The homepage shipped a text "Menu" button and
    the archive just wrapped its links onto a second row; the shared stylesheet
@@ -5,8 +6,7 @@
 
    The button is appended to whichever header is live, and the panel goes on
    <body> so it can cover the viewport without fighting the header's stacking
-   context. Everything is re-armed by a MutationObserver because the homepage
-   header is React-rendered and gets replaced wholesale. */
+   context. Initialization runs after the exported page hydrates. */
 (function () {
   var LINKS = [
     { label: 'index',   href: '/index/' },
@@ -27,14 +27,20 @@
   }
   function close() {
     if (panel) panel.classList.remove('is-open');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
     document.documentElement.classList.remove('nm-menu-open');
+    if (window.__nmDialog) window.__nmDialog.release(panel);
+    if (panel) panel.inert = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    if (window.__nmLenis) window.__nmLenis.start();
   }
   function open() {
     if (!panel) return;
+    panel.inert = false;
     panel.classList.add('is-open');
     btn.setAttribute('aria-expanded', 'true');
     document.documentElement.classList.add('nm-menu-open');
+    if (window.__nmLenis) window.__nmLenis.stop();
+    if (window.__nmDialog) window.__nmDialog.capture(panel);
   }
   function toggle() {
     if (!panel) return;
@@ -48,8 +54,19 @@
     if (!panel || !panel.isConnected) {
       panel = document.createElement('div');
       panel.className = 'nm-burger-panel';
+      panel.id = 'nm-menu';
+      panel.inert = true;
       panel.setAttribute('role', 'dialog');
       panel.setAttribute('aria-label', 'Menu');
+      panel.setAttribute('aria-modal', 'true');
+      panel.tabIndex = -1;
+      var exit = document.createElement('button');
+      exit.type = 'button';
+      exit.className = 'nm-menu-close';
+      exit.setAttribute('aria-label', 'Close menu');
+      exit.textContent = '×';
+      exit.addEventListener('click', close);
+      panel.appendChild(exit);
       var nav = document.createElement('nav');
       LINKS.forEach(function (l) {
         var a = document.createElement('a');
@@ -78,6 +95,7 @@
     btn.className = 'nm-burger';
     btn.setAttribute('aria-label', 'Menu');
     btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'nm-menu');
     btn.innerHTML = '<span></span><span></span><span></span>';
     h.appendChild(btn);
   }
@@ -93,7 +111,7 @@
        Mail) or a reload -- and page scroll is locked the whole time. The
        panel's only child is a full-size <nav>, so both count as backdrop. */
     if (panel && panel.classList.contains('is-open') &&
-        (e.target === panel || e.target === panel.firstElementChild)) { close(); return; }
+        (e.target === panel || e.target === panel.querySelector('nav'))) { close(); return; }
 
     var a = e.target.closest && e.target.closest('.nm-burger-panel a');
     if (!a) return;
@@ -109,7 +127,7 @@
         var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
         /* Lenis owns the scroll on the homepage and swallows native smooth
            behaviour, so hand it the target when it is present. */
-        if (window.lenis && window.lenis.scrollTo) window.lenis.scrollTo(y);
+        if (window.__nmLenis) window.__nmLenis.scrollTo(y, { immediate: reduce });
         else window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
         return;
       }
@@ -124,10 +142,9 @@
   }, { passive: true });
 
   build();
-  /* Shared observer — see js/nm-sync.js. build() appends a button to the
-     header and a panel to <body>, so its own writes used to re-trigger it and
-     the four other document-wide observers. __nmSync also re-runs it on
-     DOMContentLoaded and load. */
+  /* Idempotent follow-up after the other extensions mount. */
   if (window.__nmSync) window.__nmSync(build);
   else { document.addEventListener('DOMContentLoaded', build); window.addEventListener('load', build); }
 })();
+
+});

@@ -1,3 +1,4 @@
+(window.__nmReady || function (fn) { fn(); })(function () {
 /* ── sketch to shelf ───────────────────────────────────────────────────────
    The footer easter egg: a pixel runner, in the spirit of the dinosaur you
    get when the internet is gone. Click the point cloud at the bottom of the
@@ -606,3 +607,5 @@
     state: function () { return { state: state, m: dist / PX_PER_M, v: v, y: runner.y, ground: runner.ground, duck: runner.duck, obs: obs.map(function (o) { return { kind: o.kind, x: o.x, w: o.w, h: o.bh, top: GROUND + o.by }; }), W: W, sc: SC }; }
   };
 })();
+
+});

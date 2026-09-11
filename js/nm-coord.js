@@ -1,3 +1,4 @@
+(window.__nmReady || function (fn) { fn(); })(function () {
 /* The header corner used to be Boston weather. It is now a coordinate that
    changes once a day -- wonders, ruins, places nobody has actually found, and a
    few that are not on this planet. Hovering tells you where it points; clicking
@@ -175,3 +176,5 @@
   if (window.__nmSync) window.__nmSync(mount);
   else { document.addEventListener('DOMContentLoaded', mount); window.addEventListener('load', mount); }
 })();
+
+});

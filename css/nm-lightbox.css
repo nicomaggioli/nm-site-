@@ -26,7 +26,7 @@
 
 /* controls */
 .nm-lb button{
-  position:absolute; background:none; border:0; padding:0; cursor:pointer;
+  position:absolute; z-index:2; background:rgba(10,10,10,.72); border:0; padding:0; cursor:pointer;
   color:#fff; font-family:'Geist Mono', ui-monospace, monospace;
   display:flex; align-items:center; justify-content:center;
   width:56px; height:56px; border-radius:50%;
