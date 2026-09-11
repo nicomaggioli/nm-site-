@@ -14,8 +14,8 @@ test('foot position and velocity remain continuous at takeoff and loop wrap',()=
 });
 test('leg segments keep their length through the complete stride',()=>{
   for(let i=0;i<240;i++)for(const {hip,knee,foot} of stridePose(i/240*STRIDE).legs){
-    close(Math.hypot(knee.x-hip.x,knee.y-hip.y),17);
-    close(Math.hypot(foot.x-knee.x,foot.y-knee.y),17);
+    close(Math.hypot(knee.x-hip.x,knee.y-hip.y),12);
+    close(Math.hypot(foot.x-knee.x,foot.y-knee.y),12);
   }
   assert.deepEqual(stridePose(0),stridePose(STRIDE));
 });

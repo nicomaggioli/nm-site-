@@ -1,22 +1,22 @@
 // Continuous joint motion keeps the same body proportions throughout the stride.
-export const STRIDE = 104;
+export const STRIDE = 80;
 const TAU = Math.PI*2;
 const fract = n => n-Math.floor(n);
 export function footAt(phase) {
-  const p=fract(phase),contact=.4,front=20,back=front-STRIDE*contact;
+  const p=fract(phase),contact=.4,front=16,back=front-STRIDE*contact;
   if(p<contact)return {x:front-STRIDE*p,y:-4,angle:0};
   const t=(p-contact)/(1-contact);
   // Match the contact velocity at both ends of recovery. No foot snap on wrap.
   const smooth=t*t*(3-2*t),tangent=2*t*t*t-3*t*t+t,lift=Math.sin(Math.PI*t)**2;
-  return {x:back+(front-back)*smooth-STRIDE*(1-contact)*tangent,y:-4-17*lift,angle:.75*lift};
+  return {x:back+(front-back)*smooth-STRIDE*(1-contact)*tangent,y:-4-10*lift,angle:.75*lift};
 }
-export function kneeBetween(hip,foot,length=17) {
+export function kneeBetween(hip,foot,length=12) {
   const dx=foot.x-hip.x,dy=foot.y-hip.y,d=Math.max(.001,Math.hypot(dx,dy));
   const bend=Math.sqrt(Math.max(0,length*length-d*d/4));
   return {x:(hip.x+foot.x)/2+dy/d*bend,y:(hip.y+foot.y)/2-dx/d*bend};
 }
 export function stridePose(distance) {
-  const phase=fract(distance/STRIDE),hip={x:0,y:-24+1.2*Math.sin(phase*TAU*2)};
+  const phase=fract(distance/STRIDE),hip={x:0,y:-17.5+.8*Math.sin(phase*TAU*2)};
   const legs=[phase+.5,phase].map(p=>{const foot=footAt(p);return {hip,knee:kneeBetween(hip,foot),foot};});
   const arms=[phase+.5,phase].map((p,i)=>{
     const shoulder={x:i===0?1:-4,y:hip.y-19};
@@ -41,4 +41,12 @@ export function drawStride(ctx,rig,x,ground,distance) {
   const body=rig.body,bodyHeight=43,bodyWidth=body.width/body.height*bodyHeight;
   ctx.drawImage(body.image,Math.round(x-bodyWidth*.25),Math.round(ground+pose.hip.y-bodyHeight+2),Math.round(bodyWidth),bodyHeight);
   arm(1);
+}
+
+// A constant collection area, with a visual turn around the star's vertical axis.
+export function drawStar(ctx,art,x,y,time) {
+  const turn=time*Math.PI*1.8,width=Math.max(3,22*Math.abs(Math.cos(turn)));
+  ctx.save();ctx.translate(Math.round(x),Math.round(y));
+  if(Math.cos(turn)<0)ctx.scale(-1,1);
+  ctx.drawImage(art.image,-width/2,-12,width,24);ctx.restore();
 }

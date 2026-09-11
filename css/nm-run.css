@@ -1,19 +1,19 @@
 /* This stylesheet and its font load only after discovering the footer game. */
 @font-face{font-family:'Cloud Pixel';src:url('/fonts/press-start-2p.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
-.nm-run{position:fixed;inset:0;z-index:400;background:#0c162a;color:#f5f8ff;box-sizing:border-box;overflow:auto;overscroll-behavior:contain;font-family:'Cloud Pixel',monospace;font-weight:400;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.nm-run{position:fixed;inset:0;z-index:400;background:var(--nm-bg,#0a0a0a);color:#f5f8ff;box-sizing:border-box;overflow:auto;overscroll-behavior:contain;font-family:'Cloud Pixel',monospace;font-weight:400;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
 .nm-run *{box-sizing:border-box}
 html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
 .nm-run-top{width:min(100%,1060px);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .nm-run-eyebrow,.nm-run-help,.nm-run-btn,.nm-run-score{font-family:inherit;text-transform:uppercase;font-size:8px;letter-spacing:0;line-height:1.8;font-weight:400}
 .nm-run-eyebrow{color:#ffbf72;margin:0}
-.nm-run h2{font-family:inherit;font-size:32px;letter-spacing:0;line-height:1.4;margin:8px 0 0;font-weight:400;text-transform:uppercase;text-shadow:3px 3px #31527e}
-.nm-run-btn{display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:10px 16px;border:2px solid #6680a5;border-radius:0;background:#17273f;box-shadow:3px 3px 0 #060d1b;color:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap}
-.nm-run-btn:hover{border-color:#e4f4ff;background:#243d5f}.nm-run-btn:focus-visible{outline:3px solid #ffbf72;outline-offset:4px}
-.nm-run-btn:active{box-shadow:1px 1px 0 #060d1b;transform:translate(2px,2px)}
+.nm-run h2{font-family:inherit;font-size:32px;letter-spacing:0;line-height:1.4;margin:8px 0 0;font-weight:400;text-transform:uppercase;text-shadow:3px 3px #393939}
+.nm-run-btn{display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:10px 16px;border:2px solid #666;border-radius:0;background:#161616;box-shadow:3px 3px 0 #000;color:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.nm-run-btn:hover{border-color:#e4f4ff;background:#262626}.nm-run-btn:focus-visible{outline:3px solid #ffbf72;outline-offset:4px}
+.nm-run-btn:active{box-shadow:1px 1px 0 #000;transform:translate(2px,2px)}
 .nm-run-btn.pri{background:#ffd284;color:#102541;border-color:#ffe9ad;box-shadow:4px 4px 0 #314c73}
 .nm-run-btn:disabled{opacity:.65;cursor:wait}
 .nm-run-btn[hidden],.nm-run [hidden]{display:none!important}
-.nm-run-stage{flex:none;position:relative;width:min(100%,1060px);border:3px solid #d6ebff;border-radius:0;overflow:hidden;background:#639ede;isolation:isolate;box-shadow:6px 6px 0 #253d5f}
+.nm-run-stage{flex:none;position:relative;width:min(100%,1060px);border:3px solid #d6ebff;border-radius:0;overflow:hidden;background:#639ede;isolation:isolate;box-shadow:6px 6px 0 #202020}
 .nm-run canvas{display:block;width:100%;height:auto;image-rendering:pixelated;touch-action:none;user-select:none;-webkit-user-select:none}
 .nm-run-scoreboard{position:absolute;z-index:1;left:20px;right:20px;top:16px;display:flex;gap:20px;justify-content:space-between;color:#fff;text-shadow:2px 2px 0 #305480;pointer-events:none;font-variant-numeric:tabular-nums}
 .nm-run-score b{display:block;font-size:16px;font-weight:400;line-height:1.5;margin-top:4px}

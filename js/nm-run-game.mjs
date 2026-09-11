@@ -1,6 +1,6 @@
-import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X} from './nm-run-engine.mjs?v=acdeb01561';
+import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=5d858d2b17';
 
-import {drawStride} from './nm-run-motion.mjs?v=febf29bc96';
+import {drawStride,drawStar} from './nm-run-motion.mjs?v=07b6e0e090';
 
 const RIG='/media/runner/runner-rig.png?v=bbc9febfda';
 const RIG_CELLS={body:[65,90,385,530],upperArm:[525,235,205,385],forearm:[970,290,180,340],thigh:[100,710,205,415],shin:[525,760,205,370],shoe:[875,915,300,215]};
@@ -96,13 +96,13 @@ function draw(){
       sprite('bird'+frame,o.x+5+(s.left-anchor[0])*scale,GROUND-o.clearance-12+(s.top-anchor[1])*scale,s.width*scale,s.height*scale);
     }
   }
-  for(const star of game.tokens)sprite('star',star.x-11,star.y-12,22,24);
+  for(const star of game.tokens)if(sprites)drawStar(ctx,sprites.star,star.x,star.y,reduce.matches?0:game.time);
   if(rig&&game.y===0&&!game.duck&&['running','paused'].includes(game.state)){drawStride(ctx,rig,PLAYER_X+22,GROUND,game.distance);return;}
   let pose='idle';if(game.state==='hit')pose='hit';else if(game.state==='over')pose='dead';
   else if(game.y<0)pose='jump';else if(game.duck)pose='duck';
   const s=sprites&&sprites[pose];
   if(s){
-    const scale=pose==='duck'?30/s.height:64/sprites.idle.height;
+    const scale=pose==='duck'?DUCK_HEIGHT/s.height:64/sprites.idle.height;
     const baseline=['duck','dead','jump'].includes(pose)?s.top+s.height:s.baseline;
     sprite(pose,PLAYER_X+22+(s.left-s.pivot)*scale,GROUND+game.y+(s.top-baseline)*scale,s.width*scale,s.height*scale);
   }

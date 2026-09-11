@@ -2,10 +2,11 @@
 export const GROUND = 212;
 export const VIEW_HEIGHT = 340;
 export const PLAYER_X = 72;
+export const DUCK_HEIGHT = 36;
 // Both encounters use the same bird artwork. Height makes the choice readable.
 export const KINDS = {
-  bird_low:{w:46,h:28,clearance:4},
-  bird_high:{w:46,h:28,clearance:36}
+  bird_low:{w:46,h:28,clearance:34},
+  bird_high:{w:46,h:28,clearance:54}
 };
 export function overlaps(a,b) {
   return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
@@ -27,10 +28,10 @@ export class Runner {
   setDuck(value) {this.duck=value;}
   pause() {if(this.state==='running'){this.state='paused';this.jumpHeld=false;this.duck=false;}}
   resume() {if(this.state==='paused')this.state='running';}
-  playerBox() {const h=this.duck&&this.y===0?30:58;return {x:PLAYER_X+9,y:GROUND+this.y-h,w:26,h:h-3};}
+  playerBox() {const h=this.duck&&this.y===0?DUCK_HEIGHT:58;return {x:PLAYER_X+9,y:GROUND+this.y-h,w:26,h:h-3};}
   obstacleBox(o) {
-    // The body collides; decorative wing tips stay forgiving during a flap.
-    return {x:o.x+9,y:GROUND-o.clearance-16,w:29,h:15};
+    // The body and tucked feet collide; long wing tips stay forgiving during a flap.
+    return {x:o.x+9,y:GROUND-o.clearance-16,w:29,h:18};
   }
   spawn(kind) {
     const d=KINDS[kind];const o={kind,x:this.width+24,...d};this.obstacles.push(o);return o;
@@ -50,7 +51,7 @@ export class Runner {
     if(this.next<=0) {
       const pool=this.distance>650?Object.keys(KINDS):['bird_low'];
       const kind=pool[Math.floor(this.random()*pool.length)];const o=this.spawn(kind);
-      if(kind==='bird_low'&&this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-65,collected:false});
+      if(kind==='bird_low'&&this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-82,collected:false});
       this.next=(o.w+80)/this.speed+.95+this.random()*.45;
     }
     const p=this.playerBox();
