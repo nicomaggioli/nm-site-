@@ -1,5 +1,5 @@
 /* Never expose the unmasked mosaic while the first scene frame is compiling. */
-html:not(.nm-scene-ready) #nm-made[data-nm-pinned="true"]{visibility:hidden}
+html[data-nm-mask-gate]:not(.nm-scene-ready) #nm-made[data-nm-pinned="true"]{visibility:hidden}
 html.nm-past-hero [data-nm-hero-caption]{visibility:hidden}
 
 /* the mosaic is gone, so its 200svh of fly-through scroll is dead space */

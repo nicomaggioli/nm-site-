@@ -51,5 +51,6 @@ for block in re.findall(r'<script>(.*?)</script>',home,re.S):
 else:raise AssertionError('Missing Flight homepage data')
 assert 'project-list-panel' not in home.split('self.__next_f.push')[0]
 assert 'data-nm-grid-anchor' in home
+assert 'data-nm-mask-gate' in home, 'Only the new homepage opts into the mask readiness gate'
 assert 'HYDRATION_DETAIL' not in ''.join(p.read_text() for p in (ROOT/'_next/static/chunks').glob('*.js'))
 print(f'PASS: {len(set(paths))} local asset references; About HTML/Flight consistency; no debug instrumentation.')
