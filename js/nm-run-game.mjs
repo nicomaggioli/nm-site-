@@ -1,15 +1,19 @@
-import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,runFrame} from './nm-run-engine.mjs?v=21310f5b44';
+import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X} from './nm-run-engine.mjs?v=acdeb01561';
 
+import {drawStride} from './nm-run-motion.mjs?v=febf29bc96';
+
+const RIG='/media/runner/runner-rig.png?v=bbc9febfda';
+const RIG_CELLS={body:[65,90,385,530],upperArm:[525,235,205,385],forearm:[970,290,180,340],thigh:[100,710,205,415],shin:[525,760,205,370],shoe:[875,915,300,215]};
 const CHARACTER='/media/runner/runner-character-v2.png?v=1f0cad7cbd';
 const SKY='/media/runner/sky-atlas.png?v=ea731a709a';
-// Character cells share a foot baseline. Torso pivots keep the stride from
-// sliding sideways when a leg or arm extends beyond the body.
-const POSES=['run1','run2','run3','run4','run5','run6','run7','run8','idle','jump','duck','hit','dead'];
-const PIVOTS=[144,143,137,141,137,140,123,139,153,144,143,145,151];
-const SKY_CELLS={storm:[20,40,286,350],bolt:[340,40,280,350],gust:[634,40,292,350],hail:[950,40,290,350],bird1:[15,390,290,318],bird2:[330,400,280,315],plane:[646,416,277,298],star:[965,420,270,298],platform:[0,735,1254,470]};
+// The original sheet supplies idle, aerial, duck and reaction poses.
+// Running uses the continuous motion module and the six-piece rig.
+const POSES={idle:8,jump:9,duck:10,hit:11,dead:12};
+const PIVOTS={idle:153,jump:144,duck:143,hit:145,dead:151};
+const SKY_CELLS={bird1:[15,390,290,318],bird2:[330,400,280,315],star:[965,420,270,298],platform:[0,735,1254,470]};
 function put(n,value){value=String(value);if(n.textContent!==value)n.textContent=value;}
 let root=null,game=null,canvas,ctx,panel,action,heading,description,pauseButton,scoreLabel,bestLabel,starLabel,status;
-let sprites=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
+let sprites=null,rig=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 try {best=Number(localStorage.getItem('nm-cloud-run-best'))||0;}catch{}
 function node(tag,cls,text){const n=document.createElement(tag);n.className=cls||'';if(text)n.textContent=text;return n;}
@@ -34,15 +38,21 @@ function extract(image,rect){
 }
 function loadArt(){
   if(artPromise)return artPromise;
-  artPromise=Promise.all([decodeImage(CHARACTER),decodeImage(SKY)]).then(([character,sky])=>{
+  artPromise=Promise.all([decodeImage(CHARACTER),decodeImage(SKY),decodeImage(RIG)]).then(([character,sky,parts])=>{
     const result={};
-    POSES.forEach((name,i)=>{
+    Object.entries(POSES).forEach(([name,i])=>{
       const x=Math.floor(i%4*character.width/4),y=Math.floor(Math.floor(i/4)*character.height/4);
       const right=Math.floor((i%4+1)*character.width/4),bottom=Math.floor((Math.floor(i/4)+1)*character.height/4);
-      result[name]={...extract(character,[x,y,right-x,bottom-y]),pivot:PIVOTS[i],baseline:282};
+      result[name]={...extract(character,[x,y,right-x,bottom-y]),pivot:PIVOTS[name],baseline:282};
     });
     for(const [name,rect] of Object.entries(SKY_CELLS))result[name]=extract(sky,rect);
-    sprites=result;
+    const pieces={};
+    for(const [name,rect] of Object.entries(RIG_CELLS)){
+      const part=extract(parts,rect),dark=document.createElement('canvas');dark.width=part.width;dark.height=part.height;
+      const cx=dark.getContext('2d');cx.drawImage(part.image,0,0);cx.globalCompositeOperation='source-atop';cx.fillStyle='#10182e55';cx.fillRect(0,0,dark.width,dark.height);
+      pieces[name]={...part,dark};
+    }
+    sprites=result;rig=pieces;
   }).catch(error=>{artPromise=null;throw error;});return artPromise;
 }
 function say(text){if(text!==announced){status.textContent=text;announced=text;}}
@@ -53,7 +63,7 @@ function sync(){
   put(bestLabel,String(Math.max(best,game.score)).padStart(5,'0'));put(starLabel,game.stars);
   const state=game.state;panel.hidden=state==='running'||state==='hit';pauseButton.hidden=state==='ready'||state==='over'||state==='hit';
   put(pauseButton,state==='paused'?'Resume':'Pause');
-  if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump storms. Duck birds. Catch stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
+  if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump low. Duck high. Catch stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
   if(state==='paused'){heading.textContent='Paused.';description.textContent='Catch your breath up here.';action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
   if(state==='over'){saveBest();heading.textContent='One more run?';description.textContent=`${game.score} points · ${game.stars} stars · best ${best}`;action.textContent='Run again';action.disabled=false;say(`Run over. ${game.score} points. ${game.stars} stars. Best ${best}.`);}
 }
@@ -79,10 +89,17 @@ function landscape(){
 }
 function draw(){
   if(!ctx||!game)return;landscape();
-  for(const o of game.obstacles){const name=o.kind==='bird'?'bird'+(1+Math.floor(game.time*6)%2):o.kind;sprite(name,o.x,GROUND-(o.clearance||0)-o.h,o.w,o.h);}
+  for(const o of game.obstacles){
+    const frame=1+Math.floor(game.time*7)%2,s=sprites&&sprites['bird'+frame];
+    if(s){const anchor=frame===1?[45,178]:[43,149],scale=.18;
+      // Anchor the beak/body rather than the changing wing silhouette.
+      sprite('bird'+frame,o.x+5+(s.left-anchor[0])*scale,GROUND-o.clearance-12+(s.top-anchor[1])*scale,s.width*scale,s.height*scale);
+    }
+  }
   for(const star of game.tokens)sprite('star',star.x-11,star.y-12,22,24);
+  if(rig&&game.y===0&&!game.duck&&['running','paused'].includes(game.state)){drawStride(ctx,rig,PLAYER_X+22,GROUND,game.distance);return;}
   let pose='idle';if(game.state==='hit')pose='hit';else if(game.state==='over')pose='dead';
-  else if(game.y<0)pose='jump';else if(game.duck)pose='duck';else if(game.landed)pose='run2';else if(game.state==='running'||game.state==='paused')pose='run'+runFrame(game.distance);
+  else if(game.y<0)pose='jump';else if(game.duck)pose='duck';
   const s=sprites&&sprites[pose];
   if(s){
     const scale=pose==='duck'?30/s.height:64/sprites.idle.height;

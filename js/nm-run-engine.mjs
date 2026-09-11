@@ -1,11 +1,11 @@
 // Deterministic physics, independent of rendering and browser timing.
 export const GROUND = 212;
 export const VIEW_HEIGHT = 340;
-export const runFrame = distance => 1 + (Math.floor(distance / 14) % 8);
 export const PLAYER_X = 72;
+// Both encounters use the same bird artwork. Height makes the choice readable.
 export const KINDS = {
-  storm:{w:44,h:36}, bolt:{w:26,h:52}, gust:{w:38,h:40}, hail:{w:38,h:30},
-  bird:{w:64,h:32,clearance:32}, plane:{w:58,h:24,clearance:35}
+  bird_low:{w:46,h:28,clearance:4},
+  bird_high:{w:46,h:28,clearance:36}
 };
 export function overlaps(a,b) {
   return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
@@ -29,8 +29,8 @@ export class Runner {
   resume() {if(this.state==='paused')this.state='running';}
   playerBox() {const h=this.duck&&this.y===0?30:58;return {x:PLAYER_X+9,y:GROUND+this.y-h,w:26,h:h-3};}
   obstacleBox(o) {
-    return o.clearance?{x:o.x+7,y:GROUND-o.clearance-o.h+4,w:o.w-14,h:o.h-8}:
-      {x:o.x+5,y:GROUND-o.h+5,w:o.w-10,h:o.h-6};
+    // The body collides; decorative wing tips stay forgiving during a flap.
+    return {x:o.x+9,y:GROUND-o.clearance-16,w:29,h:15};
   }
   spawn(kind) {
     const d=KINDS[kind];const o={kind,x:this.width+24,...d};this.obstacles.push(o);return o;
@@ -48,9 +48,9 @@ export class Runner {
     }
     this.next-=dt;
     if(this.next<=0) {
-      const pool=this.distance>650?Object.keys(KINDS):['storm','bolt','gust','hail'];
+      const pool=this.distance>650?Object.keys(KINDS):['bird_low'];
       const kind=pool[Math.floor(this.random()*pool.length)];const o=this.spawn(kind);
-      if(!o.clearance&&this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-o.h-32,collected:false});
+      if(kind==='bird_low'&&this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-65,collected:false});
       this.next=(o.w+80)/this.speed+.95+this.random()*.45;
     }
     const p=this.playerBox();
