@@ -23,7 +23,7 @@ Shared CSS/JS references in HTML carry content-version query strings. Refresh th
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs tests/runner.test.mjs tests/runner-motion.test.mjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs
 python3 tests/validate_static.py
 git diff --check
 ```
@@ -38,7 +38,7 @@ The footer cloud is a real keyboard-accessible button. On phones it uses a small
 
 `nm-run-engine.mjs` contains deterministic movement, collision, obstacle spacing, stars and scoring. Only two encounters spawn: low birds to jump over and high birds to duck under. Flight clearances are 34 and 54 canvas pixels, measured from the anchored body. These account for the full downward wings: low birds clear the tallest foreground cloud lobes, and high wings clear the 36-pixel duck pose. Rendering and collision share `DUCK_HEIGHT`. Collision uses the body, leaving decorative wing tips forgiving. `nm-run-game.mjs` anchors both bird poses around the beak so their body position remains stable during flapping. The transparent sky atlas also provides clouds and stars; its other older objects are not extracted or spawned.
 
-`nm-run-motion.mjs` draws continuous running motion from the six reusable pieces in `runner-rig.png`. Feet travel at the track speed during contact, and their position and velocity join continuously across recovery and loop boundaries. Knees preserve compact 12-pixel leg segments with an 80-pixel stride; arms alternate with the legs. The torso keeps one silhouette throughout the run. `runner-character-v2.png` supplies idle/jump/duck/hit/dead poses only. Magenta keys and shaded rear-limb variants are prepared once when artwork loads. No image decoding or pixel reads happen inside the animation loop.
+`runner-stills.png` contains twelve complete running poses in a 4-column by 3-row atlas. `nm-run-motion.mjs` advances them in order with the distance traveled (one cycle per 112 canvas pixels). The loader removes the magenta background, trims each complete illustration, and registers it by its head center and foot baseline. All frames use one common scale, at most 60 pixels tall; flight poses lift by up to 3 pixels. Each character stays intact: the renderer does not assemble or stretch limbs. `runner-character-v2.png` supplies idle/jump/duck/hit/dead poses only. Art preparation happens once when the easter egg opens; no image decoding or pixel reads happen inside the animation loop. When replacing the running atlas, inspect the entire registered sequence and its wrap from frame twelve to one.
 
 Stars turn around their vertical axis during play while keeping a constant collection area. Their rotation pauses with game time and stays still under reduced motion. The outer game background uses the portfolio’s `--nm-bg` token.
 

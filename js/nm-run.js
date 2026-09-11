@@ -17,7 +17,7 @@
     loading = true;
     if (door) door.setAttribute('aria-busy', 'true');
     try {
-      var result = await Promise.all([import('/js/nm-run-game.mjs?v=861d84238d'), stylesheet()]);
+      var result = await Promise.all([import('/js/nm-run-game.mjs?v=3abf4b6146'), stylesheet()]);
       game = result[0]; game.openGame();
     } catch (error) {
       if (door) { door.title = 'Could not load the game. Click to try again.'; door.setAttribute('aria-label', door.title); }

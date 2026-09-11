@@ -1,19 +1,18 @@
 import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=5d858d2b17';
 
-import {drawStride,drawStar} from './nm-run-motion.mjs?v=07b6e0e090';
+import {RUN_FRAME_COUNT,runFrame,drawStar} from './nm-run-motion.mjs?v=472a03126a';
 
-const RIG='/media/runner/runner-rig.png?v=bbc9febfda';
-const RIG_CELLS={body:[65,90,385,530],upperArm:[525,235,205,385],forearm:[970,290,180,340],thigh:[100,710,205,415],shin:[525,760,205,370],shoe:[875,915,300,215]};
+const RUN_SHEET='/media/runner/runner-stills.png?v=8cfa26d5fe';
 const CHARACTER='/media/runner/runner-character-v2.png?v=1f0cad7cbd';
 const SKY='/media/runner/sky-atlas.png?v=ea731a709a';
-// The original sheet supplies idle, aerial, duck and reaction poses.
-// Running uses the continuous motion module and the six-piece rig.
+// Each running frame is a complete character illustration.
+// The previous sheet supplies idle, aerial, duck and reaction poses.
 const POSES={idle:8,jump:9,duck:10,hit:11,dead:12};
 const PIVOTS={idle:153,jump:144,duck:143,hit:145,dead:151};
 const SKY_CELLS={bird1:[15,390,290,318],bird2:[330,400,280,315],star:[965,420,270,298],platform:[0,735,1254,470]};
 function put(n,value){value=String(value);if(n.textContent!==value)n.textContent=value;}
 let root=null,game=null,canvas,ctx,panel,action,heading,description,pauseButton,scoreLabel,bestLabel,starLabel,status;
-let sprites=null,rig=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
+let sprites=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 try {best=Number(localStorage.getItem('nm-cloud-run-best'))||0;}catch{}
 function node(tag,cls,text){const n=document.createElement(tag);n.className=cls||'';if(text)n.textContent=text;return n;}
@@ -34,11 +33,14 @@ function extract(image,rect){
   cx.putImageData(data,0,0);if(right<left)throw new Error('Empty sprite');
   const trimmed=document.createElement('canvas');trimmed.width=right-left+1;trimmed.height=bottom-top+1;
   trimmed.getContext('2d').drawImage(c,left,top,trimmed.width,trimmed.height,0,0,trimmed.width,trimmed.height);
-  return {image:trimmed,left,top,width:trimmed.width,height:trimmed.height};
+  // Find a stable horizontal registration point without changing the artwork.
+  let headLeft=w,headRight=-1;
+  for(let j=top;j<top+trimmed.height*.28;j++)for(let i=left;i<=right;i++)if(p[(j*w+i)*4+3]>30){headLeft=Math.min(headLeft,i);headRight=Math.max(headRight,i);}
+  return {image:trimmed,left,top,width:trimmed.width,height:trimmed.height,headX:(headLeft+headRight)/2};
 }
 function loadArt(){
   if(artPromise)return artPromise;
-  artPromise=Promise.all([decodeImage(CHARACTER),decodeImage(SKY),decodeImage(RIG)]).then(([character,sky,parts])=>{
+  artPromise=Promise.all([decodeImage(CHARACTER),decodeImage(SKY),decodeImage(RUN_SHEET)]).then(([character,sky,running])=>{
     const result={};
     Object.entries(POSES).forEach(([name,i])=>{
       const x=Math.floor(i%4*character.width/4),y=Math.floor(Math.floor(i/4)*character.height/4);
@@ -46,13 +48,17 @@ function loadArt(){
       result[name]={...extract(character,[x,y,right-x,bottom-y]),pivot:PIVOTS[name],baseline:282};
     });
     for(const [name,rect] of Object.entries(SKY_CELLS))result[name]=extract(sky,rect);
-    const pieces={};
-    for(const [name,rect] of Object.entries(RIG_CELLS)){
-      const part=extract(parts,rect),dark=document.createElement('canvas');dark.width=part.width;dark.height=part.height;
-      const cx=dark.getContext('2d');cx.drawImage(part.image,0,0);cx.globalCompositeOperation='source-atop';cx.fillStyle='#10182e55';cx.fillRect(0,0,dark.width,dark.height);
-      pieces[name]={...part,dark};
+    const frames=[];
+    for(let i=0;i<RUN_FRAME_COUNT;i++){
+      const col=i%4,row=Math.floor(i/4),x=Math.floor(col*running.width/4),y=Math.floor(row*running.height/3);
+      const right=Math.floor((col+1)*running.width/4),bottom=Math.floor((row+1)*running.height/3);
+      frames.push(extract(running,[x,y,right-x,bottom-y]));
     }
-    sprites=result;rig=pieces;
+    // All poses retain one scale. Registration moves the whole still only.
+    const scale=60/Math.max(...frames.map(frame=>frame.height));
+    const lift=[0,0,0,2,3,2,0,0,0,2,3,1];
+    frames.forEach((frame,i)=>{result['run'+(i+1)]={...frame,pivot:frame.headX,baseline:frame.top+frame.height,scale,lift:lift[i]};});
+    sprites=result;
   }).catch(error=>{artPromise=null;throw error;});return artPromise;
 }
 function say(text){if(text!==announced){status.textContent=text;announced=text;}}
@@ -97,14 +103,13 @@ function draw(){
     }
   }
   for(const star of game.tokens)if(sprites)drawStar(ctx,sprites.star,star.x,star.y,reduce.matches?0:game.time);
-  if(rig&&game.y===0&&!game.duck&&['running','paused'].includes(game.state)){drawStride(ctx,rig,PLAYER_X+22,GROUND,game.distance);return;}
   let pose='idle';if(game.state==='hit')pose='hit';else if(game.state==='over')pose='dead';
-  else if(game.y<0)pose='jump';else if(game.duck)pose='duck';
+  else if(game.y<0)pose='jump';else if(game.duck)pose='duck';else if(['running','paused'].includes(game.state))pose='run'+runFrame(game.distance);
   const s=sprites&&sprites[pose];
   if(s){
-    const scale=pose==='duck'?DUCK_HEIGHT/s.height:64/sprites.idle.height;
+    const scale=s.scale||(pose==='duck'?DUCK_HEIGHT/s.height:64/sprites.idle.height);
     const baseline=['duck','dead','jump'].includes(pose)?s.top+s.height:s.baseline;
-    sprite(pose,PLAYER_X+22+(s.left-s.pivot)*scale,GROUND+game.y+(s.top-baseline)*scale,s.width*scale,s.height*scale);
+    sprite(pose,PLAYER_X+22+(s.left-s.pivot)*scale,GROUND+game.y-(s.lift||0)+(s.top-baseline)*scale,s.width*scale,s.height*scale);
   }
 }
 function frame(now){
