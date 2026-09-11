@@ -195,8 +195,8 @@ header[class*="z-50"] nav ul li:first-child{ display:none !important; }
   position:fixed; inset:0; z-index:55; background:#0a0a0a;
   display:flex; flex-direction:column; justify-content:center;
   padding:0 max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
-  opacity:0; visibility:hidden; transform:translateY(-8px);
-  transition:opacity .26s ease, transform .34s cubic-bezier(.22,1,.36,1),
+  opacity:0; visibility:hidden;
+  transition:opacity .26s ease,
              visibility 0s linear .34s;
 }
 .nm-menu-close{
@@ -204,15 +204,15 @@ header[class*="z-50"] nav ul li:first-child{ display:none !important; }
   right:max(8px,env(safe-area-inset-right));
   width:44px; height:44px; display:grid; place-items:center;
   border:0; padding:0; background:transparent; color:#fff;
-  font:32px/1 system-ui,sans-serif; cursor:pointer;
+  cursor:pointer; -webkit-appearance:none; appearance:none;
 }
 .nm-menu-close:focus-visible{outline:2px solid #FF7820;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){
   .nm-burger-panel,.nm-burger span{transition:none}
 }
 .nm-burger-panel.is-open{
-  opacity:1; visibility:visible; transform:none;
-  transition:opacity .26s ease, transform .34s cubic-bezier(.22,1,.36,1),
+  opacity:1; visibility:visible;
+  transition:opacity .26s ease,
              visibility 0s linear 0s;
 }
 .nm-burger-panel a{
@@ -260,81 +260,38 @@ html.nm-menu-open .nm-hdr{ z-index:60; }
 #mobile-menu{ display:none !important; }
 
 
-/* ── header backdrop (BOTH pages) ─────────────────────────────────────────
-   Lifted out of the homepage's inline <style> so the archive gets it too. It
-   had been keyed on header[class*="z-50"] only, which .nm-hdr cannot match --
-   and /index/ never loads that block at all.
-
-   That mattered because the archive grid is full-bleed, so all 176 thumbnails
-   scroll directly under the fixed bar, and eleven of them are flat 255 white.
-   The white wordmark, its 2px capsule, the nav and the burger bars were
-   sitting on pure white with no contrast floor, over a large part of an
-   18,500-38,600px scroll -- and below 768px the burger is the ONLY navigation
-   on that page.
-
-   The blur lives on pseudo-elements BEHIND the content, so the type stays
-   fully opaque, and it is tiered: a light blur over the full height plus a
-   heavier one that fades out sooner. Two overlapping ramps approximate a
-   progressive blur, which is what stops the bottom edge reading as a band. */
-header[class*="z-50"],
-.nm-hdr{
+/* A single tint keeps navigation readable without capturing and blurring
+   the moving WebGL/gallery layers underneath the fixed header. */
+header[class*="z-50"],.nm-hdr{
   background:transparent !important;
-  backdrop-filter:none; -webkit-backdrop-filter:none;
-  -webkit-mask-image:none; mask-image:none;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  mask-image:none;-webkit-mask-image:none;
   isolation:isolate;
 }
-header[class*="z-50"]::before, header[class*="z-50"]::after,
-.nm-hdr::before, .nm-hdr::after{
-  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+header[class*="z-50"]::before,.nm-hdr::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(10,10,10,.92),rgba(10,10,10,.66) 58%,rgba(10,10,10,0));
 }
-/* wide, light layer -- carries the tint and most of the height */
-header[class*="z-50"]::before,
-.nm-hdr::before{
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  background:linear-gradient(to bottom,
-    rgba(10,10,10,.72) 0%, rgba(10,10,10,.42) 58%, rgba(10,10,10,0) 100%);
-  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 55%,transparent 100%);
-          mask-image:linear-gradient(to bottom,#000 0%,#000 55%,transparent 100%);
-}
-/* tighter, heavier layer -- dies out well before the first one does */
-header[class*="z-50"]::after,
-.nm-hdr::after{
-  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
-          mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
-}
-
-/* ── phones: no live blur behind the header ───────────────────────────────
-   The bar carries two stacked backdrop-filter layers, blur(6px) and
-   blur(18px), each full width and each with its own gradient mask. A
-   backdrop-filter has to capture whatever is behind the element, blur it and
-   composite it -- and because the backdrop changes on every scroll frame,
-   both blurs are recomputed continuously for the whole scroll. On a phone
-   that is expensive enough to show up as scroll jank, and it is also why
-   large type tears and shimmers as it passes underneath the bar.
-
-   The blur is doing very little work at this size anyway; the legibility
-   comes from the dark gradient. So phones keep the gradient -- slightly
-   deeper, to make up for the blur that is gone -- and drop both filters.
-   Desktop is untouched. */
-@media (max-width:767px){
-  header[class*="z-50"]::before,
-  .nm-hdr::before{
-    backdrop-filter:none; -webkit-backdrop-filter:none;
-    background:linear-gradient(to bottom,
-      rgba(10,10,10,.88) 0%, rgba(10,10,10,.58) 58%, rgba(10,10,10,0) 100%);
-  }
-  header[class*="z-50"]::after,
-  .nm-hdr::after{
-    backdrop-filter:none; -webkit-backdrop-filter:none;
-    /* the second layer existed only to carry the heavier blur; with no filter
-       left it has nothing to draw, and an empty masked layer is still a
-       composited layer the phone has to manage every frame */
-    display:none;
-  }
-}
+header[class*="z-50"]::after,.nm-hdr::after{content:none}
 
 html.nm-menu-open .nm-burger{visibility:hidden}
 @media (max-width:359px){
   footer .foot-bar{flex-direction:column;align-items:flex-start;gap:12px}
 }
+
+/* The close icon uses the same three 1.5px white strokes as the hamburger. */
+.nm-menu-close span{
+  position:absolute;left:9px;width:26px;height:1.5px;background:#fff;
+  transition:transform .34s cubic-bezier(.22,1,.36,1),opacity .2s ease;
+}
+.nm-menu-close span:nth-child(1){top:16px}
+.nm-menu-close span:nth-child(2){top:21.25px}
+.nm-menu-close span:nth-child(3){top:26.5px}
+.nm-burger-panel.is-open .nm-menu-close span:nth-child(1){transform:translateY(5.25px) rotate(45deg)}
+.nm-burger-panel.is-open .nm-menu-close span:nth-child(2){opacity:0}
+.nm-burger-panel.is-open .nm-menu-close span:nth-child(3){transform:translateY(-5.25px) rotate(-45deg)}
+@media(prefers-reduced-motion:reduce){.nm-menu-close span{transition:none}}
+
+/* The modal already supplies an opaque background; leave its X undimmed. */
+html.nm-menu-open header[class*="z-50"]::before,
+html.nm-menu-open .nm-hdr::before{content:none}

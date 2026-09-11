@@ -35,7 +35,13 @@ home=(ROOT/'index.html').read_text()
 for block in re.findall(r'<script>(.*?)</script>',home,re.S):
     if block.startswith('self.__next_f.push(') and 'homeWorldwideTitle' in block:
         record=json.loads(block[len('self.__next_f.push('):-1])[1]
+        assert record.endswith('\n'), 'Flight records require their newline delimiter'
         data=json.loads(record.split(':',1)[1])
+        server_header=re.search(r'<header.*?</header>',home,re.S)[0]
+        assert 'href="/index/"' in server_header, 'Index must render before hydration'
+        nav=data[0][3]['navigation']['headerNavigation']
+        assert [item['url'] for item in nav] == ['#work','/index/','#about','#contact']
+        assert 'opacity:0' not in server_header, 'Header must be visible on first paint'
         copy=data[0][3]['homepage']['homeWorldwideTitle']
         assert copy in home, 'Server and client About copy must match'
         assert "I</span><span> </span><span>make" in copy

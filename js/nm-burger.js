@@ -26,6 +26,7 @@
     return null;
   }
   function close() {
+    if (!panel || !panel.classList.contains('is-open')) return;
     if (panel) panel.classList.remove('is-open');
     document.documentElement.classList.remove('nm-menu-open');
     if (window.__nmDialog) window.__nmDialog.release(panel);
@@ -33,8 +34,15 @@
     if (btn) btn.setAttribute('aria-expanded', 'false');
     if (window.__nmLenis) window.__nmLenis.start();
   }
+  function placeClose() {
+    if (!btn || !panel) return;
+    var box = btn.getBoundingClientRect(), exit = panel.querySelector('.nm-menu-close');
+    exit.style.top = (box.top - 14) + 'px';
+    exit.style.right = (window.innerWidth - box.right - 9) + 'px';
+  }
   function open() {
     if (!panel) return;
+    placeClose();
     panel.inert = false;
     panel.classList.add('is-open');
     btn.setAttribute('aria-expanded', 'true');
@@ -64,7 +72,7 @@
       exit.type = 'button';
       exit.className = 'nm-menu-close';
       exit.setAttribute('aria-label', 'Close menu');
-      exit.textContent = '×';
+      exit.innerHTML = '<span></span><span></span><span></span>';
       exit.addEventListener('click', close);
       panel.appendChild(exit);
       var nav = document.createElement('nav');
@@ -139,6 +147,7 @@
   /* a resize up into desktop must not leave the page scroll-locked */
   window.addEventListener('resize', function () {
     if (window.innerWidth >= 768) close();
+    else if (panel && panel.classList.contains("is-open")) placeClose();
   }, { passive: true });
 
   build();
