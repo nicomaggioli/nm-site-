@@ -746,3 +746,10 @@ main > #about{ background:#0a0a0a !important;
   #nm-sites .nm-site-host{ display:none; }
   #nm-sites .nm-site-arrow{ grid-column:auto; font-size:1.5rem; }
 }
+
+/* The existing point-cloud mark is an accessible, discreet game door. */
+.nm-run-door{position:absolute;z-index:2;left:50%;top:22%;transform:translateX(-50%);width:46%;height:37%;border:0;border-radius:50%;padding:0;background:none;cursor:pointer;touch-action:manipulation}
+.nm-run-door:focus-visible{outline:2px dashed #ff7820;outline-offset:8px}
+.nm-run-door img{display:none}
+.nm-run-door[aria-busy="true"]{cursor:progress}
+@media(max-width:767px){.nm-run-door{top:10px;width:150px;height:84px}.nm-run-door img{display:block;width:100%;height:100%;object-fit:contain}}

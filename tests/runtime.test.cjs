@@ -81,3 +81,17 @@ test('About deep links resolve after custom sections mount even before Lenis is 
   env.window.dispatchEvent(new Event('nm:hydrated'));env.flush();
   assert.equal(destination,2200);
 });
+
+test('responsive menu updates keep the game dialog isolated and restore prior focus on exit',()=>{
+  const document=new EventTarget(),window={};let observe;
+  const make=()=>({inert:false,isConnected:true,tagName:'DIV',contains(n){return n===this;},querySelectorAll(){return [];},focus(){document.activeElement=this;},closest(){return null;}});
+  const page=make(),trigger=make(),dialog=make();document.body={children:[page,dialog]};document.activeElement=trigger;
+  document.querySelector=selector=>selector.includes('.nm-run')?dialog:null;
+  function MutationObserver(callback){observe=callback;this.observe=()=>{};}
+  vm.runInNewContext(script('nm-trap.js'),{window,document,MutationObserver,Array,getComputedStyle:()=>({})});
+  assert.equal(page.inert,true);assert.equal(document.activeElement,dialog);
+  observe([{target:{matches:()=>true}}]);
+  assert.equal(page.inert,true);assert.equal(document.activeElement,dialog);
+  window.__nmDialog.release(dialog);
+  assert.equal(page.inert,false);assert.equal(document.activeElement,trigger);
+});

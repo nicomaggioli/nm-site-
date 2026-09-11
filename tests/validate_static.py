@@ -23,6 +23,8 @@ for name in ('nm-home-content.js','nm-brands.js'):
     source=(ROOT/'js'/name).read_text()
     content=json.loads(re.search(r'var HTML = (".*?");',source)[1])
     parser=Assets();parser.feed(content);paths+=parser.paths
+for name in ('nm-run.js','nm-run-game.mjs'):
+    paths+=re.findall(r'''[\"'](/(?:media|js|css)/[^\"']+)[\"']''',(ROOT/'js'/name).read_text())
 for css in (ROOT/'css').glob('*.css'):
     paths+=re.findall(r'url\([\'\"]?(/[^)\'\"]+)',css.read_text())
 missing=sorted({p for p in paths if not (ROOT/unquote(urlsplit(p).path).lstrip('/')).is_file()})

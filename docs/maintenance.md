@@ -23,7 +23,7 @@ Shared CSS/JS references in HTML carry content-version query strings. Refresh th
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs
 python3 tests/validate_static.py
 git diff --check
 ```
@@ -31,3 +31,13 @@ git diff --check
 Serve the repository as static files (`python3 -m http.server 8814`) and check `/` and `/index/`. The existing `serve.py` supports media range requests if needed. Check narrow phones, portrait and landscape, repeated complete down/up scrolls, visible/offscreen video playback, menu close/focus restoration, About navigation from both pages, and gallery next/previous/close. Do not test the exported HTML through a file:// URL.
 
 Deploy by merging the reviewed branch into the repository's configured Pages source branch. Keep the existing CNAME and hosting configuration. A real iOS Safari check remains useful: desktop viewport emulation cannot validate the mobile browser engine or device GPU.
+
+## Cloud Run easter egg
+
+The footer cloud is a real keyboard-accessible button. On phones it uses a small SVG projection of the existing point-cloud geometry. `/js/nm-run.js` is the lightweight door; it lazy-loads the game module, CSS and sprite atlas only after a click (or a direct `/#run` visit).
+
+`nm-run-engine.mjs` contains deterministic movement, collision, obstacle spacing, coins and scoring. `nm-run-game.mjs` owns drawing and the dialog lifecycle. The sky/cloud scenery is drawn on canvas. The character poses and obstacles come from the supplied sprite sheet, prepared as a magenta-key atlas. The magenta is removed once when the image loads, and trimmed sprite canvases are reused every frame. No image decoding or pixel reads happen inside the animation loop.
+
+Space/Up or the Jump button jumps; holding jumps higher. Down or the Duck button ducks; P pauses; Escape closes. A local high score persists across sessions. The game never sends scores or collects contact information. The canvas loop stops when paused/closed, and the underlying WebGL scene pauses while the game is open. Reduced-motion visitors can still choose to play, with decorative cloud parallax disabled.
+
+The shared focus manager must include `.nm-run` in its active-dialog query, so menu resize events do not release the game dialog's focus containment. Maintain this when adding other overlays. Always test phone rotation while the game is open.

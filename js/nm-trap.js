@@ -46,12 +46,12 @@
     }
   }, true);
   function sync() {
-    var next = document.querySelector('.nm-burger-panel.is-open,.nm-lb.is-open,.pa-modal:not(.pp-hidden)');
+    var next = document.querySelector('.nm-burger-panel.is-open,.nm-lb.is-open,.pa-modal:not(.pp-hidden),.nm-run');
     if (next) capture(next); else release();
   }
   new MutationObserver(function (records) {
     if (records.some(function (r) {
-      return r.target.matches('.nm-burger-panel,.nm-lb,.pa-modal');
+      return r.target.matches('.nm-burger-panel,.nm-lb,.pa-modal,.nm-run');
     })) sync();
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
   sync();
