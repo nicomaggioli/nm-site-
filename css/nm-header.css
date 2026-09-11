@@ -199,6 +199,17 @@ header[class*="z-50"] nav ul li:first-child{ display:none !important; }
   transition:opacity .26s ease, transform .34s cubic-bezier(.22,1,.36,1),
              visibility 0s linear .34s;
 }
+.nm-menu-close{
+  position:absolute; top:max(8px,env(safe-area-inset-top));
+  right:max(8px,env(safe-area-inset-right));
+  width:44px; height:44px; display:grid; place-items:center;
+  border:0; padding:0; background:transparent; color:#fff;
+  font:32px/1 system-ui,sans-serif; cursor:pointer;
+}
+.nm-menu-close:focus-visible{outline:2px solid #FF7820;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  .nm-burger-panel,.nm-burger span{transition:none}
+}
 .nm-burger-panel.is-open{
   opacity:1; visibility:visible; transform:none;
   transition:opacity .26s ease, transform .34s cubic-bezier(.22,1,.36,1),
@@ -321,4 +332,9 @@ header[class*="z-50"]::after,
        composited layer the phone has to manage every frame */
     display:none;
   }
+}
+
+html.nm-menu-open .nm-burger{visibility:hidden}
+@media (max-width:359px){
+  footer .foot-bar{flex-direction:column;align-items:flex-start;gap:12px}
 }

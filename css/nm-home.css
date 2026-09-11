@@ -1,0 +1,755 @@
+
+/* the mosaic is gone, so its 200svh of fly-through scroll is dead space */
+div[class*="h-[200svh]"]{ height:0 !important; min-height:0 !important; }
+
+#nm-made{ background:#0a0a0a; color:#fff; padding:0 0 max(64px,3.3333vw); position:relative;
+  z-index:-1;   /* BELOW the fixed scene canvas (z-index:0) so the hero mask
+                   paints over it and the logo aperture reveals it */
+  font-family:'Geist',system-ui,sans-serif;
+  /* Wide-angle FOV. This is what produces the fisheye: a real perspective
+     projection, so tiles away from the vanishing point splay outward as they
+     approach the camera. perspective-origin is set to the logo aperture at
+     runtime, so the zoom radiates from whatever the logo is showing. */
+  perspective:900px; }
+
+#nm-made .shop-hd-count{ font-size:9px; color:rgba(255,255,255,.6); letter-spacing:.18em; }
+
+/* the 3x3 area map, exactly as on nicomaggioli.com */
+#nm-made .index-feature{
+  display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr 1fr;
+  grid-template-areas:"a b c" "a d e" "f g g";
+  gap:0; margin-top:0; aspect-ratio:1/1;
+  /* scroll-driven zoom (see the pin script). transform only -- it must not
+     affect layout, or the pin spacer height would change every frame. */
+  position:relative; will-change:transform;
+}
+
+/* ── the surrounding 33 ───────────────────────────────────────────────────
+   A 7x7 super-grid whose centre 3x3 is left empty for the core grid above to
+   show through, so the 7 hero pieces never move or resize -- at the end of the
+   scroll the ring is simply gone and what is left is byte-for-byte the layout
+   that was there before.
+
+   Absolutely positioned on purpose: it must contribute ZERO layout height, or
+   the pin spacer and every scroll position after it would shift. */
+#nm-made .idx-ring{
+  position:absolute; left:50%; top:50%;
+  width:calc(100% * 15 / 3); height:calc(100% * 11 / 3);  /* wide enough to cover the mark's
+     width without cropping, tall enough to still cover it vertically */
+  display:grid; grid-template-columns:repeat(15,1fr); grid-template-rows:repeat(11,1fr);
+  transform:translate(-50%,-50%);
+  pointer-events:none;                          /* decorative, and it flies off-screen */
+}
+#nm-made .rc{
+  overflow:hidden; background:#111;
+  /* NO per-tile transform. The --dz/--ry/--rx written into the markup used to
+     push each tile to its own depth and angle it into a dome -- which is
+     precisely what opened black wedges at every seam. Rotating a tile about its
+     own centre pulls its edges away from both neighbours, and two tiles at
+     different depths project at different scales, so a shared edge cannot stay
+     shared. Flat tiles cannot form a curved surface AND stay touching; keeping
+     them coplanar is what makes the 40 read as one continuous sheet.
+     (The custom properties are left in the markup -- re-adding the transform
+     here is a one-line change if the curvature is ever wanted back.)
+
+     The half-pixel bleed covers subpixel rounding where the ring's 7 tracks
+     meet the core's 3. Tiles are opaque, so overlap is invisible; a hairline
+     of the section's background is not. */
+  margin:-0.5px;
+}
+#nm-made .rc img{ width:100%; height:100%; object-fit:cover; display:block; }
+#nm-made .idx-cell:nth-child(1){ grid-area:a; }
+#nm-made .idx-cell:nth-child(2){ grid-area:b; }
+#nm-made .idx-cell:nth-child(3){ grid-area:c; }
+#nm-made .idx-cell:nth-child(4){ grid-area:d; }
+#nm-made .idx-cell:nth-child(5){ grid-area:e; }
+#nm-made .idx-cell:nth-child(6){ grid-area:f; }
+#nm-made .idx-cell:nth-child(7){ grid-area:g; }
+#nm-made .idx-cell{
+  position:relative; overflow:hidden; cursor:pointer; background:#111;
+  border:0; border-radius:0; display:block; min-height:0;
+}
+#nm-made .idx-cell img, #nm-made .idx-cell video{
+  width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit;
+  transition:transform .5s cubic-bezier(.2,.7,.3,1);
+}
+#nm-made .idx-cell:hover img, #nm-made .idx-cell:hover video{ transform:scale(1.03); }
+#nm-made .idx-cell:hover video{ filter:saturate(1.1); }
+
+/* the 07/∞ count that used to balance this row is gone, so space-between now
+   parks the lone button on the LEFT */
+/* Centred on the page. Two things were wrong: flex-end was right only while
+   this row also carried the `07 / oo` count on the left, AND this element is a
+   child of .index-feature, a three-column grid -- so it was occupying a single
+   426px column and centring the button inside that, which put it a sixth of
+   the way across the page rather than halfway. Spanning all three columns is
+   what makes justify-content:center actually mean the middle. */
+#nm-made .index-feature-foot{ grid-column:1 / -1;
+  display:flex; justify-content:center; align-items:center;
+  margin-top:max(24px,1.25vw); padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+#nm-made .idx-view-all{
+  /* size the fill to the border box and stop it repeating, or the 1px ring
+     shows the gradient's tiled edge as a pale band (same as the wordmark) */
+  background-origin:border-box; background-repeat:no-repeat;
+  font-family:'Geist',system-ui,sans-serif; font-size:max(16px,0.8333vw); font-weight:700; line-height:1.2; padding:max(14px,0.7292vw) max(26px,1.3542vw);
+  background:transparent; color:#fff; border:1px solid rgba(255,255,255,.28); border-radius:999px;
+  text-decoration:none; transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+#nm-made .idx-view-all:hover{ background:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
+
+@media (max-width:767.98px){
+  #nm-made{ padding:0 0 64px; }
+  #nm-made .index-feature-foot{ padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+  #nm-made .index-feature{
+    grid-template-areas:"a b c" "a d e" "f f g"; aspect-ratio:1/1; gap:0; }
+}
+@media (max-width:600px){
+  #nm-made .index-feature{
+    grid-template-columns:1fr 1fr; grid-template-rows:auto;
+    grid-template-areas:"a a" "b c" "d e" "f g"; aspect-ratio:auto; gap:0; }
+}
+/* the original project grid this replaces */
+main > section:has(.project-card){ display:none !important; }
+
+/* This section is TWO blocks and only the second one was meant to go:
+     [0] .relative.z-10.text-white          "Available Worldwide" + the copy
+                                            explaining the studio  -> KEPT
+     [1] ...pb-whatwedo-top                 "We've worked with..." + Services +
+                                            Clients + Athletes, on the white
+                                            ground                 -> REMOVED
+   Matched by :has(.bg-whatwedo-client), which only block [1] contains.
+   The white ground itself is NOT css -- it is a WebGL group (white plane +
+   shapes.svg dashed art) gated off in 081f64dmupv9q.js. It stays off: the
+   kept copy is white type, so on the dark ground it reads, and on the white
+   plane it would not. */
+main > section > div:has(.bg-whatwedo-client){ display:none !important; }
+
+/* The original build's project-list panel and the button that opens it. The panel is a fixed
+   z-60 overlay holding 8 of their projects (Deviate/Puma, Milimani/Salomon, ...)
+   plus its hover posters; it sits at visibility:hidden until the toggle is
+   pressed. The toggle switched between that list and the project grid, which is
+   already hidden, so it had nothing left to switch to.
+   Matched on the arbitrary-value class as an attribute substring -- CSS would
+   otherwise need .z-\[60\] escaped. */
+main > div:has(.project-list-panel){ display:none !important; }
+
+/* NO background on the closing section. The footer rock renders in the fixed
+   WebGL canvas behind it, so any opaque fill here crops the model -- which is
+   exactly what cut it in half. The <html> ground is the same dark grey, so the
+   section reads identically without one. */
+
+/* The old build's social links. Their hrefs are blanked at source, so match on
+   that instead of on a brand name -- an empty social link should stay hidden
+   whoever it belonged to. */
+header a[href=""], footer a[href=""], nav a[href=""]{ display:none !important; }
+li:has(> a[href=""]){ display:none !important; }
+main > button[class*="z-[70]"]{ display:none !important; }
+
+
+
+/* ── typeface ────────────────────────────────────────────────────────────
+   Geist Sans + Geist Mono (Vercel, SIL Open Font Licence — see
+   /fonts/GEIST-OFL.txt). Chosen to stand in for the pairing on
+   orakl-oncology.com, which runs GT Planar (Grilli Type) with Simplon BP Mono
+   (Swiss Typefaces) — both retail faces that cannot legally be self-hosted
+   without a licence. Geist reproduces the structure that made that site work:
+   a geometric grotesque for everything, with its own matching monospace
+   carrying the small uppercase labels.
+
+   Two variable files cover every weight from 100 to 900, so the whole type
+   system costs 138 KB and no weight ever needs a second request. */
+@font-face{
+  font-family:'Geist';
+  src:url(/fonts/geist-sans-var.woff2) format('woff2');
+  font-weight:100 900; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'Geist Mono';
+  src:url(/fonts/geist-mono-var.woff2) format('woff2');
+  font-weight:100 900; font-style:normal; font-display:swap;
+}
+
+/* The build's own three Futura @font-face rules now point at the Geist file
+   directly (see _next/static/chunks/0y15hfs1xi6x..css), so every existing
+   `Futura` reference in the build resolves to Geist and futura-*.woff2 is never
+   requested. The original Futura files are still on disk under /fonts/ if this
+   is ever reverted. */
+:root{
+  --font-futura:'Geist', system-ui, sans-serif;
+  --font-mono:'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* The wordmark is an SVG <text> that names its family inline. */
+svg text{ font-family:'Geist', system-ui, sans-serif !important; }
+
+/* Orakl's actual system, which is as much of the look as the faces are: the
+   sans does all the display and body work, and every small uppercase
+   letterspaced label is set in the mono. */
+.nm-tag,
+#nm-coord,
+.nm-c-p-co,
+#nm-sites .nm-site-host,
+#nm-made .idx-view-all,
+#nm-made .shop-hd-count{
+  font-family:'Geist Mono', ui-monospace, monospace !important;
+  font-weight:500;
+}
+
+
+/* ── footer tagline ──────────────────────────────────────────────────────
+   "Where visions come true" has to hold one line; the <br> before the mail
+   link still breaks, so this reads as two lines rather than three.
+
+   The wrapper is w-[60%] on mobile and md:w-auto above it, but `auto` on an
+   inline-flex still resolves against the absolutely-positioned parent, which
+   was pinching the line. Width is released here and capped at 92vw instead.
+
+   nowrap alone would overflow a narrow viewport, so the size is bounded by
+   viewport width too: the string measures 11.28x its own font-size, so 8vw
+   keeps it inside 92vw at every width, and min() means the desktop size is
+   untouched. */
+div[class*="text-footer-tagline"]{
+  width:auto !important; max-width:max(min(92vw, 1200px), 62.5vw) !important;
+}
+div[class*="text-footer-tagline"] p{
+  white-space:nowrap;
+  /* px, not rem: this build sets a 10px root, so 3.4rem was 34px not 54px */
+  /* 6.2vw, not 8vw: the ratio was measured against Futura, and Geist sets the
+     same string about 25% wider -- at 375px the line ran 424px and the page
+     could be panned sideways. Geist measures ~14.1x its own font-size here,
+     so 6.2vw keeps it inside 92vw at every width. Desktop is unchanged. */
+  font-size:max(min(54px, 6.2vw), 2.8125vw);
+}
+
+
+/* nav + orbs: see /css/nm-header.css (shared with /index/) */
+
+/* "Behind the scenes" carousel. Selector verified against the real markup:
+   the container is div.pt-ww-carousel-top (an earlier guess of
+   section.h-lvh matched nothing at all). */
+div.pt-ww-carousel-top{ display:none !important; }
+
+/* dark grey ground, white type */
+/* Page ground. Black, NOT the grey the hero surround uses -- that grey lives in
+   the shader (uColorBeige), so the logo keeps its lighter surround while every
+   part of the page that paints no background of its own stays black. */
+:root{ --nm-bg:#0a0a0a; }
+/* Recovered from the previous site (commit d7bf9a8). One token, so every
+   hover fill on the site is the same orange. */
+:root{
+  --nm-orange:#FF7820;
+  --nm-orange-grad:linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%);
+}
+/* ── scaling past 1920 ────────────────────────────────────────────────────
+   The design is drawn for 1920. Above that every fixed px value froze while
+   the viewport kept growing, so 2560 rendered the same layout 25% smaller
+   relative to the screen. Each value V designed at 1920 becomes
+   max(V, (V/19.2)vw): at and below 1920 the max resolves to V and nothing
+   changes, above it the vw term takes over and everything grows together.
+
+   This one is the build's own token, which the homepage header and several
+   of its components read. */
+:root{ --spacing-grid-margin:max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw) !important; }
+/* Background goes on <html> ONLY. Painting order in the root stacking context is
+   html background -> negative z-index children -> in-flow content. <body> is
+   in-flow, so a background on it paints OVER the z-index:-1 section sitting
+   behind the logo aperture and hides it completely. */
+html{ background:var(--nm-bg) !important; }
+body{ background:transparent !important; color:#fff !important; }
+/* surfaces the original build painted white */
+.bg-white{ background-color:var(--nm-bg) !important; }
+/* `text-black` is everywhere in this build (it was a light-ground design) and
+   renders invisible on a dark page */
+.text-black{ color:#fff !important; }
+h1,h2,h3,h4,h5,h6,p,li,a,span,button,figcaption{ color:#fff; }
+.text-body-sm, .text-label, .text-nav{ color:rgba(255,255,255,.62); }
+.border-white{ border-color:rgba(255,255,255,.18) !important; }
+/* The build sets Univers Condensed on .text-footer-side / .text-label / .text-button.
+   Those are the ONLY visible non-Futura strings left ("From the sketch.",
+   "To the shelf.", the copyright, the copy-email button). Overridden here rather
+   than in the compiled css -- and with nothing left requesting it, the Univers
+   woff2 files stop being downloaded. */
+.text-footer-side, .text-label, .text-button{ font-family:var(--font-futura) !important; }
+
+/* header backdrop: moved to /css/nm-header.css so the archive gets it too.
+   It was keyed on header[class*="z-50"], which <header class="nm-hdr">
+   cannot match -- and /index/ never loads this block at all. */
+
+/* The footer email is pinned dead-centre by the build
+   (md:!absolute md:left-1/2 md:-translate-x-1/2). Release it and let the
+   footer's own flex layout put it on the right. */
+/* Footer bottom row. The build centres the email absolutely
+   (md:left-1/2 + translateX(-50%)) and draws a dashed rule above it. Both go:
+   the email lands on the same right gutter as the wordmark and the weather, and
+   the row becomes a plain two-up -- copyright left, email right. */
+/* Make the container a ROW and the two simply sit at either end -- at every
+   width, on the same gutter as the wordmark and the weather. Absolute
+   positioning is dropped entirely rather than re-anchored. */
+footer .flex.flex-col.items-start{
+  flex-direction:row !important; width:100% !important;
+  align-items:baseline !important; justify-content:space-between !important;
+}
+footer .text-label.md\:\!absolute{
+  position:static !important; left:auto !important; right:auto !important;
+  top:auto !important; transform:none !important;
+  margin-left:auto; text-align:right !important;
+}
+footer .text-label.md\:\!absolute span{ text-align:right !important; left:auto !important; right:0 !important; }
+
+/* the dashed hairline above the footer row -- a repeating-linear-gradient div,
+   not a border, so it needs matching on the arbitrary class */
+footer div[class*="repeating-linear-gradient"]{ display:none !important; }
+
+/* "From the sketch." / "To the shelf." */
+.text-footer-side{ display:none !important; }
+
+/* Widow control. `pretty` tells the browser to look ahead and avoid leaving a
+   single word alone on the last line; `balance` evens out short headings across
+   their lines. Doing it here rather than hard-coding &nbsp; means it holds at
+   every viewport width, not just the one I happened to measure. */
+#nm-services .nm-svc-desc,
+#about .text-heading-xl,
+main p, main li, .text-footer-side{ text-wrap:pretty; }
+#nm-services .nm-svc-name, .text-heading-md, .text-heading-lg{ text-wrap:balance; }
+
+/* ── Boston weather, top right ──────────────────────────────────────────
+   Sits opposite the wordmark so the header reads left / centre / right. Hidden
+   below the nav's own breakpoint, since the nav goes too. Starts at opacity 0
+   and is only revealed once real data lands -- if the request fails there is
+   nothing to see rather than a broken widget. */
+/* coordinates widget: see /css/nm-coord.css (shared with /index/) */
+
+
+/* nav centring now lives in /css/nm-header.css, which /index/ loads too. The
+   rule that used to be here only set translateX, so it silently overrode the
+   shared rule's vertical centring and the two navs sat 6px apart. */
+
+/* Magnetised elements. transform is written per-frame by nm-magnet-js, so no
+   css transition here -- a transition would fight the lerp and lag the cursor.
+   will-change keeps each one on its own layer so only the compositor moves. */
+.nm-mag{ will-change:transform; }
+.nm-mag-on{ display:inline-block; }
+
+/* The contact card is gone -- "Work with me" opens the mail client instead.
+   Hidden rather than cut out of the bundle: it is a self-contained fixed
+   overlay, so this removes it entirely without touching the tree around it. */
+div[class*="z-[100]"]:has(button[aria-label="Close contact"]){ display:none !important; }
+
+/* ── contact card ───────────────────────────────────────────────────────
+   The close control was a ticket-stamp SVG -- dashed border, corner crops, the
+   word CLOSE. Nothing else on the site looks like that. Swapped for the same
+   pill language as View all: hairline circle, fills white on hover. Drawn with
+   pseudo-elements so React can re-render the button freely without losing it. */
+button[aria-label="Close contact"]{
+  width:52px; height:52px; border-radius:999px; position:absolute;
+  border:1px solid rgba(255,255,255,.28); background:transparent;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s ease, border-color .2s ease;
+}
+button[aria-label="Close contact"] svg{ display:none !important; }
+button[aria-label="Close contact"]::before,
+button[aria-label="Close contact"]::after{
+  content:""; position:absolute; width:16px; height:1.5px; background:#fff;
+  transition:background .2s ease;
+}
+button[aria-label="Close contact"]::before{ transform:rotate(45deg); }
+button[aria-label="Close contact"]::after{ transform:rotate(-45deg); }
+button[aria-label="Close contact"]:hover{ background:#fff; border-color:#fff; }
+button[aria-label="Close contact"]:hover::before,
+button[aria-label="Close contact"]:hover::after{ background:#000; }
+
+/* the mark: cap it and sit it on the baseline of its column instead of floating */
+/* wide mark in a slot sized for a tall one -- let it use the width and take
+   its own height */
+.z-\[100\] img[src*="nm-mark"]{ width:168px !important; height:auto !important;
+  max-width:none; opacity:.92; align-self:end; }
+
+/* Instagram / Vimeo survive as empty anchors -- match on the empty href so a
+   dead social link stays hidden wherever it lives, not just in the header */
+a[href=""]:empty, a[href=""]{ display:none !important; }
+
+/* tighter vertical rhythm: the card was mostly gap. (gap-y is a tailwind class,
+   not a css property -- the property is row-gap.) */
+.z-\[100\] .grid{ row-gap:3.2rem !important; }
+.z-\[100\] h2{ margin-bottom:.1em; }
+
+/* leave the work itself alone */
+canvas, img, video{ filter:none !important; }
+
+/* ── mobile: the footer without the cloud ────────────────────────────────
+   The NM point cloud is skipped at this breakpoint (see the nmNoMark() guard
+   in the scene chunk), and it was the only thing that needed a screen-tall
+   closing section. Left alone, the section keeps its 100lvh and the CTA keeps
+   sitting at 67% of it, so the cloud's slot stays behind as ~490px of empty
+   black above "Where visions come true".
+
+   So the box shrinks with its contents. The meta row is pinned to the section
+   bottom by items-end and follows on its own; min-height keeps the CTA and
+   that row from colliding on very short phones. */
+@media (max-width:767px){
+  main > section.h-lvh{ height:46svh !important; min-height:340px !important; }
+  main > section.h-lvh [class*="top-[67%]"]{ top:32% !important; }
+  /* the list's own trailing padding stacks on top of the section's lead-in --
+     72 + 200 read as a third of a phone screen of nothing between the last
+     site and the call to action */
+  #nm-sites{ padding-bottom:40px !important; }
+}
+
+/* ── the about copy is prose now, so stop justifying it ──────────────────
+   The old line was a three-line statement and justified cleanly. The new copy
+   runs ten lines of 80px display type and carries short words plus a
+   colon-separated list, which justification cannot absorb: measured word
+   spaces ran from 18.3px to 327.3px, a 17.9x spread, i.e. rivers straight
+   down the block.
+
+   Ragged right is the correct setting for this. Phones were already left
+   aligned (there is a rule for that in the brands sheet); this brings every
+   width into line rather than leaving desktop as the odd one out. */
+#about .text-heading-xl{ text-align:left !important; }
+/* balance, not the `pretty` this block inherits from the widow-control rule
+   above. pretty only protects against a single word on the last line and it
+   did not fire here -- it broke the copy as
+
+     I make what I can't find. / Positioning, identity, / packaging, web.
+     Make it / real and make it make / sense.
+
+   leaving "sense." alone at 80px. balance evens all five lines instead and
+   ends on "make it make sense.", same five lines, same 360px, no orphan.
+   Chrome caps balance at ~6 lines, so phones (more lines at 24px) fall back
+   to normal wrapping, which is fine -- the orphan is only ugly at display
+   size. */
+#about .text-heading-xl p{ text-wrap:balance; }
+
+/* ── phones: the about block was mostly air ──────────────────────────────
+   Measured at 375: the section carried 132px of top padding and the grid
+   inside it another 24px of margin -- 156px of empty space above a text
+   block only 108px tall. More gap than copy. And at 24px the statement read
+   as body text rather than as the one thing the section is there to say.
+
+   Padding comes down to 64px, the grid's own margin to 12px, and the type
+   goes to 34px. Desktop keeps its own scale untouched. */
+@media (max-width:767px){
+  #about{ padding-top:64px !important; }
+  #about .grid-layout.mt-gap-lg{ margin-top:12px !important; }
+  /* font-size lives on the clamp floor in the brands sheet, not here -- that
+     rule is !important at the same specificity and comes LATER in document
+     order, so any size set here is dead on arrival. Leading only. */
+  #about .text-heading-xl{ line-height:1.06 !important; }
+}
+
+/* ── footer meta row: hold the site's own scaling convention ─────────────
+   The build sizes .text-label at 0.793651vw, which crosses 12px at 1512 and
+   keeps growing -- so above 1512 the homepage's footer type and row height
+   pulled away from the archive's hand-written .foot-bar (max(12px,0.625vw),
+   the site's max(V,(V/19.2)vw) curve: flat to 1920, 1.333x at 2560). At 2560
+   that was 20.3px against 16px, and a 78px row against 61px. The archive is
+   the one following the convention, so the homepage comes to it. */
+footer .text-label{ font-size:max(12px, 0.625vw) !important; }
+
+
+/* The explainer's ground. It carried no background of its own -- the page grey
+   showed through -- so black has to be set here, not only on the blocks below. */
+main > #about{ background:#0a0a0a !important;
+  padding:max(132px,6.875vw) 0 max(40px,2.0833vw) !important; }
+
+#nm-brands, #nm-services{ background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif; }
+#nm-brands{ padding:max(104px,5.4167vw) 0 max(104px,5.4167vw); overflow:hidden; position:relative; }
+.nm-tag{ font-size:max(12px,0.625vw); line-height:1.5; letter-spacing:.16em;
+  font-weight:500; color:rgba(255,255,255,.6) !important; text-transform:uppercase;
+  padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); margin:0 0 max(36px,1.875vw); }
+
+/* "Available Worldwide" */
+#about .text-body-sm{ display:none !important; }
+
+#nm-brands .nm-brands-marquee{ overflow:hidden; padding:max(10px,0.5208vw) 0;
+  /* fade both ends so logos enter and leave rather than popping at the edge */
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 9%,#000 91%,transparent 100%);
+          mask-image:linear-gradient(to right,transparent 0%,#000 9%,#000 91%,transparent 100%); }
+#nm-brands .nm-brands-track{ display:flex; align-items:center; width:max-content;
+  animation:nmBrandsScroll 38s linear infinite; will-change:transform; }
+#nm-brands .nm-brand{ margin-right:max(84px,4.375vw); display:inline-flex; align-items:center; }
+#nm-brands .nm-brand img{ height:100%; width:auto; display:block;
+  /* !important is load-bearing: the theme reset has `img{filter:none !important}`
+     (there to stop it tinting the work media) and it was cancelling this. */
+  filter:brightness(0) invert(1) !important; }
+#nm-brands .nm-brand{ transition:transform .25s ease; }
+@media (hover:hover){
+  /* at full white there is no brightness headroom left for a hover state, so the
+     cue is the small lift his own marquee uses on its text brands */
+  #nm-brands .nm-brand:hover{ transform:translateY(-1px); }
+  /* Pause only while the pointer is genuinely over a logo. #nm-brands:hover
+     covered the entire section -- a full-width band ~330px tall including all the
+     padding -- so the strip halted whenever the cursor came anywhere near it.
+     .nm-brand is sized to the logo itself and the 84px separation is margin,
+     which does not take hover, so the gaps between logos do not trigger it. */
+  #nm-brands .nm-brands-track:has(.nm-brand:hover){ animation-play-state:paused; }
+}
+#nm-brands .nm-b-staples{ height:max(32px,1.6666vw); }
+#nm-brands .nm-b-seagate{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-bose{ height:max(26px,1.3541vw); }
+#nm-brands .nm-b-alares{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-ua{ height:max(42px,2.1875vw); }
+#nm-brands .nm-b-kohler{ height:max(30px,1.5625vw); }
+#nm-brands .nm-b-ravisauce{ height:max(44px,2.2916vw); }
+#nm-brands .nm-b-puffco{ height:max(40px,2.0833vw); }
+#nm-brands .nm-b-pawsta{ height:max(44px,2.2916vw); }
+#nm-brands .nm-b-ravi{ height:max(26px,1.3541vw); }
+/* 4 identical sets in the track, so travelling exactly -25% lands set 2 where
+   set 1 began -- the loop point is invisible. */
+@keyframes nmBrandsScroll{ from{ transform:translateX(0); } to{ transform:translateX(-25%); } }
+
+/* text-heading-xl is a 64->112px clamp; words like CONCEPT, are wider than a
+   phone column at that size and were running straight off the right edge.
+   Scale by viewport instead, and allow a break as a last resort. */
+#about .text-heading-xl{
+  /* Sized to the line breaks, not picked by eye. Justified text distributes
+     each line's slack across its word gaps, so a line with three words puts
+     ~300px into two gaps and you get rivers. Measured across the range at
+     1440: 104px broke 4/5/3/3/1 with gaps of 29-223px (a 7.7x spread), while
+     80px breaks 6/5/5 with gaps of 18-32px (1.8x). Three even lines, no rivers,
+     and the justification is kept.
+     5.55vw resolves to 80px at 1440. The cap is 8.8rem rather than a rounder
+     number because it was measured too: above ~1585px the clamp pins the size,
+     and at 1920 a 92px cap breaks 6/6/4 with gaps of 21-68px (3.2x) while 88px
+     breaks 7/7/2 with gaps of 20-24px (1.2x). Four pixels is the difference
+     between a river and none. */
+  /* 3.0rem floor, not 2.4rem. The floor only binds below ~540px, so this is a
+     phone-only change and every width above still resolves to the same 5.55vw
+     as before. At 375 the statement was setting 24px and reading as body copy
+     rather than as the one line the section exists to deliver.
+
+     3.0rem and not larger because of where the copy breaks. Measured at 375:
+     26 and 28px give five lines, 30px six, and both end on a full phrase --
+     but 32px and 34px push it to seven and eight lines and strand "sense."
+     alone, because Chrome stops applying text-wrap:balance past about six
+     lines. 30px is the largest size that still reads as a statement without
+     leaving a one-word line. */
+  font-size:max(clamp(3.0rem, 5.55vw, 8.8rem), 4.5833vw) !important;
+  overflow-wrap:break-word; word-break:normal; hyphens:none;
+}
+@media (max-width:767.98px){
+  #about .text-heading-xl{ text-align:left !important; }   /* justify shreds short lines */
+}
+
+#nm-services{ padding:max(104px,5.4167vw) 0 max(128px,6.6667vw); }
+
+/* ── services ────────────────────────────────────────────────────────────
+   Fixed rail. The numerals and the descriptions never move -- they sit on hard
+   columns, and a hairline runs the full height of the list where the copy
+   starts, so there is one edge the eye can hold.
+
+   The ONLY thing that steps is the name, and it steps by transform rather than
+   by changing its grid column. That matters: a transform can animate, so on
+   hover the row pulls itself flush to the rail. The misalignment stops being
+   drift and becomes something that resolves when you touch it. */
+#nm-services .nm-svc-grid{ display:flex; flex-direction:column; padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+#nm-services .nm-svc-row{
+  position:relative;
+  display:grid; grid-template-columns:repeat(12,1fr); column-gap:max(24px,1.25vw);
+  align-items:start; padding:max(38px,1.9792vw) max(16px,0.8333vw); margin:0;
+  transition:background .2s ease, color .2s ease;
+}
+/* The numerals are gone -- the list reads as six capabilities, not a ranked
+   sequence, and the count was doing no work. */
+#nm-services .nm-svc-num{ display:none !important; }
+#nm-services .nm-svc-name{
+  /* starts at column 1 now, flush with the section tag and the rest of the
+     page, the same way the live-sites rows sit */
+  grid-column:1 / span 6;
+  font-size:max(clamp(2.2rem,2.6vw,3.4rem), 1.7708vw); font-weight:700;
+  letter-spacing:-.025em; line-height:1.05; color:#fff;
+  transition:transform .42s cubic-bezier(.22,.9,.28,1);
+  will-change:transform;
+}
+#nm-services .nm-svc-desc{
+  grid-column:8 / span 5;
+  font-size:max(1.6rem,0.8333vw); line-height:1.55; color:rgba(255,255,255,.66);
+  align-self:end; max-width:46ch;
+  /* static on purpose: the rail is positioned against the ROW, not against
+     this column, so it sits on the row's true centre line. */
+  position:static;
+}
+/* the rail. -38px top/bottom is exactly the row padding, so the segments meet
+   and read as one unbroken line down the section */
+#nm-services .nm-svc-desc::before{
+  content:""; position:absolute; left:50%; top:0; bottom:0; width:1px;
+  background:rgba(255,255,255,.13); transition:background .2s ease;
+}
+
+/* No stagger. The names used to march right down the list as a diagram of
+   idea-to-object; left-aligning them flush is the plainer read and matches the
+   live-sites list below. */
+
+/* ── the name fills with the work ────────────────────────────────────────
+   At rest the letters are solid white and the image behind them is invisible.
+   On hover the fill colour goes transparent and the work shows through the
+   letterforms. The flat white layer on top of the photo is a legibility floor:
+   several of these thumbnails are dark, and without it a name could hover into
+   something unreadable. */
+#nm-services .nm-svc-name{
+  background-image:linear-gradient(rgba(255,255,255,.24),rgba(255,255,255,.24)), var(--fill);
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:#fff;
+  transition:transform .42s cubic-bezier(.22,.9,.28,1), -webkit-text-fill-color .3s ease;
+}
+
+/* ── the rail fills as you scroll ────────────────────────────────────────
+   One bright segment per row, laid exactly over the dim base segment. Each
+   fills as its row crosses the viewport, and because the segments already meet
+   end to end it reads as a single line drawing itself down the section.
+
+   Driven by a view() timeline rather than a scroll listener on purpose: no
+   JS, no rAF (which does not run in a background tab), and where the timeline
+   is unsupported the segment simply stays hidden and the dim rail is what was
+   always there. */
+#nm-services .nm-svc-rail{
+  position:absolute; left:50%; top:0; bottom:0; width:1px;
+  background:#fff; transform:scaleY(0); transform-origin:top; }
+@supports (animation-timeline: view()){
+  #nm-services .nm-svc-rail{
+    animation:nmRailDraw linear both;
+    animation-timeline:view();
+    animation-range:entry 15% cover 55%; }
+}
+@keyframes nmRailDraw{ from{ transform:scaleY(0); } to{ transform:scaleY(1); } }
+
+@media (hover:hover){
+  /* hovering pulls the name flush and lights the rail */
+  #nm-services .nm-svc-row:hover .nm-svc-name{ -webkit-text-fill-color:transparent; }
+  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:var(--nm-orange, #FF7820); }
+  #nm-services .nm-svc-row:hover .nm-svc-num{ color:var(--nm-orange, #FF7820); transform:scale(1.18); }
+  #nm-services .nm-svc-row:hover{ background:rgba(255,133,32,.05); }
+}
+
+@media (max-width:767.98px){
+  #nm-brands{ padding:56px 0 56px; }
+  /* 48s, not 20s. The track travels a fixed -25% of its own width, so the
+     duration sets absolute pixels-per-second and the viewport does not enter
+     into it -- 20s here against 38s on desktop meant the strip ran 1.9x FASTER
+     on the smaller screen, which is backwards. 48s is a shade gentler than
+     desktop, which suits a phone. */
+  #nm-brands .nm-brands-track{ animation-duration:48s; }
+  #nm-brands .nm-brand{ margin-right:48px; }
+  .nm-tag{ margin-bottom:16px; padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+  #nm-brands .nm-b-staples{ height:22px; }
+  #nm-brands .nm-b-seagate{ height:28px; }
+  #nm-brands .nm-b-bose{ height:18px; }
+  #nm-brands .nm-b-alares{ height:28px; }
+  #nm-brands .nm-b-ua{ height:28px; }
+  #nm-brands .nm-b-kohler{ height:22px; }
+  #nm-brands .nm-b-ravisauce{ height:32px; }
+  #nm-brands .nm-b-puffco{ height:28px; }
+  #nm-brands .nm-b-pawsta{ height:30px; }
+  #nm-brands .nm-b-ravi{ height:18px; }
+  #nm-services{ padding:56px 0 72px; }
+  #nm-services .nm-svc-grid{ padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
+  /* A plain single-column stack. This block used to declare a 52px first track
+     for the numerals -- which are now display:none globally -- and then follow
+     `grid-area` with `grid-column:auto`, which wipes the column half of the
+     shorthand. Both the name and the description auto-placed into that dead
+     52px track: at 375px the rows measured 52x92 and 52x419, roughly one word
+     per line, with 257px of empty black beside them. That was 45% of the
+     mobile page. */
+  #nm-services .nm-svc-row{
+    grid-template-columns:1fr; grid-template-areas:"name" "desc";
+    column-gap:0; row-gap:8px; padding:26px 0; }
+  #nm-services .nm-svc-row .nm-svc-name{ grid-area:name; font-size:2.2rem;
+    transform:none !important; }
+  #nm-services .nm-svc-row .nm-svc-desc{ grid-area:desc; font-size:1.5rem; }
+  /* No rail on a stacked layout -- it would cut straight through the copy.
+     This selector list previously ended in a trailing comma and a `}` that
+     closed the @media, so the whole rule was discarded as a parse error and
+     BOTH rails survived on phones: .nm-svc-desc::before is positioned against
+     the ROW (the desc is deliberately static), so a white hairline drew itself
+     down the centre of the screen through all six stacked rows. */
+  #nm-services .nm-svc-desc::before,
+  #nm-services .nm-svc-rail{ display:none; }
+  }
+@media (prefers-reduced-motion:reduce){ #nm-brands .nm-brands-track{ animation:none; } }
+
+/* ── live websites ───────────────────────────────────────────────────────
+   Same rail idiom as the services list above it, but the row is a link and
+   the payoff is a screenshot that tracks the cursor. Rows stay quiet so the
+   panel is the only thing that moves. */
+#nm-sites{ background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif;
+  padding:0 0 max(128px,6.6667vw); }
+#nm-sites .nm-sites-grid{
+  margin-top:max(40px,2.0833vw);
+  padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw);
+  border-top:1px solid rgba(255,255,255,.13); }
+#nm-sites .nm-site{
+  position:relative; display:grid;
+  grid-template-columns:repeat(12,1fr); column-gap:max(24px,1.25vw); align-items:baseline;
+  padding:max(30px,1.5625vw) max(16px,0.8333vw); text-decoration:none; color:inherit;
+  border-bottom:1px solid rgba(255,255,255,.13);
+  transition:background .22s ease; }
+#nm-sites .nm-site-num{
+  grid-column:1 / span 1;
+  font-size:max(clamp(1.8rem,2.2vw,2.8rem), 1.4583vw); font-weight:700; line-height:1;
+  letter-spacing:-.02em; color:rgba(255,255,255,.42);
+  transform-origin:left center;
+  transition:color .2s ease, transform .34s cubic-bezier(.22,.9,.28,1); }
+#nm-sites .nm-site-name{
+  grid-column:2 / span 6;
+  font-size:max(clamp(2.2rem,2.6vw,3.4rem), 1.7708vw); font-weight:700;
+  letter-spacing:-.025em; line-height:1.05; color:#fff;
+  transition:transform .42s cubic-bezier(.22,.9,.28,1); will-change:transform; }
+#nm-sites .nm-site-host{
+  grid-column:8 / span 4;
+  font-size:max(1.3rem,0.6771vw); line-height:1.5; letter-spacing:.02em;
+  color:rgba(255,255,255,.5); transition:color .2s ease; }
+#nm-sites .nm-site-arrow{
+  grid-column:12 / span 1; justify-self:end;
+  font-size:max(clamp(1.6rem,2vw,2.2rem), 1.1458vw); line-height:1;
+  color:rgba(255,255,255,.35);
+  transition:color .2s ease, transform .28s cubic-bezier(.22,.9,.28,1); }
+
+@media (hover:hover){
+  #nm-sites .nm-site:hover{ background:rgba(255,133,32,.05); }
+  #nm-sites .nm-site:hover .nm-site-num{ color:#fff; transform:scale(1.18); }
+  #nm-sites .nm-site:hover .nm-site-name{ transform:translateX(max(14px,0.7292vw)); }
+  #nm-sites .nm-site:hover .nm-site-host{ color:rgba(255,255,255,.8); }
+  #nm-sites .nm-site:hover .nm-site-arrow{ color:var(--nm-orange, #FF7820); transform:translate(max(4px,0.2083vw),min(-4px,-0.2083vw)); }
+}
+
+/* the panel that rides the cursor. Fixed-positioned on <body>, outside the
+   section, so no ancestor transform can capture it. */
+.nm-site-peek{
+  position:fixed; top:0; left:0; width:max(380px,19.7916vw); aspect-ratio:16 / 10;
+  overflow:hidden; background:#0a0a0a;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 max(24px,1.25vw) max(64px,3.3333vw) rgba(0,0,0,.6);
+  pointer-events:none; opacity:0; transform:scale(.96);
+  transition:opacity .18s ease, transform .26s cubic-bezier(.22,1,.36,1);
+  z-index:9000; will-change:transform, opacity, left, top; }
+.nm-site-peek.is-on{ opacity:1; transform:scale(1); }
+.nm-site-peek img{ width:100%; height:100%; object-fit:cover;
+  object-position:top center; display:block; }
+.nm-site-peek::after{ content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55)); }
+.nm-site-peek .lbl{
+  position:absolute; bottom:12px; left:14px; right:14px; z-index:1;
+  font-family:'Geist',system-ui,sans-serif;
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(255,255,255,.85); display:flex; justify-content:space-between; gap:10px; }
+.nm-site-peek .dot{ display:inline-block; width:max(6px,0.3125vw); height:max(6px,0.3125vw); border-radius:50%;
+  background:#fff; margin-right:7px; transform:translateY(-1px); }
+
+@media (hover:none),(max-width:767.98px){ .nm-site-peek{ display:none; } }
+@media (max-width:767.98px){
+  #nm-sites{ padding:0 0 72px; }
+    #nm-sites .nm-site{ grid-template-columns:auto 1fr auto; column-gap:14px;
+    padding:22px 0; align-items:center; }
+  #nm-sites .nm-site-num{ grid-column:auto; font-size:1.3rem; }
+  #nm-sites .nm-site-name{ grid-column:auto; font-size:2rem; }
+  #nm-sites .nm-site-host{ display:none; }
+  #nm-sites .nm-site-arrow{ grid-column:auto; font-size:1.5rem; }
+}
+
+/* The existing point-cloud mark is an accessible, discreet game door. */
+.nm-run-door{position:absolute;z-index:2;left:50%;top:22%;transform:translateX(-50%);width:46%;height:37%;border:0;border-radius:50%;padding:0;background:none;cursor:pointer;touch-action:manipulation}
+.nm-run-door:focus-visible{outline:2px dashed #ff7820;outline-offset:8px}
+.nm-run-door img{display:none}
+.nm-run-door[aria-busy="true"]{cursor:progress}
+@media(max-width:767px){.nm-run-door{top:10px;width:150px;height:84px}.nm-run-door img{display:block;width:100%;height:100%;object-fit:contain}}

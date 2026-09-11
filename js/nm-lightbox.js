@@ -65,11 +65,13 @@
     show(i);
     lb.classList.add('is-open');
     document.documentElement.classList.add('nm-lb-open');
+    if (window.__nmDialog) window.__nmDialog.capture(lb);
     lb.querySelector('.nm-lb-close').focus();
   }
   function close() {
     if (!lb) return;
     lb.classList.remove('is-open');
+    if (window.__nmDialog) window.__nmDialog.release(lb);
     document.documentElement.classList.remove('nm-lb-open');
     /* drop the src so a 3MB image is not held in memory behind the overlay */
     setTimeout(function () { if (!lb.classList.contains('is-open')) imgEl.removeAttribute('src'); }, 260);
