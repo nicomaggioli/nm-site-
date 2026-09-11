@@ -1,0 +1,154 @@
+/* ── hold the mark ────────────────────────────────────────────────────────
+   The footer easter egg. Click the point cloud and the wind picks up.
+
+   Everything here is the site's own vocabulary -- the black ground, Geist for
+   the one headline, Geist Mono for every label, the capsule for every control,
+   the orange gradient for the one action that matters -- so the game reads as
+   a room in the same building, not a popup from somewhere else.
+
+   Fixed and full-viewport rather than pinned to the footer: the footer is
+   React-rendered and re-rendered, and a child appended into it is at the
+   mercy of reconciliation. A fixed layer on <body> is not. It also means the
+   deep link (#hold) works from any scroll position. */
+.nm-hold{
+  position:fixed; inset:0; z-index:400;
+  background:#0a0a0a; color:#fff;
+  font-family:'Geist',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  opacity:0; transition:opacity .35s ease;
+  cursor:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+  touch-action:none; overscroll-behavior:contain;
+}
+.nm-hold.is-in{ opacity:1; }
+/* the page under the overlay holds still: keys and the scrollbar included */
+html.nm-hold-open, html.nm-hold-open body{ overflow:hidden !important; }
+.nm-hold canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+/* the mono label, the site's recipe */
+.nm-hold-lbl{
+  font-family:'Geist Mono',ui-monospace,monospace;
+  font-size:max(12px,0.625vw); letter-spacing:.14em; text-transform:uppercase;
+  line-height:1.2; color:rgba(255,255,255,.62); white-space:nowrap;
+}
+
+/* HUD: the site's page gutter, the same asymmetric padding the header uses */
+.nm-hold-hud{
+  position:absolute; inset:0; pointer-events:none;
+  padding:clamp(12px, 7.8px + 1.07vw, 24px) max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
+}
+.nm-hold-hud > *{ position:absolute; }
+.nm-hold-time{ left:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw); bottom:clamp(12px, 7.8px + 1.07vw, 24px); color:#fff; }
+.nm-hold-int { right:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw); bottom:clamp(12px, 7.8px + 1.07vw, 24px); color:#fff; font-variant-numeric:tabular-nums; }
+.nm-hold-wave{
+  left:50%; bottom:clamp(12px, 7.8px + 1.07vw, 24px); transform:translateX(-50%);
+  opacity:0; transition:opacity .25s ease;
+}
+.nm-hold-wave.is-on{ opacity:1; }
+.nm-hold-leave{ right:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw); top:clamp(12px, 7.8px + 1.07vw, 24px);
+                pointer-events:auto; cursor:pointer; }
+
+/* ── intro / paused / over: one centred stack ────────────────────────────*/
+.nm-hold-msg{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  text-align:center; pointer-events:none;
+  opacity:0; transition:opacity .3s ease;
+  padding:0 24px; max-width:min(92vw, 720px);
+}
+.nm-hold-msg.is-on{ opacity:1; }
+.nm-hold-msg h2{
+  margin:0; font-weight:700; letter-spacing:-.025em; line-height:.98;
+  font-size:max(clamp(38px, 6vw, 88px), 4.58vw); text-wrap:balance;
+}
+.nm-hold-msg .nm-hold-lbl{ white-space:normal; line-height:1.7; }
+.nm-hold-msg .nm-hold-lbl b{ color:#fff; font-weight:400; }
+
+/* ── the card ────────────────────────────────────────────────────────────
+   Shown over the frozen mark. Real cursor here: it has controls. */
+.nm-hold-card{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(92vw, 560px); max-height:calc(100vh - 48px); max-height:calc(100svh - 48px);
+  overflow-y:auto; overscroll-behavior:contain;
+  padding:26px 26px 22px;
+  background:#101010; border:1px solid rgba(255,255,255,.14); border-radius:24px;
+  cursor:auto; pointer-events:auto;
+  opacity:0; transform:translate(-50%,-48%); transition:opacity .35s ease, transform .35s ease;
+}
+.nm-hold-card.is-on{ opacity:1; transform:translate(-50%,-50%); }
+@media (max-width:767px){ .nm-hold-card{ padding:22px 18px 18px; border-radius:20px; } }
+.nm-hold-card .nm-hold-lbl{ display:inline-flex; align-items:center; gap:10px; }
+.nm-hold-card > .nm-hold-lbl:first-child::before, .nm-hold-ask > .nm-hold-lbl::before{
+  content:""; width:8px; height:8px; border-radius:50%; flex:none;
+  background:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418));
+}
+.nm-hold-card h2{ margin:12px 0 4px; font-weight:700; letter-spacing:-.025em; line-height:1;
+  font-size:max(clamp(40px, 5.4vw, 72px), 3.75vw); font-variant-numeric:tabular-nums; }
+.nm-hold-card .nm-hold-sub{ margin:0; color:rgba(255,255,255,.62); font-size:max(15px,0.78vw); line-height:1.55; }
+.nm-hold-card .nm-hold-sub b{ color:#fff; font-weight:500; }
+.nm-hold-best{ display:block; margin-top:10px; }
+.nm-hold-best.is-new{ color:#FF7820; }
+
+.nm-hold-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+
+/* the capsule, straight from nm-capsule.css */
+.nm-hold-btn{
+  appearance:none; -webkit-appearance:none; background:transparent; color:#fff;
+  font-family:'Geist Mono',ui-monospace,monospace; font-size:max(12px,0.625vw);
+  letter-spacing:.14em; text-transform:uppercase; line-height:1;
+  padding:max(11px,0.5729vw) max(18px,0.9375vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; cursor:pointer;
+  /* border-color only (nm-capsule's token): the gradient fill cannot
+     transition, so easing color alongside it leaves dark text on the dark
+     ground for a beat on every hover-out */
+  transition:var(--nm-cap-ease, border-color .24s ease);
+  background-origin:border-box; background-repeat:no-repeat;
+  text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+}
+@media (hover:hover){
+  .nm-hold-btn:hover{
+    background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418));
+    color:#0a0a0a; border-color:transparent;
+  }
+  .nm-hold-btn.pri:hover{ opacity:.88; }
+}
+.nm-hold-btn:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off, 3px); }
+.nm-hold-btn.pri{
+  background-image:var(--nm-orange-grad, linear-gradient(135deg,#FF8C28,#FF7820 50%,#FF6418));
+  color:#0a0a0a; border-color:transparent;
+}
+.nm-hold-btn[disabled]{ opacity:.5; cursor:default; }
+
+/* share fallback: the image itself, save-able */
+.nm-hold-share{ margin-top:16px; display:none; }
+.nm-hold-share.is-on{ display:block; }
+.nm-hold-share img{ display:block; width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,.14); }
+.nm-hold-share .nm-hold-lbl{ margin-top:8px; }
+
+/* ── the ask ─────────────────────────────────────────────────────────────*/
+.nm-hold-ask{ margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.14); }
+.nm-hold-ask h3{ margin:8px 0 6px; font-size:max(20px,1.04vw); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+.nm-hold-ask p{ margin:0; color:rgba(255,255,255,.62); font-size:max(14px,0.73vw); line-height:1.55; }
+.nm-hold-form{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+.nm-hold-form input{
+  width:100%; box-sizing:border-box; background:transparent; color:#fff; font:inherit; font-size:max(16px,0.833vw);
+  padding:max(11px,0.5729vw) max(18px,0.9375vw);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; outline:none;
+  transition:border-color .24s ease;
+}
+.nm-hold-form input::placeholder{ color:rgba(255,255,255,.38); }
+.nm-hold-form input:focus{ border-color:rgba(255,255,255,.7); }
+.nm-hold-form input:focus-visible{ outline:var(--nm-focus, 2px solid #fff); outline-offset:var(--nm-focus-off, 3px); }
+.nm-hold-form .nm-hold-btn{ align-self:flex-start; }
+.nm-hold-fine{ margin-top:10px !important; font-size:max(12px,0.625vw) !important; color:rgba(255,255,255,.5) !important; }
+.nm-hold-ok{ display:none; margin-top:12px; color:#fff; font-size:max(15px,0.78vw); }
+.nm-hold-ok.is-on{ display:block; }
+.nm-hold-err{ display:none; margin-top:10px; color:#FF7820; font-size:max(13px,0.677vw); }
+.nm-hold-err.is-on{ display:block; }
+
+/* the copyright line is a second door on phones, where the cloud is not drawn.
+   A long press must not select the text or summon the callout. */
+.nm-hold-door{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+
+@media (prefers-reduced-motion: reduce){
+  .nm-hold, .nm-hold-card, .nm-hold-msg, .nm-hold-wave{ transition:none; }
+}
