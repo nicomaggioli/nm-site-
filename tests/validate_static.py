@@ -50,7 +50,7 @@ for block in re.findall(r'<script>(.*?)</script>',home,re.S):
         assert 'opacity:0' not in server_header, 'Header must be visible on first paint'
         copy=data[0][3]['homepage']['homeWorldwideTitle']
         assert copy in home, 'Server and client About copy must match'
-        assert "I</span><span> </span><span>make" in copy
+        assert "I</span><span> </span><span>turn" in copy
         break
 else:raise AssertionError('Missing Flight homepage data')
 assert 'project-list-panel' not in home.split('self.__next_f.push')[0]
