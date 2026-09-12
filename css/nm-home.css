@@ -595,6 +595,8 @@ main > #about{ background:#0a0a0a !important;
 }
 #nm-services .nm-svc-visual img{ display:block; width:100%; height:100%; object-fit:cover; }
 #nm-services .nm-svc-contain img{ object-fit:contain; padding:20px; }
+#nm-services .nm-svc-art{ background:#0a0a0a; }
+#nm-services .nm-svc-art img{ object-fit:contain; }
 #nm-services .nm-svc-copy{
   grid-column:1; grid-row:7; align-self:start;
   max-width:50ch; margin:24px 32px 0 0; color:rgba(255,255,255,.66);
