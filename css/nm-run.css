@@ -17,6 +17,7 @@ html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
 .nm-run canvas{display:block;width:100%;height:auto;image-rendering:pixelated;touch-action:none;user-select:none;-webkit-user-select:none}
 .nm-run-scoreboard{position:absolute;z-index:1;left:calc(20 * var(--nm-unit,1px));right:calc(20 * var(--nm-unit,1px));top:calc(16 * var(--nm-unit,1px));display:flex;gap:calc(20 * var(--nm-unit,1px));justify-content:space-between;color:#fff;text-shadow:calc(2 * var(--nm-unit,1px)) calc(2 * var(--nm-unit,1px)) 0 #305480;pointer-events:none;font-variant-numeric:tabular-nums}
 .nm-run-score b{display:block;font-size:calc(16 * var(--nm-unit,1px));font-weight:400;line-height:1.5;margin-top:calc(4 * var(--nm-unit,1px))}
+.nm-run-milestone{position:absolute;z-index:1;top:calc(70 * var(--nm-unit,1px));left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);padding:calc(5 * var(--nm-unit,1px)) calc(8 * var(--nm-unit,1px));background:#19364bbf;border:1px solid #bfdff2;color:#fff3bf;font:calc(8 * var(--nm-unit,1px))/1.8 'Cloud Pixel',monospace;text-align:center;text-transform:uppercase;pointer-events:none}
 .nm-run-panel{position:absolute;z-index:2;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(16 * var(--nm-unit,1px));background:#16345429;text-align:center;padding:calc(48 * var(--nm-unit,1px)) calc(14 * var(--nm-unit,1px)) calc(16 * var(--nm-unit,1px))}
 .nm-run-panel h3{font-family:inherit;font-size:calc(24 * var(--nm-unit,1px));font-weight:400;letter-spacing:0;line-height:1.6;margin:0;color:#fff;text-shadow:calc(3 * var(--nm-unit,1px)) calc(3 * var(--nm-unit,1px)) 0 #315780;text-transform:uppercase}
 .nm-run-panel p{font-family:inherit;font-size:calc(8 * var(--nm-unit,1px));line-height:2;color:#fff;text-shadow:calc(1 * var(--nm-unit,1px)) calc(2 * var(--nm-unit,1px)) 0 #315780;margin:0;max-width:40ch;text-wrap:balance}
@@ -35,3 +36,5 @@ html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
  .nm-run-bottom{flex-direction:row;justify-content:center;align-items:center}
  .nm-run-help{display:none}
 }
+@media(max-width:600px){.nm-run-milestone{top:58px;font-size:7px}}
+@media(max-height:520px) and (orientation:landscape){.nm-run-milestone{top:42px;font-size:6px;padding:3px 6px}}
