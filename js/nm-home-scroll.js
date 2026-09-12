@@ -29,6 +29,7 @@
     }
     var progress = hold ? Math.min(1, Math.max(0,window.scrollY / hold)) : 1;
     var pinned = progress < 1;
+    if (window.__nmIntroSurface) window.__nmIntroSurface(progress, hold);
     if (progress === lastProgress) return;
     lastProgress = progress;
     if (pinned !== lastPinned) {

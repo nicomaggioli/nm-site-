@@ -12,6 +12,8 @@ The homepage extensions now live in `/js/nm-home-content.js`, `nm-home-scroll.js
 
 During the intro, the footer render texture is disabled and its point updates stop until footer progress becomes positive. Keep the cloud mounted so it resumes without loading again. The pointer-trail canvas uploads once when empty and stops after the final fade; only a fine hover pointer records new trail points. Touch scrolling must not drive this mouse effect. Grid styles update only when progress changes, with geometry reads before writes.
 
+`nm-intro-surface.js` caches the phone collage into two bounded canvases: the seven central posters and the surrounding tiles. It runs after content mounting and before the scroll controller. The scroll controller draws those two layers into a viewport-sized canvas using the existing scale and fade formulas. Central links retain their hit areas; live DOM images/videos return at the end. Never hide or remove the grid from layout, since that would change the runway. Preparation yields after 4ms, deduplicates source decoding, and falls back to the DOM if an image/canvas fails. Textures are capped at 2048px per side and the viewport at 1.5 DPR. Rotation rebuilds once and releases old buffers; toolbar height changes do not rebuild the collage. Desktop and reduced motion retain their original rendering. The hero shader skips pointer-noise calculations on coarse pointers without changing its mask/blur formula.
+
 The `nm-home-*` bundle provides the hydration event, Lenis bridge, stable About markup and hero-label visibility. `nm-shared-*` fades complete text elements without splitting and replacing their children. `nm-scenes-*` pauses the WebGL canvas outside visible hero/footer regions and while the tab is hidden. The paused canvas must also use `visibility:hidden`: stopping its frame loop alone leaves the last cloud frame painted over intervening sections.
 
 ## Media and caching
@@ -27,7 +29,7 @@ Shared CSS/JS references in HTML carry content-version query strings. Refresh th
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs tests/intro-surface.test.cjs
 python3 tests/validate_static.py
 git diff --check
 ```
@@ -67,6 +69,8 @@ The homepage footer uses the original centered cloud, tagline and metadata. The 
 `nm-responsive.css` loads last on the homepage and Index. Above 1920px, `--nm-unit` scales the remaining fixed service typography, controls, spacing, popup text and gallery gaps against the 1920px composition. A 2560px viewport uses 4/3 of those dimensions and preserves wrapping. The game also uses this unit; its logical canvas and physics remain independent of the displayed size. Do not use page zoom or transform scaling for layout.
 
 The phone menu has a real 44px hit box, so the header's paint containment cannot clip its target. Its close icon is positioned from the control's center. Phone visitors can open the same daily location facts through a compact globe. Both headers use identical spacing.
+
+Phone hero captions sit 30px plus `env(safe-area-inset-bottom)` above the bottom, with at least 20px side gutters. Keep the base clearance even when Safari reports a zero inset; it protects text from rounded screen corners without changing the site's viewport configuration.
 
 `nm-sites-touch.js` adds separate Preview buttons for coarse pointers and narrow screens. Site links still navigate directly. Preview images load only on first expansion and are retained; returning to desktop closes inline previews and restores the existing cursor preview. Keep each button outside its corresponding anchor and preserve `aria-expanded` / `aria-controls`.
 

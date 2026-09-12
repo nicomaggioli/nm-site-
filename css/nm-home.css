@@ -758,3 +758,18 @@ body{overflow:visible}
 .nm-made-anchor{position:absolute;left:0;width:0;height:0;pointer-events:none;overflow-anchor:none}
 
 .nm-past-hero .nm-made-track{z-index:1}
+
+/* The phone intro uses a bounded surface; media stay in place for the handoff. */
+.nm-intro-surface{position:absolute;top:0;left:0;width:100%;pointer-events:none;contain:strict;transform:translateZ(0)}
+.nm-intro-surface[hidden]{display:none!important}
+#nm-made.nm-intro-cached .idx-cell{opacity:0}
+#nm-made.nm-intro-cached .idx-cell:focus-visible{opacity:1}
+#nm-made.nm-intro-cached .idx-ring{visibility:hidden}
+
+/* Clear the rounded bottom corners and home indicator, including landscape. */
+@media(max-width:767px),(pointer:coarse) and (max-width:1024px){
+ [data-nm-hero-caption]{padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))!important;
+   padding-left:max(20px,env(safe-area-inset-left,0px))!important;
+   padding-right:max(20px,env(safe-area-inset-right,0px))!important}
+ #nm-made .idx-cell:hover img,#nm-made .idx-cell:hover video{transform:none;filter:none}
+}
