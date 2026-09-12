@@ -22,6 +22,8 @@ Homepage loops have posters and deferred `data-src` / `data-mobile-src` attribut
 
 Phones and coarse-pointer tablets retain posters until the opening zoom finishes, avoiding video startup and decoding during the zoom. Desktop playback still starts at 25% of the hero distance. Returning to the intro pauses all loops, including a late-resolving play request.
 
+Each homepage video has a real poster image with width/height attributes in the grid flow. The video is absolutely positioned over it and stays transparent until `requestVideoFrameCallback` confirms a presented frame (or `playing` with decoded data on older browsers). Keep the image mounted underneath. Safari drops native poster dimensions between `play()` and metadata loading: allowing the video to size an auto grid row collapses the mobile collage and shifts the whole scroll runway. Errors/reloads restore the poster; buffering keeps the last video frame.
+
 Shared CSS/JS references in HTML carry content-version query strings. Refresh these after editing their source. Changed production bundles use new filenames; update every reference in HTML and other chunks whenever changing a bundle's cache identity.
 
 ## Validation
@@ -35,6 +37,8 @@ git diff --check
 ```
 
 Serve the repository as static files (`python3 -m http.server 8814`) and check `/` and `/index/`. The existing `serve.py` supports media range requests if needed. Check narrow phones, portrait and landscape, repeated complete down/up scrolls, visible/offscreen video playback, menu close/focus restoration, About navigation from both pages, and gallery next/previous/close. Do not test the exported HTML through a file:// URL.
+
+With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
 
 Deploy by merging the reviewed branch into the repository's configured Pages source branch. Keep the existing CNAME and hosting configuration. A real iOS Safari check remains useful: desktop viewport emulation cannot validate the mobile browser engine or device GPU.
 

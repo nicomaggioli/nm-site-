@@ -10,6 +10,28 @@
   var hero = document.querySelector('main > section.h-svh');
   var startAt = Infinity;
   var connection = navigator.connection;
+  videos.forEach(function (video) {
+    var frameRequest = 0;
+    function resetPoster() {
+      if (frameRequest && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(frameRequest);
+      frameRequest = 0;
+      video.removeAttribute('data-nm-frame-ready');
+    }
+    function revealFrame() {
+      frameRequest = 0;
+      if (video.readyState >= 2) video.setAttribute('data-nm-frame-ready', '');
+    }
+    function awaitFrame() {
+      if (video.hasAttribute('data-nm-frame-ready') || frameRequest) return;
+      // play() / loadedmetadata may precede the first painted frame on iOS.
+      if (video.requestVideoFrameCallback) frameRequest = video.requestVideoFrameCallback(revealFrame);
+      else if (video.readyState >= 2 && !video.paused) revealFrame();
+    }
+    video.addEventListener('playing', awaitFrame);
+    video.addEventListener('loadeddata', awaitFrame);
+    video.addEventListener('emptied', resetPoster);
+    video.addEventListener('error', resetPoster);
+  });
   function allowed(video) {
     return !document.hidden && !reduce.matches && !(connection && connection.saveData) &&
       visible.has(video) && window.scrollY >= startAt;

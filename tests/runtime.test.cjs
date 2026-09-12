@@ -143,9 +143,10 @@ test('videos defer bytes, use the phone source, and pause a late play promise af
   reduce.matches=false;mobile.matches=true;document.hidden=false;window.scrollY=0;
   let sequence=0, intersection, resolvePlay, plays=0;
   const attributes={};
-  const video={dataset:{src:'/desktop.mp4',mobileSrc:'/phone.mp4'},paused:true,isConnected:true,
-    set src(value){attributes.src=value;},getAttribute:k=>attributes[k],load(){},
-    pause(){this.paused=true;},play(){plays++;return new Promise(resolve=>{resolvePlay=()=>{this.paused=false;resolve();};});}};
+  const video=Object.assign(new EventTarget(),{dataset:{src:'/desktop.mp4',mobileSrc:'/phone.mp4'},paused:true,isConnected:true,
+    getAttribute:k=>attributes[k],load(){},
+    pause(){this.paused=true;},play(){plays++;return new Promise(resolve=>{resolvePlay=()=>{this.paused=false;resolve();};});}});
+  Object.defineProperty(video,'src',{set:value=>{attributes.src=value;}});
   document.querySelectorAll=()=>[video];document.querySelector=()=>({offsetHeight:800});
   function IntersectionObserver(callback){intersection=callback;this.observe=()=>{};}
   window.IntersectionObserver=IntersectionObserver;
@@ -164,6 +165,40 @@ test('videos defer bytes, use the phone source, and pause a late play promise af
   resolvePlay();await Promise.resolve();assert.equal(video.paused,true);
   document.hidden=false;reduce.matches=true;document.dispatchEvent(new Event('visibilitychange'));flush();
   assert.equal(plays,1);
+});
+
+test('video posters stay visible until a presented frame, including slow loads and playback failures', () => {
+  for (const callbacks of [true,false]) {
+    const window=new EventTarget(),document=new EventTarget(),media=new EventTarget();
+    const attributes=new Map(),frames=new Map();let sequence=0;
+    const video=Object.assign(new EventTarget(),{
+      readyState:0,paused:false,
+      hasAttribute:key=>attributes.has(key),setAttribute:(key,value)=>attributes.set(key,value),
+      removeAttribute:key=>attributes.delete(key)
+    });
+    if(callbacks){
+      video.requestVideoFrameCallback=fn=>{frames.set(++sequence,fn);return sequence;};
+      video.cancelVideoFrameCallback=id=>frames.delete(id);
+    }
+    document.querySelectorAll=()=>[video];document.querySelector=()=>({offsetHeight:844});
+    const context={window,document,navigator:{},matchMedia:()=>media,requestAnimationFrame:()=>1};
+    vm.runInNewContext(script('nm-video.js'),context);
+    const ready=()=>attributes.has('data-nm-frame-ready');
+    video.dispatchEvent(new Event('loadedmetadata'));assert.equal(ready(),false);
+    video.dispatchEvent(new Event('playing'));assert.equal(ready(),false,'play alone cannot expose a blank video');
+    video.readyState=2;video.dispatchEvent(new Event('loadeddata'));
+    if(callbacks){
+      assert.equal(ready(),false,'wait for the compositor frame, not just decoded data');
+      assert.equal(frames.size,1,'loadeddata and playing share one frame request');
+      const callback=[...frames.values()][0];frames.clear();callback();
+    }
+    assert.equal(ready(),true);
+    video.dispatchEvent(new Event('waiting'));assert.equal(ready(),true,'buffering retains the last frame');
+    video.dispatchEvent(new Event('error'));assert.equal(ready(),false,'a failed video falls back to its photo');
+    video.dispatchEvent(new Event('playing'));
+    video.dispatchEvent(new Event('emptied'));
+    assert.equal(ready(),false);assert.equal(frames.size,0,'reloading cancels an obsolete frame callback');
+  }
 });
 
 
