@@ -6,14 +6,19 @@
   var visible = new Set(), pending = new WeakSet(), frame = 0;
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var mobile = matchMedia('(max-width: 767px)');
+  var coarse = matchMedia('(pointer:coarse)');
+  var hero = document.querySelector('main > section.h-svh');
+  var startAt = Infinity;
   var connection = navigator.connection;
   function allowed(video) {
-    var hero = document.querySelector('main > section.h-svh');
     return !document.hidden && !reduce.matches && !(connection && connection.saveData) &&
-      visible.has(video) && window.scrollY >= (hero ? hero.offsetHeight : innerHeight) * .25;
+      visible.has(video) && window.scrollY >= startAt;
   }
   function update() {
     frame = 0;
+    // Finish the touch-screen zoom before decoding and compositing video frames.
+    // Read layout once, before any video writes, rather than for every tile.
+    startAt = (hero ? hero.offsetHeight : innerHeight) * ((mobile.matches || coarse.matches) ? 1 : .25);
     videos.forEach(function (video) {
       if (!video.isConnected || !allowed(video)) { video.pause(); return; }
       if (!video.getAttribute('src')) {
@@ -43,6 +48,7 @@
     videos.forEach(function (video) { observer.observe(video); });
   } else videos.forEach(function (video) { visible.add(video); });
   window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule, { passive: true });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) videos.forEach(function (video) { video.pause(); });
     else schedule();

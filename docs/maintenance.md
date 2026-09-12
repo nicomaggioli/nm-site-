@@ -10,11 +10,15 @@ The homepage extensions now live in `/js/nm-home-content.js`, `nm-home-scroll.js
 
 `nm-home-scroll.js` alone owns the custom grid zoom and sticky runway. The gallery keeps one positioning mode; the wrapper reserves its full height plus the hero scroll distance. ResizeObserver updates those dimensions, and scroll updates are coalesced with requestAnimationFrame. Do not restore fixed/relative switching, which caused header paint glitches on return to the top.
 
+During the intro, the footer render texture is disabled and its point updates stop until footer progress becomes positive. Keep the cloud mounted so it resumes without loading again. The pointer-trail canvas uploads once when empty and stops after the final fade; only a fine hover pointer records new trail points. Touch scrolling must not drive this mouse effect. Grid styles update only when progress changes, with geometry reads before writes.
+
 The `nm-home-*` bundle provides the hydration event, Lenis bridge, stable About markup and hero-label visibility. `nm-shared-*` fades complete text elements without splitting and replacing their children. `nm-scenes-*` pauses the WebGL canvas outside visible hero/footer regions and while the tab is hidden. The paused canvas must also use `visibility:hidden`: stopping its frame loop alone leaves the last cloud frame painted over intervening sections.
 
 ## Media and caching
 
 Homepage loops have posters and deferred `data-src` / `data-mobile-src` attributes. `nm-video.js` assigns a source only when a tile becomes visible and pauses it when hidden. Reduced motion and Save-Data visitors keep posters. Original media are retained. The first desktop loop and all five phone loops have optimized variants; the other desktop originals were already smaller than their recompressed candidates.
+
+Phones and coarse-pointer tablets retain posters until the opening zoom finishes, avoiding video startup and decoding during the zoom. Desktop playback still starts at 25% of the hero distance. Returning to the intro pauses all loops, including a late-resolving play request.
 
 Shared CSS/JS references in HTML carry content-version query strings. Refresh these after editing their source. Changed production bundles use new filenames; update every reference in HTML and other chunks whenever changing a bundle's cache identity.
 
@@ -69,3 +73,5 @@ The phone menu has a real 44px hit box, so the header's paint containment cannot
 Archive thumbnails have responsive source sets using their actual source widths. Narrow screens keep small files; larger or denser screens can select the existing full-size images. Only the first tile has high fetch priority; other images load lazily. Lightbox sizing uses the dynamic viewport height so controls and images stay visible after rotation.
 
 The footer scene updates its stored progress on ScrollTrigger refresh as well as scroll. The home bridge coalesces window and main-layout resize events into a single refresh per frame, with cleanup. This is required when rotation changes the service layout and footer position while already at the bottom. Cloud sprites scale with viewport height relative to the 1080px desktop reference, so landscape phones do not become an overexposed blob.
+
+On coarse pointers, window height-only changes from browser toolbars do not trigger a full scroll-range refresh. Width changes and ResizeObserver notifications for real content/hero geometry still refresh, including rotation. Preserve this distinction in both the home bridge and `nm-home-scroll.js`.

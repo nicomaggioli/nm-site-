@@ -157,6 +157,8 @@ test('videos defer bytes, use the phone source, and pause a late play promise af
   intersection([{target:video,isIntersecting:true}]);flush();
   assert.equal(attributes.src,undefined);assert.equal(plays,0);
   window.scrollY=400;window.dispatchEvent(new Event('scroll'));flush();
+  assert.equal(attributes.src,undefined,'phone videos wait until the intro zoom finishes');assert.equal(plays,0);
+  window.scrollY=800;window.dispatchEvent(new Event('scroll'));flush();
   assert.equal(attributes.src,'/phone.mp4');assert.equal(plays,1);
   document.hidden=true;document.dispatchEvent(new Event('visibilitychange'));
   resolvePlay();await Promise.resolve();assert.equal(video.paused,true);
@@ -275,10 +277,11 @@ test('layout and orientation changes refresh scroll ranges once per frame and cl
   const bundle=fs.readFileSync(path.join(root,'_next/static/chunks',html.match(/nm-home-[a-f0-9]+\.js/)[0]),'utf8');
   const effect='() => {'+bundle.split('(0,u.useEffect)(()=>{window.__nmLenis=A;')[1].split('},[A]);let J=')[0];
   const window=new EventTarget(),frames=new Map();let next=0,refreshes=0,resizes=0,observer,disconnected=false;
-  window.scrollY=0;
+  window.scrollY=0;window.innerWidth=390;
+  const coarse={matches:false};
   const main={};
   class ResizeObserver {constructor(callback){observer=callback;}observe(node){assert.equal(node,main);}disconnect(){disconnected=true;}}
-  const context={window,document:{querySelector:()=>main},Event,ResizeObserver,G(){},
+  const context={window,document:{querySelector:()=>main},Event,ResizeObserver,matchMedia:()=>coarse,G(){},
     A:{resize(){resizes++;}},a:{ScrollTrigger:{refresh(){refreshes++;}}},
     requestAnimationFrame:fn=>{frames.set(++next,fn);return next;},cancelAnimationFrame:id=>frames.delete(id)};
   const cleanup=vm.runInNewContext('('+effect+'})()',context);
@@ -287,6 +290,56 @@ test('layout and orientation changes refresh scroll ranges once per frame and cl
   for(let n=0;n<12;n++){window.dispatchEvent(new Event('resize'));observer();}
   flush();assert.equal(refreshes,1);assert.equal(resizes,1);
   window.dispatchEvent(new Event('scroll'));flush();assert.equal(refreshes,1,'ordinary scrolling must not rebuild ranges');
-  window.dispatchEvent(new Event('resize'));cleanup();flush();assert.equal(refreshes,1);assert.equal(disconnected,true);
-  window.dispatchEvent(new Event('resize'));flush();assert.equal(refreshes,1);
+  coarse.matches=true;
+  for(let n=0;n<20;n++)window.dispatchEvent(new Event('resize'));
+  flush();assert.equal(refreshes,1,'touch browser toolbar height changes must not rebuild scroll ranges');
+  window.innerWidth=844;window.dispatchEvent(new Event('resize'));flush();assert.equal(refreshes,2,'rotation must refresh the scroll ranges');
+  observer();flush();assert.equal(refreshes,3,'real content reflow must still refresh');
+  window.innerWidth=390;window.dispatchEvent(new Event('resize'));cleanup();flush();assert.equal(refreshes,3);assert.equal(disconnected,true);
+  window.dispatchEvent(new Event('resize'));flush();assert.equal(refreshes,3);
+});
+
+
+function homeBundle() {
+  const root=path.join(__dirname,'..');
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  return fs.readFileSync(path.join(root,'_next/static/chunks',html.match(/nm-home-[a-f0-9]+\.js/)[0]),'utf8');
+}
+
+test('hidden render textures perform zero GPU render passes and resume when enabled', () => {
+  const bundle=homeBundle();
+  const component=bundle.slice(bundle.indexOf('function T({frames:'),bundle.indexOf('var k=k;function _('));
+  let frame,renders=0,target='screen';
+  const gl={autoClear:false,xr:{enabled:true,isPresenting:true},
+    getRenderTarget:()=>target,setRenderTarget:value=>{target=value;},render(){renders++;}};
+  const T=vm.runInNewContext('('+component+')',{
+    G:{D:fn=>{frame=fn;}},u:{createElement(){},Fragment:'fragment'}});
+  T({frames:Infinity,renderPriority:0,fbo:'footer',enabled:false});
+  for(let n=0;n<300;n++)frame({gl});
+  assert.equal(renders,0,'the invisible footer must do no GPU work during the opening zoom');
+  T({frames:Infinity,renderPriority:0,fbo:'footer',enabled:true});
+  for(let n=0;n<60;n++)frame({gl});
+  assert.equal(renders,60);assert.equal(target,'screen');assert.equal(gl.autoClear,false);assert.equal(gl.xr.enabled,true);
+  T({frames:Infinity,renderPriority:0,fbo:'footer',enabled:false});
+  for(let n=0;n<120;n++)frame({gl});
+  assert.equal(renders,60,'scrolling back to the top must stop the footer pass again');
+});
+
+test('idle mouse trails stop clearing and uploading the canvas texture after the final fade', () => {
+  const bundle=homeBundle();
+  const source=bundle.slice(bundle.indexOf('class t_{'),bundle.indexOf('var G=k,k=k,O=k,G=k,k=k;let tH='));
+  let uploads=0,clears=0;
+  const ctx={fillRect(){clears++;},createRadialGradient:()=>({addColorStop(){}}),beginPath(){},arc(){},fill(){}};
+  const Trail=vm.runInNewContext('('+source+')',{
+    tT:t=>t,L:{Texture:class {set needsUpdate(value){if(value)uploads++;}}},
+    document:{createElement:()=>({style:{},getContext:()=>ctx})}});
+  const trail=new Trail({size:1024,maxAge:600});
+  for(let n=0;n<300;n++)trail.update(1/60);
+  assert.equal(uploads,1);assert.equal(clears,2);
+  trail.addTouch({x:.3,y:.3});trail.addTouch({x:.4,y:.4});
+  for(let n=0;n<40;n++)trail.update(1/60);
+  const afterFade=uploads;
+  assert.ok(afterFade>1);assert.equal(trail.trail.length,0);
+  for(let n=0;n<300;n++)trail.update(1/60);
+  assert.equal(uploads,afterFade,'an empty pointer trail must not reupload 4 MB every frame');
 });
