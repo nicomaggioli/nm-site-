@@ -155,14 +155,15 @@
     paint();
   }
   mount();
-  /* click anywhere else, or Escape, closes it. The panel itself is excluded so
-     that selecting the text inside does not dismiss it mid-drag. */
+  /* Capture outside clicks too: the mobile menu handles its trigger during
+     capture and stops propagation, so a bubbling listener leaves this top-layer
+     card covering the menu. Clicks inside the card remain excluded. */
   document.addEventListener('click', function (e) {
     var pan = panel();
     if (!pan || !pan.classList.contains('is-open')) return;
     if (pan.contains(e.target) || (el && el.contains(e.target))) return;
     close();
-  });
+  }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   window.addEventListener('resize', function () {
     var pan = panel();

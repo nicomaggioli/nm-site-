@@ -18,6 +18,15 @@ for (const engine of ['webkit','chromium']) {
       assert.equal(await page.evaluate(()=>document.activeElement.className),'nm-c-p-go','keyboard activation reaches the popup link');
       await page.keyboard.press('Escape');
       assert.equal(await page.evaluate(()=>document.activeElement.id),'nm-coord','Escape returns focus to the location button');
+      async function locationToMenu() {
+        await page.locator('#nm-coord').click();
+        await page.locator('.nm-burger').click();
+        assert.equal(await page.locator('.nm-c-panel').evaluate(el=>el.classList.contains('is-open')||el.matches(':popover-open')),false,'location card must not cover the mobile menu');
+        assert.equal(await page.locator('#nm-coord').getAttribute('aria-expanded'),'false');
+        assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Close menu');
+        await page.locator('.nm-menu-close').click();
+      }
+      await locationToMenu();
       const tile=page.locator('.grid .tile').nth(40);
       await tile.focus();await page.keyboard.press('Enter');
       await page.waitForSelector('.nm-lb img.is-ready');
@@ -59,6 +68,7 @@ for (const engine of ['webkit','chromium']) {
       await page.waitForURL('**/#about');await page.waitForSelector('#about');
       await page.waitForFunction(()=>Math.abs(document.querySelector('#about').getBoundingClientRect().top)<2);
       assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('nm-menu-open')),false);
+      await locationToMenu();
 
       await page.goto(origin+'/#run',{waitUntil:'domcontentloaded'});
       const start=page.getByRole('button',{name:'Start run',exact:true});
