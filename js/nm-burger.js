@@ -37,8 +37,8 @@
   function placeClose() {
     if (!btn || !panel) return;
     var box = btn.getBoundingClientRect(), exit = panel.querySelector('.nm-menu-close');
-    exit.style.top = (box.top - 14) + 'px';
-    exit.style.right = (window.innerWidth - box.right - 9) + 'px';
+    exit.style.top = (box.top + (box.height - 44) / 2) + 'px';
+    exit.style.right = (window.innerWidth - box.right + (box.width - 44) / 2) + 'px';
   }
   function open() {
     if (!panel) return;

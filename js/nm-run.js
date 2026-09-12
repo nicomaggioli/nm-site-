@@ -7,7 +7,7 @@
     if (existing) return Promise.resolve();
     return new Promise(function (resolve, reject) {
       var link = document.createElement('link');
-      link.rel = 'stylesheet'; link.href = '/css/nm-run.css?v=6d03c066c1'; link.dataset.nmGameStyle = '';
+      link.rel = 'stylesheet'; link.href = '/css/nm-run.css?v=61ad5f3efe'; link.dataset.nmGameStyle = '';
       link.onload = resolve; link.onerror = function () { link.remove(); reject(new Error('Game styles failed to load')); };
       document.head.appendChild(link);
     });

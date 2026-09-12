@@ -1,0 +1,103 @@
+/* Shared responsive refinements. The 1920px composition is the desktop
+   reference: one unit grows from 1px at 1920 to 4/3px at 2560. Scale the
+   remaining fixed details without zooming the page or altering text zoom. */
+:root{--nm-unit:max(1px,calc(100vw / 1920))}
+.nm-c-globe{display:none}
+#nm-sites .nm-site-host{min-width:0;overflow-wrap:anywhere}
+
+/* Real hit areas survive the header's paint containment. Keep the labels and
+   strokes in their original positions within those larger controls. */
+header[data-nm-header] nav ul,.nm-hdr .nm-nav,
+header[data-nm-header] nav ul li,.nm-hdr .nm-nav li{height:44px}
+header[data-nm-header] nav ul li > *,.nm-hdr .nm-nav li > a{
+  display:inline-flex;align-items:center;min-height:44px;
+}
+.nm-burger{width:44px;height:44px;margin-right:-9px}
+.nm-burger::after{content:none}
+.nm-burger span{left:9px;width:26px}
+.nm-burger span:nth-child(1){top:16px}
+.nm-burger span:nth-child(2){top:22px}
+.nm-burger span:nth-child(3){top:auto;bottom:16px}
+
+/* Location facts remain available on touch screens, with a compact globe. */
+@media(max-width:767.98px){
+  .nm-hdr{gap:0;flex-wrap:nowrap}
+  main > #about{padding:64px 0 32px !important}
+  #nm-coord{display:flex;justify-content:center;width:44px;min-height:44px;
+    padding:0;border:0;flex:none;color:#fff;order:1}
+  #nm-coord .nm-c-face{display:none}
+  .nm-c-globe{display:block}
+  .nm-burger{order:2;margin-left:4px}
+  .nm-c-panel,.nm-c-panel[popover]{display:block;width:calc(100vw - 24px);
+    max-height:calc(100dvh - 104px);overflow:auto;overscroll-behavior:contain}
+  .nm-c-p-go{min-height:44px;display:inline-flex;align-items:center}
+  .nm-c-p-fact{font-size:16px}
+  footer .flex.flex-col.items-start{flex-wrap:wrap;gap:12px}
+  footer button.text-label{min-height:44px;display:inline-flex;align-items:center}
+  #nm-services .nm-svc-copy{padding-right:0}
+}
+
+/* Explicit tap previews preserve normal one-tap navigation on the site links. */
+.nm-site-entry{position:relative}
+.nm-site-preview-toggle,.nm-site-inline-preview{display:none}
+@media(hover:none),(pointer:coarse),(max-width:767.98px){
+  .nm-site-peek{display:none}
+  #nm-sites .nm-site{padding-right:88px}
+  #nm-sites .nm-site-name{min-width:0}
+  .nm-site-preview-toggle{display:flex;align-items:center;justify-content:center;
+    position:absolute;right:0;top:12px;min-width:76px;min-height:44px;
+    padding:8px;border:1px solid rgba(255,255,255,.28);border-radius:999px;
+    background:#0a0a0a;color:#fff;font:12px 'Geist',system-ui,sans-serif;
+    cursor:pointer;touch-action:manipulation}
+  .nm-site-preview-toggle[aria-expanded="true"]{color:var(--nm-orange,#ff7820)}
+  .nm-site-inline-preview:not([hidden]){display:block;margin:16px 0 24px;
+    width:min(100%,640px);aspect-ratio:16 / 10;border-radius:18px;
+    overflow:hidden;background:#141414;border:1px solid rgba(255,255,255,.16)}
+  .nm-site-inline-preview img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+}
+@media(pointer:coarse) and (min-width:768px),(hover:none) and (min-width:768px){
+  #nm-sites .nm-site{grid-template-columns:32px minmax(0,1fr) 24px;gap:20px}
+  #nm-sites .nm-site-num,#nm-sites .nm-site-name,#nm-sites .nm-site-arrow{grid-column:auto}
+  #nm-sites .nm-site-host{display:none}
+  .nm-site-preview-toggle{top:26px}
+}
+
+/* Images and controls fit the currently visible browser area on rotation. */
+.nm-lb{--lb-pad:clamp(16px,4vw,64px);padding:max(var(--lb-pad),env(safe-area-inset-top)) max(var(--lb-pad),env(safe-area-inset-right)) max(var(--lb-pad),env(safe-area-inset-bottom)) max(var(--lb-pad),env(safe-area-inset-left))}
+.nm-lb img{max-height:82dvh}
+.nm-lb-prev,.nm-lb-next{transform:translateY(-50%);margin-top:0}
+@media(max-width:767.98px){.nm-lb{--lb-pad:12px}.nm-lb img{max-height:74dvh}}
+
+@media(min-width:1920px){
+  header[data-nm-header],.nm-hdr{padding:calc(24 * var(--nm-unit))}
+  header[data-nm-header] > a[href="/"],.nm-hdr .wordmark{border-width:calc(2 * var(--nm-unit))}
+  header[data-nm-header] nav ul,.nm-hdr .nm-nav,
+  header[data-nm-header] nav ul li,.nm-hdr .nm-nav li{height:calc(44 * var(--nm-unit))}
+  header[data-nm-header] nav ul li > *,.nm-hdr .nm-nav li > a{min-height:calc(44 * var(--nm-unit))}
+  #nm-services .nm-svc-showcase{--svc-gap:calc(32 * var(--nm-unit));
+    grid-template-rows:repeat(6,minmax(calc(96 * var(--nm-unit)),auto) min-content);column-gap:4vw}
+  #nm-services .nm-svc-trigger{min-height:calc(96 * var(--nm-unit));padding:calc(24 * var(--nm-unit)) 0}
+  #nm-services .nm-svc-title{font-size:calc(36 * var(--nm-unit))}
+  #nm-services .nm-svc-number{flex-basis:calc(20 * var(--nm-unit));font-size:calc(13 * var(--nm-unit))}
+  #nm-services .nm-svc-copy{font-size:calc(20 * var(--nm-unit));margin-bottom:calc(26 * var(--nm-unit));
+    padding:0 calc(32 * var(--nm-unit)) 0 calc(52 * var(--nm-unit))}
+  #nm-services .nm-svc-item:last-child.is-open .nm-svc-copy{padding-bottom:calc(26 * var(--nm-unit));margin-bottom:0}
+  #nm-services .nm-svc-mark{flex-basis:calc(16 * var(--nm-unit));height:calc(16 * var(--nm-unit))}
+  #nm-services .nm-svc-mark::before,#nm-services .nm-svc-mark::after{
+    top:calc(7 * var(--nm-unit));left:var(--nm-unit);width:calc(14 * var(--nm-unit));height:calc(1.5 * var(--nm-unit))}
+  #nm-services .nm-svc-contain img{padding:calc(20 * var(--nm-unit))}
+  .nm-c-panel,.nm-site-peek,#nm-services .nm-svc-visual,.nm-lb img,.grid .tile{border-radius:calc(18 * var(--nm-unit))}
+  .nm-c-panel{padding:calc(20 * var(--nm-unit)) calc(22 * var(--nm-unit)) calc(18 * var(--nm-unit))}
+  .nm-c-p-name{font-size:calc(19 * var(--nm-unit))}
+  .nm-c-p-co{font-size:calc(11 * var(--nm-unit))}
+  .nm-c-p-fact{font-size:calc(14 * var(--nm-unit))}
+  .nm-site-peek .lbl{font-size:calc(11 * var(--nm-unit));bottom:calc(12 * var(--nm-unit));left:calc(14 * var(--nm-unit));right:calc(14 * var(--nm-unit));gap:calc(10 * var(--nm-unit))}
+  main.grid{--tile-gap:calc(24 * var(--nm-unit))}
+  .foot-mark{padding:calc(120 * var(--nm-unit)) 0 calc(88 * var(--nm-unit))}
+  .foot-cta{padding:calc(120 * var(--nm-unit)) 0 calc(48 * var(--nm-unit))}
+  .nm-lb button{width:calc(56 * var(--nm-unit));height:calc(56 * var(--nm-unit))}
+  .nm-lb{--lb-pad:calc(64 * var(--nm-unit))}
+  .nm-lb-close{top:calc(28 * var(--nm-unit));right:calc(28 * var(--nm-unit));font-size:calc(20 * var(--nm-unit))}
+  .nm-lb-prev{left:calc(28 * var(--nm-unit));font-size:calc(22 * var(--nm-unit))}
+  .nm-lb-next{right:calc(28 * var(--nm-unit));font-size:calc(22 * var(--nm-unit))}
+}

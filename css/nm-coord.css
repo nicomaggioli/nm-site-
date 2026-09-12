@@ -114,3 +114,6 @@
    of the hero's WebGL compositing surface. */
 .nm-c-panel[popover]{margin:0;left:auto;bottom:auto;overflow:visible}
 .nm-c-panel::backdrop{background:transparent;pointer-events:none}
+
+/* Hidden on layouts that do not opt into the compact phone control. */
+.nm-c-globe{display:none}

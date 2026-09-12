@@ -23,7 +23,7 @@ Shared CSS/JS references in HTML carry content-version query strings. Refresh th
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs tests/runner.test.mjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs
 python3 tests/validate_static.py
 git diff --check
 ```
@@ -57,3 +57,13 @@ The Services section is authored in `nm-brands.js` and controlled by `nm-service
 The Index gallery uses the same 18px radius, responsive outer gutters, and a shared `--tile-gap` for column spacing and tile bottom margins. Keep the existing image aspect ratios and column breakpoints when adjusting spacing.
 
 The homepage footer uses the original centered cloud, tagline and metadata. The Cloud Run button exists in both server HTML and the footer React component so resizing cannot remove it. Cloud hover deformation stays disabled.
+
+## Responsive layouts
+
+`nm-responsive.css` loads last on the homepage and Index. Above 1920px, `--nm-unit` scales the remaining fixed service typography, controls, spacing, popup text and gallery gaps against the 1920px composition. A 2560px viewport uses 4/3 of those dimensions and preserves wrapping. The game also uses this unit; its logical canvas and physics remain independent of the displayed size. Do not use page zoom or transform scaling for layout.
+
+The phone menu has a real 44px hit box, so the header's paint containment cannot clip its target. Its close icon is positioned from the control's center. Phone visitors can open the same daily location facts through a compact globe. Both headers use identical spacing.
+
+`nm-sites-touch.js` adds separate Preview buttons for coarse pointers and narrow screens. Site links still navigate directly. Preview images load only on first expansion and are retained; returning to desktop closes inline previews and restores the existing cursor preview. Keep each button outside its corresponding anchor and preserve `aria-expanded` / `aria-controls`.
+
+Archive thumbnails have responsive source sets using their actual source widths. Narrow screens keep small files; larger or denser screens can select the existing full-size images. Only the first tile has high fetch priority; other images load lazily. Lightbox sizing uses the dynamic viewport height so controls and images stay visible after rotation.

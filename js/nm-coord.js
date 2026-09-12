@@ -39,6 +39,7 @@
     var label = body ? name + ', ' + body : name;
     if (i !== cur) {
       el.innerHTML =
+        '<svg class="nm-c-globe" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg>' +
         '<span class="nm-c-face">' +
           '<span class="nm-c-num"></span>' +
           '<span class="nm-c-name"></span>' +
@@ -91,7 +92,7 @@
   function place() {
     var pan = panel(), h = header();
     if (!pan || !h) return;
-    pan.style.top = Math.round(h.getBoundingClientRect().bottom + 14) + 'px';
+    pan.style.top = Math.round(h.getBoundingClientRect().bottom + Math.max(14, innerWidth * 14 / 1920)) + 'px';
   }
   function close() {
     var pan = panel();
