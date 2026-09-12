@@ -43,16 +43,7 @@
     var m = liveMain(); if (!m) return;
     var b = m.querySelector('footer .text-label[class*="absolute"]');
     if (!b || b.dataset.nmPinned) return;
-    b.parentElement.style.setProperty('flex-direction', window.innerWidth < 360 ? 'column' : 'row', 'important');
-    if (window.innerWidth < 360) {
-      ['position:relative','left:auto','right:auto','top:auto','transform:none',
-       'margin:12px 0 0','text-align:left'].forEach(function (declaration) {
-        var colon = declaration.indexOf(':');
-        b.style.setProperty(declaration.slice(0, colon), declaration.slice(colon + 1), 'important');
-      });
-      b.dataset.nmPinned = '1';
-      return;
-    }
+    b.parentElement.style.setProperty('flex-direction', 'row', 'important');
     /* Positioned by MEASUREMENT, not by declaration. Both `right:0` and a
        static two-up landed the button 80px short of its container's right edge,
        and the container reports the correct edge -- so rather than keep guessing

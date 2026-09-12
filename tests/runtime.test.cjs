@@ -120,6 +120,13 @@ test('leaving the footer hides its frozen canvas and returning to the hero resto
   gameOpen=false;window.dispatchEvent(new Event('nm:gamechange'));flush();verify(true);
   document.hidden=true;document.dispatchEvent(new Event('visibilitychange'));verify(false);
   document.hidden=false;document.dispatchEvent(new Event('visibilitychange'));verify(true);
+  mobile.matches=true;context.innerHeight=844;
+  context.scrollY=5370;footerTop=0;window.dispatchEvent(new Event('resize'));flush();verify(true);
+  assert.deepEqual(Array.from(view().props.children.props.dpr),[1,1.25]);
+  gameOpen=true;window.dispatchEvent(new Event('nm:gamechange'));verify(false);
+  gameOpen=false;window.dispatchEvent(new Event('nm:gamechange'));verify(true);
+  footerTop=1800;context.scrollY=3570;window.dispatchEvent(new Event('scroll'));flush();verify(false);
+  context.scrollY=0;footerTop=5370;window.dispatchEvent(new Event('scroll'));flush();verify(true);
 });
 
 test('one failed extension does not prevent the rest from initializing', () => {
@@ -259,4 +266,27 @@ test('site previews follow the row under the cursor during momentum scrolling an
   pointer('pointermove',{pointerType:'touch'});assert.equal(classes.has('is-on'),false);
   pointer('pointermove');enabled.matches=false;enabled.dispatchEvent(new Event('change'));flush();
   assert.equal(classes.has('is-on'),false,'the preview must turn off at the mobile breakpoint');
+});
+
+
+test('layout and orientation changes refresh scroll ranges once per frame and clean up on unmount', () => {
+  const root=path.join(__dirname,'..');
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  const bundle=fs.readFileSync(path.join(root,'_next/static/chunks',html.match(/nm-home-[a-f0-9]+\.js/)[0]),'utf8');
+  const effect='() => {'+bundle.split('(0,u.useEffect)(()=>{window.__nmLenis=A;')[1].split('},[A]);let J=')[0];
+  const window=new EventTarget(),frames=new Map();let next=0,refreshes=0,resizes=0,observer,disconnected=false;
+  window.scrollY=0;
+  const main={};
+  class ResizeObserver {constructor(callback){observer=callback;}observe(node){assert.equal(node,main);}disconnect(){disconnected=true;}}
+  const context={window,document:{querySelector:()=>main},Event,ResizeObserver,G(){},
+    A:{resize(){resizes++;}},a:{ScrollTrigger:{refresh(){refreshes++;}}},
+    requestAnimationFrame:fn=>{frames.set(++next,fn);return next;},cancelAnimationFrame:id=>frames.delete(id)};
+  const cleanup=vm.runInNewContext('('+effect+'})()',context);
+  const flush=()=>{const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn());};
+  flush();
+  for(let n=0;n<12;n++){window.dispatchEvent(new Event('resize'));observer();}
+  flush();assert.equal(refreshes,1);assert.equal(resizes,1);
+  window.dispatchEvent(new Event('scroll'));flush();assert.equal(refreshes,1,'ordinary scrolling must not rebuild ranges');
+  window.dispatchEvent(new Event('resize'));cleanup();flush();assert.equal(refreshes,1);assert.equal(disconnected,true);
+  window.dispatchEvent(new Event('resize'));flush();assert.equal(refreshes,1);
 });
