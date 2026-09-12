@@ -25,13 +25,17 @@ test('service previews handle desktop selection, touch expansion and breakpoint 
   const context={window:{IntersectionObserver},document,matchMedia:()=>desktop,IntersectionObserver};
   vm.runInNewContext(script('nm-services.js'),context);
   const open=()=>items.map((item,index)=>item.classes.has('is-open')?index:-1).filter(index=>index>=0);
-  const enter=(index,type)=>{const event=new Event('pointerenter');event.pointerType=type;items[index].button.dispatchEvent(event);};
+  let pointerPosition=0;
+  const move=(index,type,position=++pointerPosition)=>{const event=new Event('pointermove');Object.assign(event,{pointerType:type,clientX:100,clientY:position});items[index].button.dispatchEvent(event);};
   assert.deepEqual(open(),[0]);
   assert.equal(items.every(item=>item.image.loading==='lazy'),true,'do not eagerly fetch showcase images at page load');
   intersection([{isIntersecting:true}]);
   assert.equal(items.every(item=>item.image.loading==='eager'),true);
-  for(const index of [5,2,1,4,0]){enter(index,'mouse');assert.deepEqual(open(),[index]);}
-  enter(3,'touch');assert.deepEqual(open(),[0],'touch hover must not select a panel before a tap');
+  for(const index of [5,2,1,4,0]){move(index,'mouse');assert.deepEqual(open(),[index]);}
+  move(3,'mouse',pointerPosition);assert.deepEqual(open(),[0],'layout changes beneath a stationary pointer must not switch panels');
+  items[3].button.dispatchEvent(Object.assign(new Event('pointerenter'),{pointerType:'mouse'}));
+  assert.deepEqual(open(),[0],'expanding a row must not trigger a hover selection loop');
+  move(3,'touch');assert.deepEqual(open(),[0],'touch hover must not select a panel before a tap');
   items[0].button.dispatchEvent(Object.assign(new Event('keydown',{cancelable:true}),{key:'ArrowDown'}));
   assert.equal(focused,1);assert.deepEqual(open(),[1]);
   desktop.matches=false;desktop.dispatchEvent(new Event('change'));

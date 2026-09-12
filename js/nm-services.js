@@ -11,6 +11,7 @@
   var expanded = new Set([0]);
   var selected = 0;
   var near = false;
+  var pointerX = null, pointerY = null;
 
   function load(panel) {
     var img = panel.querySelector('img');
@@ -35,8 +36,13 @@
   }
 
   buttons.forEach(function (button, index) {
-    button.addEventListener('pointerenter', function (event) {
-      if (desktop.matches && event.pointerType === 'mouse') select(index);
+    button.addEventListener('pointermove', function (event) {
+      if (!desktop.matches || event.pointerType !== 'mouse') return;
+      // Expanding copy can move another heading beneath a stationary cursor.
+      // Only actual pointer movement should choose another service.
+      if (event.clientX === pointerX && event.clientY === pointerY) return;
+      pointerX = event.clientX; pointerY = event.clientY;
+      select(index);
     });
     button.addEventListener('focus', function () {
       if (desktop.matches) select(index);
@@ -64,7 +70,7 @@
     });
   });
 
-  // Warm the six existing WebP files only as this section approaches.
+  // Warm the six responsive images only as this section approaches.
   // Phone visitors load the panels they open, rather than the whole showcase.
   function warm() {
     near = true;
