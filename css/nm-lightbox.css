@@ -21,6 +21,8 @@
   opacity:0; transition:opacity .2s ease;
 }
 .nm-lb img.is-ready{ opacity:1; }
+.nm-lb img[hidden],.nm-lb-message[hidden]{display:none}
+.nm-lb-message{max-width:28ch;margin:0 52px;color:#fff;text-align:center;font:16px/1.5 'Geist',system-ui,sans-serif}
 /* No caption. The filename and the 135/176 counter were scaffolding, not
    something a viewer needs; the img keeps its alt for screen readers. */
 

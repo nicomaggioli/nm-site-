@@ -48,14 +48,18 @@
       el.querySelector('.nm-c-name').textContent = label;
       el.setAttribute('aria-label', label + ' — ' + coords);
       el.setAttribute('aria-expanded', 'false');
+      el.setAttribute('aria-controls', 'nm-location-panel');
 
       /* the panel is a sibling, not a child: the widget is uppercase and
          letterspaced, and prose has to escape that */
       var pan = document.createElement('div');
       pan.className = 'nm-c-panel';
+      pan.id = 'nm-location-panel';
+      pan.setAttribute('role', 'region');
+      pan.setAttribute('aria-labelledby', 'nm-location-title');
       if ('showPopover' in pan) pan.setAttribute('popover', 'manual');
       pan.innerHTML =
-        '<div class="nm-c-p-name"></div>' +
+        '<div class="nm-c-p-name" id="nm-location-title"></div>' +
         '<div class="nm-c-p-co"></div>' +
         '<p class="nm-c-p-fact"></p>' +
         '<a class="nm-c-p-go" target="_blank" rel="noreferrer">Open in maps ↗</a>';
@@ -96,13 +100,15 @@
   }
   function close() {
     var pan = panel();
+    var restoreFocus = pan && pan.contains(document.activeElement);
     if (pan) {
       pan.classList.remove('is-open');
       if (pan.hasAttribute('popover') && pan.matches(':popover-open')) pan.hidePopover();
     }
     if (el) el.setAttribute('aria-expanded', 'false');
+    if (restoreFocus && el) el.focus({preventScroll:true});
   }
-  function toggle() {
+  function toggle(keyboard) {
     var pan = panel();
     if (!pan) return;
     var open = !pan.classList.contains('is-open');
@@ -112,6 +118,9 @@
     } else if (pan.hasAttribute('popover') && pan.matches(':popover-open')) pan.hidePopover();
     pan.classList.toggle('is-open', open);
     el.setAttribute('aria-expanded', String(open));
+    // The body-mounted panel otherwise comes after the entire gallery in
+    // keyboard order. Enter/Space should reach its link immediately.
+    if (open && keyboard) pan.querySelector('.nm-c-p-go').focus({preventScroll:true});
   }
   function mount() {
     var h = header();
@@ -130,7 +139,7 @@
       found = document.createElement('button');
       found.id = 'nm-coord';
       found.type = 'button';
-      found.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+      found.addEventListener('click', function (e) { e.stopPropagation(); toggle(e.detail === 0); });
       h.appendChild(found);
       cur = -1;                       // fresh node: force a repaint of its guts
     } else if (found.parentNode !== h) {

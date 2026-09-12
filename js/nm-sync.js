@@ -26,7 +26,7 @@
     window.addEventListener(type, function () { hashCancelled = true; }, { once: true, passive: true });
   });
   function resolveHash() {
-    if (hashCancelled || (location.hash !== '#about' && location.hash !== '#contact')) return;
+    if (hashCancelled || !['#work', '#about', '#nm-services', '#contact'].includes(location.hash)) return;
     var target = document.querySelector(location.hash);
     if (!target) return;
     if (window.__nmLenis) {

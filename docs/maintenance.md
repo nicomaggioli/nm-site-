@@ -6,6 +6,8 @@ This repository is a static Next.js export served by GitHub Pages. It does not c
 
 `nm-sync.js` queues custom extensions until the homepage React component emits `nm:hydrated`. Static pages initialize at DOMContentLoaded. Extensions mount once; they must not rewrite React text or use document-wide mutation observers to repair content. The dialog focus observer only reacts to overlay classes.
 
+Public `#work`, `#about`, `#nm-services` and `#contact` links resolve after the custom sections mount and their layout is ready. Any wheel, touch, pointer or key input cancels the startup correction so it cannot pull a visitor away from their own scroll.
+
 The homepage extensions now live in `/js/nm-home-content.js`, `nm-home-scroll.js`, `nm-brands.js`, `nm-anchors.js`, `nm-navact.js`, `nm-magnet.js`, and `nm-sites.js`. The extracted homepage styling is `/css/nm-home.css`.
 
 `nm-home-scroll.js` alone owns the custom grid zoom and sticky runway. The gallery keeps one positioning mode; the wrapper reserves its full height plus the hero scroll distance. ResizeObserver updates those dimensions, and scroll updates are coalesced with requestAnimationFrame. Do not restore fixed/relative switching, which caused header paint glitches on return to the top.
@@ -38,7 +40,7 @@ git diff --check
 
 Serve the repository as static files (`python3 -m http.server 8814`) and check `/` and `/index/`. The existing `serve.py` supports media range requests if needed. Check narrow phones, portrait and landscape, repeated complete down/up scrolls, visible/offscreen video playback, menu close/focus restoration, About navigation from both pages, and gallery next/previous/close. Do not test the exported HTML through a file:// URL.
 
-With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
+With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs tests/responsive.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
 
 Deploy by merging the reviewed branch into the repository's configured Pages source branch. Keep the existing CNAME and hosting configuration. A real iOS Safari check remains useful: desktop viewport emulation cannot validate the mobile browser engine or device GPU.
 
@@ -54,6 +56,8 @@ Stars turn around their vertical axis during play while keeping a constant colle
 
 The self-hosted Press Start 2P font and its OFL license live in `fonts/`. Its font-face is declared only in the lazy game stylesheet. The taller canvas leaves space below the cloud. Maintain both the logical height and short-landscape CSS aspect ratio when resizing the stage.
 
+The short-landscape game layout applies based on orientation, including phones narrower than 601px. The canvas uses the same 900×340 logical stage there. Safe centering keeps Exit reachable if a viewport is shorter than the content; compact landscape hides the keyboard hint to leave room for touch controls.
+
 Space/Up or the Jump button jumps; holding jumps higher. Down or the Duck button ducks under higher birds; P pauses; Escape closes. A local high score persists across sessions. The game never sends scores or collects contact information. The canvas loop stops when paused/closed, and the underlying WebGL scene pauses while the game is open. Reduced-motion visitors can still choose to play, with decorative cloud parallax disabled.
 
 The shared focus manager must include `.nm-run` in its active-dialog query, so menu resize events do not release the game dialog's focus containment. Maintain this when adding other overlays. Always test phone rotation while the game is open.
@@ -64,22 +68,26 @@ The Services section is authored in `nm-brands.js` and controlled by `nm-service
 
 `nm-sites.js` retains decoded display-sized WebP images, tracks the current pointer position, and checks the row underneath on scroll. Do not unconditionally hide the panel on scroll: trackpad momentum would hide it until the pointer re-enters a row. The coordinates popup, site preview cards and enlarged archive images use an 18px corner radius.
 
-The Index gallery uses the same 18px radius, responsive outer gutters, and a shared `--tile-gap` for column spacing and tile bottom margins. Keep the existing image aspect ratios and column breakpoints when adjusting spacing.
+The Index gallery is a continuous edge-to-edge image wall: no horizontal padding, no column or tile gaps, and square tile corners. Keep the existing image aspect ratios and 2/3/4/5-column breakpoints. Shared large-screen rules must not reintroduce rounded tile corners or spacing.
 
 The homepage footer uses the original centered cloud, tagline and metadata. The Cloud Run button exists in both server HTML and the footer React component so resizing cannot remove it. Cloud hover deformation stays disabled.
 
 ## Responsive layouts
 
-`nm-responsive.css` loads last on the homepage and Index. Above 1920px, `--nm-unit` scales the remaining fixed service typography, controls, spacing, popup text and gallery gaps against the 1920px composition. A 2560px viewport uses 4/3 of those dimensions and preserves wrapping. The game also uses this unit; its logical canvas and physics remain independent of the displayed size. Do not use page zoom or transform scaling for layout.
+`nm-responsive.css` loads last on the homepage, Index and proposal screens, keeping their header controls consistent. Above 1920px, `--nm-unit` scales the remaining fixed service typography, controls, spacing and popup text against the 1920px composition. A 2560px viewport uses 4/3 of those dimensions and preserves wrapping. The game also uses this unit; its logical canvas and physics remain independent of the displayed size. Do not use page zoom or transform scaling for layout.
 
-The phone menu has a real 44px hit box, so the header's paint containment cannot clip its target. Its close icon is positioned from the control's center. Phone visitors can open the same daily location facts through a compact globe. Both headers use identical spacing.
+The phone menu has a real 44px hit box, so the header's paint containment cannot clip its target. Its close icon is positioned from the control's center. Phone visitors can open the same daily location facts through a compact globe. Both headers use identical spacing. Keyboard activation of the location button focuses its Maps link; Escape returns focus to the button. Keep the body-mounted panel associated through `aria-controls` and its title.
 
 Phone hero captions sit 30px plus `env(safe-area-inset-bottom)` above the bottom, with at least 20px side gutters. Keep the base clearance even when Safari reports a zero inset; it protects text from rounded screen corners without changing the site's viewport configuration.
 
 `nm-sites-touch.js` adds separate Preview buttons for coarse pointers and narrow screens. Site links still navigate directly. Preview images load only on first expansion and are retained; returning to desktop closes inline previews and restores the existing cursor preview. Keep each button outside its corresponding anchor and preserve `aria-expanded` / `aria-controls`.
 
-Archive thumbnails have responsive source sets using their actual source widths. Narrow screens keep small files; larger or denser screens can select the existing full-size images. Only the first tile has high fetch priority; other images load lazily. Lightbox sizing uses the dynamic viewport height so controls and images stay visible after rotation.
+Archive images have responsive source sets using actual pixel widths: small `nm-thumb` files, 768px-wide `nm-index` files, and `nm-work` originals. The intermediate size avoids downloading 1600px originals for a 195px tile on a 3× phone. Source sizes track the exact 2/3/4/5-column fractions. Only the first tile has high fetch priority; other images load lazily. Run `python3 tools/build-index-images.py` with Pillow after changing gallery originals; use `--check` to validate every candidate’s pixel width and decoding. Lightbox sizing uses the dynamic viewport height so controls and images stay visible after rotation.
+
+If a full-size lightbox request fails, it falls back once to the thumbnail. If both fail, a short status replaces the image while next/previous/close remain available. Paging resets the failure state, so one failed asset cannot strand the viewer.
 
 The footer scene updates its stored progress on ScrollTrigger refresh as well as scroll. The home bridge coalesces window and main-layout resize events into a single refresh per frame, with cleanup. This is required when rotation changes the service layout and footer position while already at the bottom. Cloud sprites scale with viewport height relative to the 1080px desktop reference, so landscape phones do not become an overexposed blob.
 
 On coarse pointers, window height-only changes from browser toolbars do not trigger a full scroll-range refresh. Width changes and ResizeObserver notifications for real content/hero geometry still refresh, including rotation. Preserve this distinction in both the home bridge and `nm-home-scroll.js`.
+
+The Index cloud waits for its texture before drawing during rotation. Its animation runs only near the footer in a visible tab; changing the reduced-motion preference redraws one still frame and stops the loop.

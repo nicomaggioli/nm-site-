@@ -86,13 +86,12 @@ header[data-nm-header] nav ul li > *,.nm-hdr .nm-nav li > a{
   #nm-services .nm-svc-mark::before,#nm-services .nm-svc-mark::after{
     top:calc(7 * var(--nm-unit));left:var(--nm-unit);width:calc(14 * var(--nm-unit));height:calc(1.5 * var(--nm-unit))}
   #nm-services .nm-svc-contain img{padding:calc(20 * var(--nm-unit))}
-  .nm-c-panel,.nm-site-peek,#nm-services .nm-svc-visual,.nm-lb img,.grid .tile{border-radius:calc(18 * var(--nm-unit))}
+  .nm-c-panel,.nm-site-peek,#nm-services .nm-svc-visual,.nm-lb img{border-radius:calc(18 * var(--nm-unit))}
   .nm-c-panel{padding:calc(20 * var(--nm-unit)) calc(22 * var(--nm-unit)) calc(18 * var(--nm-unit))}
   .nm-c-p-name{font-size:calc(19 * var(--nm-unit))}
   .nm-c-p-co{font-size:calc(11 * var(--nm-unit))}
   .nm-c-p-fact{font-size:calc(14 * var(--nm-unit))}
   .nm-site-peek .lbl{font-size:calc(11 * var(--nm-unit));bottom:calc(12 * var(--nm-unit));left:calc(14 * var(--nm-unit));right:calc(14 * var(--nm-unit));gap:calc(10 * var(--nm-unit))}
-  main.grid{--tile-gap:calc(24 * var(--nm-unit))}
   .foot-mark{padding:calc(120 * var(--nm-unit)) 0 calc(88 * var(--nm-unit))}
   .foot-cta{padding:calc(120 * var(--nm-unit)) 0 calc(48 * var(--nm-unit))}
   .nm-lb button{width:calc(56 * var(--nm-unit));height:calc(56 * var(--nm-unit))}

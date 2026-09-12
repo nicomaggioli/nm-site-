@@ -1,9 +1,9 @@
 /* ── archive lightbox ─────────────────────────────────────────────────────
-   The grid renders 512px thumbnails from /media/nm-thumb/. Every one has a
+   The grid selects responsive thumbnail sizes. Every image has a
    full-size original at the SAME filename under /media/nm-work/ (verified:
-   176 of 176). Clicking a tile opens that.
+   170 of 170). Clicking a tile opens that.
 
-   Delegated off document rather than bound per tile: there are 176 of them,
+   Delegated off document rather than bound per tile: there are 170 of them,
    and delegation also survives if the grid is ever re-rendered.
 
    The full-size images are never preloaded on page load -- only the neighbours
@@ -11,7 +11,7 @@
    initial load. */
 (function () {
   var TH = '/media/nm-thumb/', FULL = '/media/nm-work/';
-  var lb = null, imgEl = null;
+  var lb = null, imgEl = null, messageEl = null;
   var tiles = [], idx = -1, lastFocus = null;
 
   function full(src) { return src.indexOf(TH) === 0 ? FULL + src.slice(TH.length) : src; }
@@ -32,9 +32,10 @@
       '<button class="nm-lb-close" type="button" aria-label="Close">✕</button>' +
       '<button class="nm-lb-prev"  type="button" aria-label="Previous image">←</button>' +
       '<button class="nm-lb-next"  type="button" aria-label="Next image">→</button>' +
-      '<figure><img alt=""></figure>';
+      '<figure><img alt=""><p class="nm-lb-message" role="status" hidden></p></figure>';
     document.body.appendChild(lb);
     imgEl = lb.querySelector('img');
+    messageEl = lb.querySelector('.nm-lb-message');
     return lb;
   }
 
@@ -48,9 +49,26 @@
     if (!tiles.length || i < 0 || i >= tiles.length) return;
     idx = i;
     var t = tiles[i];
+    var source = t.getAttribute('src'), original = full(source), fallback = false;
+    var thumbnail = t.currentSrc || source;
+    if (thumbnail === new URL(original, document.baseURI).href) thumbnail = source;
+    messageEl.hidden = true; messageEl.textContent = '';
+    imgEl.hidden = false;
     imgEl.classList.remove('is-ready');
     imgEl.onload = function () { imgEl.classList.add('is-ready'); };
-    imgEl.src = full(t.getAttribute('src'));
+    imgEl.onerror = function () {
+      // A failed full-size request must not leave an empty, locked overlay.
+      // Reuse the responsive photo actually displayed in the index, which
+      // can already be cached even when the connection has dropped.
+      if (!fallback && original !== thumbnail) {
+        fallback = true; imgEl.src = thumbnail;
+      } else {
+        imgEl.hidden = true;
+        messageEl.textContent = 'This image couldn’t load. Use the arrows to continue.';
+        messageEl.hidden = false;
+      }
+    };
+    imgEl.src = original;
     imgEl.alt = t.getAttribute('alt') || '';
     /* neighbours only, so paging is instant without a 25MB preload */
     preload(i - 1); preload(i + 1);
@@ -60,7 +78,7 @@
     build(); collect();
     /* remember the TILE explicitly rather than reading document.activeElement:
        a mouse click does not reliably leave focus on the element, so closing
-       would drop the keyboard user back at the top of a 176-tile grid. */
+       would drop the keyboard user back at the top of the gallery. */
     lastFocus = origin || document.activeElement;
     show(i);
     lb.classList.add('is-open');

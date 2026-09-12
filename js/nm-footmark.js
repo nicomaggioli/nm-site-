@@ -51,8 +51,8 @@
   var CROP = { x: 57, y: 159, w: 406, h: 202 };
   var ASPECT = CROP.w / CROP.h;                       /* 2.01 */
 
-  var reduce = false;
-  try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  var reduce = false, motionQuery = null;
+  try { motionQuery = matchMedia('(prefers-reduced-motion: reduce)'); reduce = motionQuery.matches; } catch (e) {}
   /* Sprite radius scales with the canvas, so a phone's smaller mark does NOT
      need fewer points to look the same -- it needs the same count at a smaller
      size. Cutting the count purely for CPU therefore thins the cloud out, and
@@ -64,7 +64,7 @@
   var GAIN = BASE / COUNT;
 
   var pts = null, dpr = 1, W = 0, H = 0, sprite = null, sprR = 0;
-  var running = false, raf = 0, last = 0, t0 = 0;
+  var running = false, visible = false, raf = 0, last = 0, t0 = 0;
 
   /* One pre-rendered soft dot, redrawn per point. Building the gradient per
      point instead would be 7,500 gradient allocations every frame. */
@@ -130,6 +130,7 @@
   }
 
   function draw(now) {
+    if (!pts || !sprite) return;
     var t = reduce ? 0 : (now - t0) / 1000;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, cv.width, cv.height);
@@ -165,7 +166,7 @@
   }
 
   function start() {
-    if (running || !pts) return;
+    if (running || !pts || !visible || document.hidden) return;
     if (!resize()) return;
     /* re-checked on every start, so a rotation into landscape gets a drawn
        mark and a rotation back into portrait stops paying for one */
@@ -186,11 +187,20 @@
   addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      var was = running;
       stop();
-      if (resize()) { if (was && !reduce) start(); else draw(performance.now()); }
+      // Rotation can happen before the texture has decoded. Starting only
+      // when visible also avoids waking an offscreen footer on every resize.
+      if (pts && visible) start();
     }, 150);
   }, { passive: true });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stop(); else start();
+  });
+  if (motionQuery) motionQuery.addEventListener('change', function () {
+    reduce = motionQuery.matches;
+    stop(); start();
+  });
 
   var img = new Image();
   img.decoding = 'async';
@@ -205,9 +215,10 @@
     resize();
     host.classList.add('is-ready');
 
-    if (!('IntersectionObserver' in window)) { start(); return; }
+    if (!('IntersectionObserver' in window)) { visible = true; start(); return; }
     new IntersectionObserver(function (es) {
-      if (es[0].isIntersecting) start(); else stop();
+      visible = es[0].isIntersecting;
+      if (visible) start(); else stop();
     }, { rootMargin: '200px' }).observe(host);
   };
   img.onerror = function () { host.removeChild(cv); };

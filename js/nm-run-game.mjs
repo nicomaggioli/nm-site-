@@ -78,7 +78,7 @@ function pause(){if(!game||game.state!=='running')return;game.pause();cancelAnim
 function togglePause(){if(game.state==='paused')start();else pause();}
 function jump(){if(!sprites)return;if(game.state==='ready'||game.state==='over'||game.state==='paused')start();game.jump();wake();}
 function duck(value){if(!game)return;game.setDuck(value);if(game.state==='running')wake();}
-function layout(){if(!root)return;const width=canvas.parentElement.clientWidth;canvas.width=innerHeight<=520&&innerWidth>600?900:Math.max(420,Math.min(900,Math.round(width)));canvas.height=VIEW_HEIGHT;game.width=canvas.width;ctx.imageSmoothingEnabled=false;draw();}
+function layout(){if(!root)return;const width=canvas.parentElement.clientWidth;canvas.width=innerHeight<=520&&innerWidth>innerHeight?900:Math.max(420,Math.min(900,Math.round(width)));canvas.height=VIEW_HEIGHT;game.width=canvas.width;ctx.imageSmoothingEnabled=false;draw();}
 function sprite(name,x,y,w,h){const s=sprites&&sprites[name];if(!s)return;ctx.drawImage(s.image,Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 function landscape(){
   const w=canvas.width,offset=reduce.matches?0:game.distance;

@@ -202,15 +202,20 @@ test('video posters stay visible until a presented frame, including slow loads a
 });
 
 
-test('About deep links resolve after custom sections mount even before Lenis is ready', () => {
-  const env=scheduler(true);let destination;
-  env.location.hash='#about';env.window.scrollY=700;
-  env.window.scrollTo=options=>{destination=options.top;};
-  env.window.__nmReady(()=>{
-    env.document.querySelector=selector=>selector==='#about'?{getBoundingClientRect:()=>({top:1500})}:null;
-  });
-  env.window.dispatchEvent(new Event('nm:hydrated'));env.flush();
-  assert.equal(destination,2200);
+test('public deep links resolve after sections mount, without overriding a visitor’s scroll', () => {
+  for (const hash of ['#work', '#about', '#nm-services', '#contact']) {
+    for (const cancelled of [false, true]) {
+      const env=scheduler(true);let destination;
+      env.location.hash=hash;env.window.scrollY=700;
+      env.window.scrollTo=options=>{destination=options.top;};
+      env.window.__nmReady(()=>{
+        env.document.querySelector=selector=>selector===hash?{getBoundingClientRect:()=>({top:1500})}:null;
+      });
+      if (cancelled) env.window.dispatchEvent(new Event('touchstart'));
+      env.window.dispatchEvent(new Event('nm:hydrated'));env.flush();
+      assert.equal(destination,cancelled?undefined:2200,hash);
+    }
+  }
 });
 
 test('responsive menu updates keep the game dialog isolated and restore prior focus on exit',()=>{
