@@ -16,17 +16,15 @@
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
   html{background:#0a0a0a}
   body{background:#0a0a0a;color:#fff;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  /* header, nav and orbs all come from /css/nm-header.css?v=760bab1e1a, which the homepage
+  /* header, nav and orbs all come from /css/nm-header.css?v=6d56938f88, which the homepage
      loads too — that shared file is what keeps the two bars identical. The
      blurred, bordered, sticky bar that used to be here was the main reason
      this page felt like a different site. */
   
   p{text-wrap:pretty}
-  /* Full bleed. The horizontal padding is gone entirely so the tiles run to
-   both screen edges at every width, matching the homepage grid. Vertical
-   padding stays: the top clears the fixed header, the bottom separates the
-   footer. column-gap is 0 and .tile has no margin, so the columns meet. */
-  .grid{columns:2;column-gap:0;padding:max(clamp(96px,9vw,132px),6.875vw) 0 max(clamp(60px,9vw,120px),6.25vw)}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  /* Match the site gutters, with equal horizontal and vertical tile spacing. */
+  .grid{--tile-gap:clamp(10px,1.25vw,24px);columns:2;column-gap:var(--tile-gap);padding:max(clamp(96px,9vw,132px),6.875vw) max(clamp(12px,7.8px + 1.07vw,24px),1.25vw) max(clamp(60px,9vw,120px),6.25vw)}
         /* Explicit counts. `columns:<count> <width>` treats the count as a MAX --
            used = min(4, floor(width/260)) -- so 768px resolved to 2 columns of
            384px, wider tiles than a 1440 desktop gets, and the page came out
@@ -102,14 +100,14 @@
          margin keeps the bar exactly the same height */
       padding:15px 0;margin:-15px 0;transition:color .2s ease}
         @media (hover:hover){.foot-mail:hover{color:var(--nm-orange, #FF7820)}}
-        .tile{break-inside:avoid;margin:0;overflow:hidden;background:#141414;border-radius:0}
+        .tile{break-inside:avoid;margin:0 0 var(--tile-gap);overflow:hidden;background:#141414;border-radius:18px}
   .tile img{display:block;width:100%;height:auto;transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .4s}
   .tile:hover img{transform:scale(1.035)}
   @media(max-width:640px){}
   @media(prefers-reduced-motion:reduce){.tile img{transition:none}}
 </style>
 <script src="/js/nm-sync.js?v=0f9842ac7b"></script>
-<link rel="stylesheet" href="/css/nm-header.css?v=760bab1e1a"><link rel="stylesheet" href="/css/nm-coord.css?v=e656812099"><link rel="stylesheet" href="/css/nm-capsule.css?v=2eaa40104e"><link rel="stylesheet" href="/css/nm-lightbox.css?v=a661292a28"><script src="/js/nm-burger.js?v=9736dbea22" defer></script><script src="/js/nm-coord.js?v=76aeecf570" defer></script></head>
+<link rel="stylesheet" href="/css/nm-header.css?v=6d56938f88"><link rel="stylesheet" href="/css/nm-coord.css?v=c10851e7c6"><link rel="stylesheet" href="/css/nm-capsule.css?v=a4a104116a"><link rel="stylesheet" href="/css/nm-lightbox.css?v=54d2c9825b"><script src="/js/nm-burger.js?v=a46afe1543" defer></script><script src="/js/nm-coord.js?v=15c656def5" defer></script></head>
 <body>
 <header class="nm-hdr">
   <a class="wordmark" href="/" aria-label="Nico Maggioli — Home">
@@ -122,6 +120,7 @@
 </header>
 
 <main class="grid">
+<h1 class="sr-only">Work index — Nico Maggioli</h1>
 <figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/3D_Print_Organic_Vase.webp" alt="3D Print Organic Vase" loading="eager" fetchpriority="high" decoding="async" width="1600" height="1600"></figure>
 <figure class="tile" style="aspect-ratio:1600/1600"><img src="/media/nm-thumb/AMEnergy_Mushroom_Packaging.webp" alt="AMEnergy Mushroom Packaging" loading="eager" fetchpriority="high" decoding="async" width="1600" height="1600"></figure>
 <figure class="tile" style="aspect-ratio:1200/1600"><img src="/media/nm-thumb/Alares_Airfoil_Prototype.webp" alt="Alares Airfoil Prototype" loading="eager" fetchpriority="high" decoding="async" width="1200" height="1600"></figure>

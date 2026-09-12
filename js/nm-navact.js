@@ -26,7 +26,7 @@
     return null;
   }
   document.addEventListener('click', function (e) {
-    var btn = e.target.closest && e.target.closest('header[class*="z-50"] nav ul li button');
+    var btn = e.target.closest && e.target.closest('header[data-nm-header] nav ul li button');
     if (!btn) return;
     var label = (btn.textContent || '').trim().toLowerCase();
     if (label === 'contact') {

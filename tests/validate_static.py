@@ -10,9 +10,11 @@ class Assets(HTMLParser):
         super().__init__(); self.paths=[]
     def handle_starttag(self, tag, attrs):
         attrs=dict(attrs)
-        for key in ('src','srcset','poster','data-src','data-mobile-src'):
+        for key in ('src','srcset','poster','data-src','data-mobile-src','data-shot'):
             value=attrs.get(key,'')
-            if value.startswith('/'):self.paths.append(value)
+            if key=='srcset':
+                self.paths += [candidate.strip().split()[0] for candidate in value.split(',') if candidate.strip().startswith('/')]
+            elif value.startswith('/'):self.paths.append(value)
         if tag=='link' and attrs.get('href','').startswith('/'):
             self.paths.append(attrs['href'])
 
@@ -28,6 +30,8 @@ for name in ('nm-run.js','nm-run-game.mjs','nm-run-motion.mjs'):
     paths+=['/js/'+path[2:] for path in re.findall(r'''from\s+[\"'](\./[^\"']+)[\"']''',(ROOT/'js'/name).read_text())]
 for css in (ROOT/'css').glob('*.css'):
     paths+=re.findall(r'url\([\'\"]?(/[^)\'\"]+)',css.read_text())
+# Every archive thumbnail must have its full-size lightbox counterpart.
+paths += [p.replace('/media/nm-thumb/','/media/nm-work/') for p in paths if p.startswith('/media/nm-thumb/')]
 missing=sorted({p for p in paths if not (ROOT/unquote(urlsplit(p).path).lstrip('/')).is_file()})
 assert not missing, 'Missing assets: '+repr(missing)
 

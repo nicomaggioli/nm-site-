@@ -27,7 +27,7 @@
   function header() {
     /* the homepage header is Tailwind-classed and React-rendered; the archive's
        is the hand-written .nm-hdr. One widget, both bars. */
-    var h = document.querySelectorAll('header[class*="z-50"], header.nm-hdr');
+    var h = document.querySelectorAll('header[data-nm-header], header.nm-hdr');
     for (var i = 0; i < h.length; i++) if (rendered(h[i])) return h[i];
     return null;
   }
@@ -52,6 +52,7 @@
          letterspaced, and prose has to escape that */
       var pan = document.createElement('div');
       pan.className = 'nm-c-panel';
+      if ('showPopover' in pan) pan.setAttribute('popover', 'manual');
       pan.innerHTML =
         '<div class="nm-c-p-name"></div>' +
         '<div class="nm-c-p-co"></div>' +
@@ -94,14 +95,20 @@
   }
   function close() {
     var pan = panel();
-    if (pan) pan.classList.remove('is-open');
+    if (pan) {
+      pan.classList.remove('is-open');
+      if (pan.hasAttribute('popover') && pan.matches(':popover-open')) pan.hidePopover();
+    }
     if (el) el.setAttribute('aria-expanded', 'false');
   }
   function toggle() {
     var pan = panel();
     if (!pan) return;
     var open = !pan.classList.contains('is-open');
-    if (open) place();
+    if (open) {
+      place();
+      if (pan.hasAttribute('popover')) pan.showPopover();
+    } else if (pan.hasAttribute('popover') && pan.matches(':popover-open')) pan.hidePopover();
     pan.classList.toggle('is-open', open);
     el.setAttribute('aria-expanded', String(open));
   }

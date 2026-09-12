@@ -99,7 +99,7 @@ button:focus-visible{
 /* The two hover states that carry information rather than decoration, mirrored
    onto focus. Deliberately OUTSIDE any @media (hover:hover) wrapper -- keyboard
    users are not hover users. */
-header[class*="z-50"] > a[href="/"]:focus-visible,
+header[data-nm-header] > a[href="/"]:focus-visible,
 .nm-hdr .wordmark:focus-visible{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; }
 
 #nm-sites .nm-site:focus-visible{ background:rgba(255,133,32,.05); }

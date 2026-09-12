@@ -273,7 +273,7 @@ h1,h2,h3,h4,h5,h6,p,li,a,span,button,figcaption{ color:#fff; }
 .text-footer-side, .text-label, .text-button{ font-family:var(--font-futura) !important; }
 
 /* header backdrop: moved to /css/nm-header.css so the archive gets it too.
-   It was keyed on header[class*="z-50"], which <header class="nm-hdr">
+   It was keyed on header[data-nm-header], which <header class="nm-hdr">
    cannot match -- and /index/ never loads this block at all. */
 
 /* The footer email is pinned dead-centre by the build
@@ -308,10 +308,10 @@ footer div[class*="repeating-linear-gradient"]{ display:none !important; }
    single word alone on the last line; `balance` evens out short headings across
    their lines. Doing it here rather than hard-coding &nbsp; means it holds at
    every viewport width, not just the one I happened to measure. */
-#nm-services .nm-svc-desc,
+#nm-services .nm-svc-copy,
 #about .text-heading-xl,
 main p, main li, .text-footer-side{ text-wrap:pretty; }
-#nm-services .nm-svc-name, .text-heading-md, .text-heading-lg{ text-wrap:balance; }
+#nm-services .nm-svc-title, .text-heading-md, .text-heading-lg{ text-wrap:balance; }
 
 /* ── Boston weather, top right ──────────────────────────────────────────
    Sits opposite the wordmark so the header reads left / centre / right. Hidden
@@ -532,95 +532,97 @@ main > #about{ background:#0a0a0a !important;
   #about .text-heading-xl{ text-align:left !important; }   /* justify shreds short lines */
 }
 
+/* Preview images share the right column; descriptions share a reserved row
+   below the left list so changing selections cannot move the hover targets. */
 #nm-services{ padding:max(104px,5.4167vw) 0 max(128px,6.6667vw); }
-
-/* ── services ────────────────────────────────────────────────────────────
-   Fixed rail. The numerals and the descriptions never move -- they sit on hard
-   columns, and a hairline runs the full height of the list where the copy
-   starts, so there is one edge the eye can hold.
-
-   The ONLY thing that steps is the name, and it steps by transform rather than
-   by changing its grid column. That matters: a transform can animate, so on
-   hover the row pulls itself flush to the rail. The misalignment stops being
-   drift and becomes something that resolves when you touch it. */
-#nm-services .nm-svc-grid{ display:flex; flex-direction:column; padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
-#nm-services .nm-svc-row{
-  position:relative;
-  display:grid; grid-template-columns:repeat(12,1fr); column-gap:max(24px,1.25vw);
-  align-items:start; padding:max(38px,1.9792vw) max(16px,0.8333vw); margin:0;
-  transition:background .2s ease, color .2s ease;
+#nm-services .nm-svc-showcase{
+  display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+  grid-template-rows:repeat(6,minmax(96px,auto)) auto;
+  column-gap:clamp(32px,4vw,88px);
+  padding:0 max(clamp(1.2rem,.78rem + 1.07vw,2.4rem),1.25vw);
 }
-/* The numerals are gone -- the list reads as six capabilities, not a ranked
-   sequence, and the count was doing no work. */
-#nm-services .nm-svc-num{ display:none !important; }
-#nm-services .nm-svc-name{
-  /* starts at column 1 now, flush with the section tag and the rest of the
-     page, the same way the live-sites rows sit */
-  grid-column:1 / span 6;
-  font-size:max(clamp(2.2rem,2.6vw,3.4rem), 1.7708vw); font-weight:700;
-  letter-spacing:-.025em; line-height:1.05; color:#fff;
-  transition:transform .42s cubic-bezier(.22,.9,.28,1);
-  will-change:transform;
+#nm-services .nm-svc-item{ display:contents; }
+#nm-services .nm-svc-heading{
+  grid-column:1; grid-row:var(--svc-row); margin:0; min-width:0;
+  border-top:1px solid rgba(255,255,255,.16);
 }
-#nm-services .nm-svc-desc{
-  grid-column:8 / span 5;
-  font-size:max(1.6rem,0.8333vw); line-height:1.55; color:rgba(255,255,255,.66);
-  align-self:end; max-width:46ch;
-  /* static on purpose: the rail is positioned against the ROW, not against
-     this column, so it sits on the row's true centre line. */
-  position:static;
+#nm-services .nm-svc-item:last-child .nm-svc-heading{ border-bottom:1px solid rgba(255,255,255,.16); }
+#nm-services .nm-svc-trigger{
+  display:flex; align-items:center; gap:clamp(16px,2vw,32px);
+  width:100%; height:100%; min-height:96px; padding:24px 0;
+  border:0; border-radius:0; background:none; box-shadow:none;
+  text-align:left; color:#f5f5f5; cursor:pointer;
+  font:inherit; touch-action:manipulation;
+  transition:color .18s ease;
 }
-/* the rail. -38px top/bottom is exactly the row padding, so the segments meet
-   and read as one unbroken line down the section */
-#nm-services .nm-svc-desc::before{
-  content:""; position:absolute; left:50%; top:0; bottom:0; width:1px;
-  background:rgba(255,255,255,.13); transition:background .2s ease;
+#nm-services .nm-svc-number{
+  flex:none; align-self:center;
+  font-family:'Geist Mono',monospace; font-size:13px; line-height:1.4;
+  letter-spacing:.08em; color:rgba(255,255,255,.38);
+  transition:color .18s ease;
 }
-
-/* No stagger. The names used to march right down the list as a diagram of
-   idea-to-object; left-aligning them flush is the plainer read and matches the
-   live-sites list below. */
-
-/* ── the name fills with the work ────────────────────────────────────────
-   At rest the letters are solid white and the image behind them is invisible.
-   On hover the fill colour goes transparent and the work shows through the
-   letterforms. The flat white layer on top of the photo is a legibility floor:
-   several of these thumbnails are dark, and without it a name could hover into
-   something unreadable. */
-#nm-services .nm-svc-name{
-  background-image:linear-gradient(rgba(255,255,255,.24),rgba(255,255,255,.24)), var(--fill);
-  background-size:cover; background-position:center; background-repeat:no-repeat;
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:#fff;
-  transition:transform .42s cubic-bezier(.22,.9,.28,1), -webkit-text-fill-color .3s ease;
+#nm-services .nm-svc-title{
+  flex:1; min-width:0; max-width:22ch; color:inherit;
+  font-size:clamp(22px,2.3vw,36px); font-weight:650;
+  letter-spacing:-.035em; line-height:1.12;
 }
-
-/* ── the rail fills as you scroll ────────────────────────────────────────
-   One bright segment per row, laid exactly over the dim base segment. Each
-   fills as its row crosses the viewport, and because the segments already meet
-   end to end it reads as a single line drawing itself down the section.
-
-   Driven by a view() timeline rather than a scroll listener on purpose: no
-   JS, no rAF (which does not run in a background tab), and where the timeline
-   is unsupported the segment simply stays hidden and the dim rail is what was
-   always there. */
-#nm-services .nm-svc-rail{
-  position:absolute; left:50%; top:0; bottom:0; width:1px;
-  background:#fff; transform:scaleY(0); transform-origin:top; }
-@supports (animation-timeline: view()){
-  #nm-services .nm-svc-rail{
-    animation:nmRailDraw linear both;
-    animation-timeline:view();
-    animation-range:entry 15% cover 55%; }
+#nm-services .nm-svc-mark{ position:relative; flex:0 0 16px; margin-left:auto; height:16px; color:rgba(255,255,255,.35); }
+#nm-services .nm-svc-mark::before,
+#nm-services .nm-svc-mark::after{
+  content:''; position:absolute; top:7px; left:1px; width:14px; height:1.5px;
+  background:currentColor; transition:transform .18s ease;
 }
-@keyframes nmRailDraw{ from{ transform:scaleY(0); } to{ transform:scaleY(1); } }
-
-@media (hover:hover){
-  /* hovering pulls the name flush and lights the rail */
-  #nm-services .nm-svc-row:hover .nm-svc-name{ -webkit-text-fill-color:transparent; }
-  #nm-services .nm-svc-row:hover .nm-svc-desc::before{ background:var(--nm-orange, #FF7820); }
-  #nm-services .nm-svc-row:hover .nm-svc-num{ color:var(--nm-orange, #FF7820); transform:scale(1.18); }
-  #nm-services .nm-svc-row:hover{ background:rgba(255,133,32,.05); }
+#nm-services .nm-svc-mark::after{ transform:rotate(90deg); }
+#nm-services .is-open .nm-svc-trigger,
+#nm-services .is-open .nm-svc-number,
+#nm-services .is-open .nm-svc-mark{ color:var(--nm-orange,#ff7820); }
+#nm-services .is-open .nm-svc-mark::after{ transform:rotate(0); }
+#nm-services .nm-svc-trigger:focus-visible{ outline:2px solid var(--nm-orange,#ff7820); outline-offset:5px; border-radius:4px; }
+#nm-services .nm-svc-panel{
+  display:contents;
+}
+#nm-services .nm-svc-visual,
+#nm-services .nm-svc-copy{
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .18s ease,visibility .18s;
+}
+#nm-services .is-open .nm-svc-visual,
+#nm-services .is-open .nm-svc-copy{ opacity:1; visibility:visible; pointer-events:auto; }
+#nm-services .nm-svc-visual{
+  grid-column:2; grid-row:1 / 8; align-self:start; min-width:0;
+  aspect-ratio:6 / 5; overflow:hidden; border-radius:18px;
+  background:#141414; border:1px solid rgba(255,255,255,.08);
+}
+#nm-services .nm-svc-visual img{ display:block; width:100%; height:100%; object-fit:cover; }
+#nm-services .nm-svc-contain img{ object-fit:contain; padding:20px; }
+#nm-services .nm-svc-copy{
+  grid-column:1; grid-row:7; align-self:start;
+  max-width:50ch; margin:24px 32px 0 0; color:rgba(255,255,255,.66);
+  font-size:clamp(16px,1.2vw,20px); line-height:1.55;
+}
+@media(max-width:900px){
+  #nm-services{ padding:56px 0 72px; }
+  #nm-services .nm-svc-showcase{ display:block; }
+  #nm-services .nm-svc-item{ display:block; }
+  #nm-services .nm-svc-trigger{ min-height:88px; gap:16px; padding:22px 0; }
+  #nm-services .nm-svc-title{ font-size:clamp(20px,3.6vw,28px); }
+  #nm-services .nm-svc-number{ font-size:12px; }
+  #nm-services .nm-svc-panel{ display:none; transition:none; }
+  #nm-services .is-open .nm-svc-panel{ display:flex; flex-direction:column-reverse; padding:0 0 30px; }
+  #nm-services .nm-svc-visual{ width:100%; aspect-ratio:1 / 1; }
+  #nm-services .nm-svc-copy{ margin:0 0 20px; font-size:16px; }
+  #nm-services .nm-svc-visual,
+  #nm-services .nm-svc-copy{ transition:none; }
+  #nm-services .nm-svc-item:last-child .nm-svc-heading{ border-bottom:0; }
+  #nm-services .nm-svc-item:last-child{ border-bottom:1px solid rgba(255,255,255,.16); }
+}
+@media(prefers-reduced-motion:reduce){
+  #nm-services .nm-svc-visual,
+  #nm-services .nm-svc-copy,
+  #nm-services .nm-svc-trigger,
+  #nm-services .nm-svc-number,
+  #nm-services .nm-svc-mark::before,
+  #nm-services .nm-svc-mark::after{ transition:none; }
 }
 
 @media (max-width:767.98px){
@@ -643,34 +645,11 @@ main > #about{ background:#0a0a0a !important;
   #nm-brands .nm-b-puffco{ height:28px; }
   #nm-brands .nm-b-pawsta{ height:30px; }
   #nm-brands .nm-b-ravi{ height:18px; }
-  #nm-services{ padding:56px 0 72px; }
-  #nm-services .nm-svc-grid{ padding:0 max(clamp(1.2rem, .78rem + 1.07vw, 2.4rem), 1.25vw); }
-  /* A plain single-column stack. This block used to declare a 52px first track
-     for the numerals -- which are now display:none globally -- and then follow
-     `grid-area` with `grid-column:auto`, which wipes the column half of the
-     shorthand. Both the name and the description auto-placed into that dead
-     52px track: at 375px the rows measured 52x92 and 52x419, roughly one word
-     per line, with 257px of empty black beside them. That was 45% of the
-     mobile page. */
-  #nm-services .nm-svc-row{
-    grid-template-columns:1fr; grid-template-areas:"name" "desc";
-    column-gap:0; row-gap:8px; padding:26px 0; }
-  #nm-services .nm-svc-row .nm-svc-name{ grid-area:name; font-size:2.2rem;
-    transform:none !important; }
-  #nm-services .nm-svc-row .nm-svc-desc{ grid-area:desc; font-size:1.5rem; }
-  /* No rail on a stacked layout -- it would cut straight through the copy.
-     This selector list previously ended in a trailing comma and a `}` that
-     closed the @media, so the whole rule was discarded as a parse error and
-     BOTH rails survived on phones: .nm-svc-desc::before is positioned against
-     the ROW (the desc is deliberately static), so a white hairline drew itself
-     down the centre of the screen through all six stacked rows. */
-  #nm-services .nm-svc-desc::before,
-  #nm-services .nm-svc-rail{ display:none; }
-  }
+}
 @media (prefers-reduced-motion:reduce){ #nm-brands .nm-brands-track{ animation:none; } }
 
 /* ── live websites ───────────────────────────────────────────────────────
-   Same rail idiom as the services list above it, but the row is a link and
+   The row is a link and
    the payoff is a screenshot that tracks the cursor. Rows stay quiet so the
    panel is the only thing that moves. */
 #nm-sites{ background:#0a0a0a; color:#fff; font-family:'Geist',system-ui,sans-serif;
@@ -719,12 +698,12 @@ main > #about{ background:#0a0a0a !important;
 .nm-site-peek{
   position:fixed; top:0; left:0; width:max(380px,19.7916vw); aspect-ratio:16 / 10;
   overflow:hidden; background:#0a0a0a;
-  border:1px solid rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.16); border-radius:18px;
   box-shadow:0 max(24px,1.25vw) max(64px,3.3333vw) rgba(0,0,0,.6);
-  pointer-events:none; opacity:0; transform:scale(.96);
-  transition:opacity .18s ease, transform .26s cubic-bezier(.22,1,.36,1);
-  z-index:9000; will-change:transform, opacity, left, top; }
-.nm-site-peek.is-on{ opacity:1; transform:scale(1); }
+  pointer-events:none; opacity:0;
+  transition:opacity .08s ease;
+  z-index:40; }
+.nm-site-peek.is-on{ opacity:1; }
 .nm-site-peek img{ width:100%; height:100%; object-fit:cover;
   object-position:top center; display:block; }
 .nm-site-peek::after{ content:""; position:absolute; inset:0;
@@ -734,6 +713,8 @@ main > #about{ background:#0a0a0a !important;
   font-family:'Geist',system-ui,sans-serif;
   font-size:11px; letter-spacing:.16em; text-transform:uppercase;
   color:rgba(255,255,255,.85); display:flex; justify-content:space-between; gap:10px; }
+.nm-site-peek .lbl > span:first-child{flex:none;white-space:nowrap}
+.nm-site-peek .host{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .nm-site-peek .dot{ display:inline-block; width:max(6px,0.3125vw); height:max(6px,0.3125vw); border-radius:50%;
   background:#fff; margin-right:7px; transform:translateY(-1px); }
 
@@ -748,9 +729,25 @@ main > #about{ background:#0a0a0a !important;
   #nm-sites .nm-site-arrow{ grid-column:auto; font-size:1.5rem; }
 }
 
-/* The existing point-cloud mark is an accessible, discreet game door. */
-.nm-run-door{position:absolute;z-index:2;left:50%;top:22%;transform:translateX(-50%);width:46%;height:37%;border:0;border-radius:50%;padding:0;background:none;cursor:pointer;touch-action:manipulation}
+/* The cloud remains the hidden entrance to Cloud Run. */
+main > section.h-lvh .nm-run-door{position:absolute;z-index:2;left:50%;top:42%;transform:translate(-50%,-50%);width:32%;height:32%;border:0;border-radius:24px;padding:0;background:none;cursor:pointer;touch-action:manipulation}
 .nm-run-door:focus-visible{outline:2px dashed #ff7820;outline-offset:8px}
 .nm-run-door img{display:none}
 .nm-run-door[aria-busy="true"]{cursor:progress}
-@media(max-width:767px){.nm-run-door{top:10px;width:150px;height:84px}.nm-run-door img{display:block;width:100%;height:100%;object-fit:contain}}
+@media(max-width:767px){
+ main > section.h-lvh .nm-run-door{top:12%;width:90px;height:45px}
+ .nm-run-door img{display:block;width:100%;height:100%;object-fit:contain}
+}
+
+/* Bound WebGL painting to its viewport so resuming the scene cannot invalidate
+   the independently painted header and floating controls above it. */
+#global-canvas{contain:strict;isolation:isolate;transform:translateZ(0)}
+/* Preserve the same gallery projection without changing fixed/relative
+   positioning, inserting/removing spacer height, or moving paint layers. */
+body{overflow:visible}
+.nm-made-track{position:relative;z-index:-1;overflow:visible}
+.nm-made-track #nm-made{position:sticky!important;top:0!important;left:auto!important;right:auto!important;z-index:auto!important;margin-top:0!important;overflow:clip}
+.nm-made-track .index-feature{will-change:auto!important}
+.nm-made-anchor{position:absolute;left:0;width:0;height:0;pointer-events:none;overflow-anchor:none}
+
+.nm-past-hero .nm-made-track{z-index:1}

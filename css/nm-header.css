@@ -63,7 +63,7 @@
    capsule; the padding then grows the outline around it rather than squeezing
    the name. currentColor so it tracks the header's colour rather than being
    pinned to white. */
-header[class*="z-50"] > a[href="/"],
+header[data-nm-header] > a[href="/"],
 .nm-hdr .wordmark{
   display:block; color:#fff;
   box-sizing:content-box;
@@ -79,7 +79,7 @@ header[class*="z-50"] > a[href="/"],
   border-radius:999px;
   transition:border-color .24s ease;
 }
-header[class*="z-50"] > a[href="/"] svg,
+header[data-nm-header] > a[href="/"] svg,
 .nm-hdr .wordmark svg{ display:block; width:100%; height:auto; }
 .nm-hdr .wordmark svg text{ font-family:'Geist', system-ui, sans-serif; }
 /* fills on hover, the way a badge does.
@@ -92,7 +92,7 @@ header[class*="z-50"] > a[href="/"] svg,
    border box, and with border-color:transparent that 2px ring showed the
    tiled edge as a pale band down the left and right of the capsule. */
 @media (hover:hover){
-  header[class*="z-50"] > a[href="/"]:hover,
+  header[data-nm-header] > a[href="/"]:hover,
   .nm-hdr .wordmark:hover{ background-image:var(--nm-orange-grad, linear-gradient(135deg, #FF8C28 0%, #FF7820 50%, #FF6418 100%)); color:#0a0a0a; border-color:transparent; }
 }
 
@@ -104,11 +104,11 @@ header[class*="z-50"] > a[href="/"] svg,
    intrinsic heights and their static top positions differ by 2px -- enough that
    the nav nudges when you move between pages. Centring on both axes makes the
    intrinsic height irrelevant. */
-header[class*="z-50"] nav,
+header[data-nm-header] nav,
 .nm-hdr .nm-nav{
   position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
 }
-header[class*="z-50"] nav ul,
+header[data-nm-header] nav ul,
 .nm-hdr .nm-nav{
   display:flex; align-items:center; gap:max(46px, 2.3958vw);
   list-style:none; margin:0; padding:0;
@@ -116,7 +116,7 @@ header[class*="z-50"] nav ul,
 /* flex + fixed height, so the item's position inside the row is not decided by
    baseline alignment -- that was putting the two pages' labels 2px apart even
    once the outer boxes matched */
-header[class*="z-50"] nav ul li,
+header[data-nm-header] nav ul li,
 .nm-hdr .nm-nav li{
   position:relative; z-index:1; list-style:none;
   display:flex; align-items:center; height:max(16px,0.8333vw); line-height:max(15px,0.7812vw);
@@ -128,10 +128,10 @@ header[class*="z-50"] nav ul li,
    <nav> and the archive does not, so the two absolute boxes still resolved to
    16px and 15px and the items landed 2px apart. Fixing the height makes the
    nesting irrelevant: both boxes are 16px, both centre on the same pixel. */
-header[class*="z-50"] nav ul,
+header[data-nm-header] nav ul,
 .nm-hdr .nm-nav{ line-height:max(15px,0.7812vw); height:max(16px,0.8333vw); }
 
-header[class*="z-50"] nav ul li > *,
+header[data-nm-header] nav ul li > *,
 .nm-hdr .nm-nav li > a{
   position:relative; display:inline-block; isolation:isolate;
   font-family:'Geist', system-ui, sans-serif;
@@ -147,14 +147,14 @@ header[class*="z-50"] nav ul li > *,
    Unkerned text is wider -- "contact" came out 66px there against 64px on the
    archive -- so the rail was a couple of pixels off. Kerning is restored here
    so both pages measure the same string the same way. */
-header[class*="z-50"] nav ul li > * span{
+header[data-nm-header] nav ul li > * span{
   font-kerning:normal !important;
   font-variant-ligatures:normal !important;
   text-rendering:auto !important;
 }
 
 /* "work" is gone from both: the archive IS the work. */
-header[class*="z-50"] nav ul li:first-child{ display:none !important; }
+header[data-nm-header] nav ul li:first-child{ display:none !important; }
 
 @media (max-width:767.98px){
 }
@@ -237,15 +237,15 @@ html.nm-menu-open, html.nm-menu-open body{ overflow:hidden !important; }
    There was no way out of the menu on a phone except following a link.
    Both headers are background:transparent, so lifting the whole header above
    the panel costs nothing visually -- only the wordmark and the X ride above. */
-html.nm-menu-open header[class*="z-50"],
+html.nm-menu-open header[data-nm-header],
 html.nm-menu-open .nm-hdr{ z-index:60; }
 
 @media (max-width:767.98px){
   .nm-burger{ display:block; }
-  header[class*="z-50"] nav,
+  header[data-nm-header] nav,
   .nm-hdr .nm-nav{ display:none !important; }
   /* the build's own text "Menu" control */
-  header[class*="z-50"] button[class*="text-menu"]{ display:none !important; }
+  header[data-nm-header] button[class*="text-menu"]{ display:none !important; }
 }
 @media (min-width:768px){
   .nm-burger, .nm-burger-panel{ display:none !important; }
@@ -260,19 +260,20 @@ html.nm-menu-open .nm-hdr{ z-index:60; }
 #mobile-menu{ display:none !important; }
 
 
-/* A single tint keeps navigation readable without capturing and blurring
-   the moving WebGL/gallery layers underneath the fixed header. */
-header[class*="z-50"],.nm-hdr{
-  background:transparent !important;
+/* Keep the original gradient while painting header controls independently
+   from the WebGL scene. */
+header[data-nm-header],.nm-hdr{
+  background:linear-gradient(to bottom,rgba(10,10,10,.92),rgba(10,10,10,.66) 58%,rgba(10,10,10,0)) !important;
   backdrop-filter:none;-webkit-backdrop-filter:none;
   mask-image:none;-webkit-mask-image:none;
+  transform:none;
+  will-change:auto;
   isolation:isolate;
+  opacity:1;
+  visibility:visible;
 }
-header[class*="z-50"]::before,.nm-hdr::before{
-  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(to bottom,rgba(10,10,10,.92),rgba(10,10,10,.66) 58%,rgba(10,10,10,0));
-}
-header[class*="z-50"]::after,.nm-hdr::after{content:none}
+header[data-nm-header]::before,.nm-hdr::before,
+header[data-nm-header]::after,.nm-hdr::after{content:none}
 
 html.nm-menu-open .nm-burger{visibility:hidden}
 @media (max-width:359px){
@@ -293,5 +294,21 @@ html.nm-menu-open .nm-burger{visibility:hidden}
 @media(prefers-reduced-motion:reduce){.nm-menu-close span{transition:none}}
 
 /* The modal already supplies an opaque background; leave its X undimmed. */
-html.nm-menu-open header[class*="z-50"]::before,
-html.nm-menu-open .nm-hdr::before{content:none}
+html.nm-menu-open header[data-nm-header],
+html.nm-menu-open .nm-hdr{background:transparent !important}
+
+/* Chromium can retain stale paint for these controls over the returning WebGL
+   scene. Give each control a bounded paint surface, including its border. */
+header[data-nm-header] > a,
+header[data-nm-header] > nav,
+header[data-nm-header] > #nm-coord,
+header[data-nm-header] > .nm-burger{
+  contain:paint;
+  backface-visibility:hidden;
+  will-change:transform;
+}
+header[data-nm-header] > a,
+header[data-nm-header] > #nm-coord{transform:translateZ(0)}
+header[data-nm-header] > nav{transform:translate3d(-50%,-50%,0)}
+.nm-c-panel{transform:translateZ(0);will-change:transform;backface-visibility:hidden}
+.nm-c-panel{contain:paint}

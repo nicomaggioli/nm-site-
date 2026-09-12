@@ -17,7 +17,7 @@
     loading = true;
     if (door) door.setAttribute('aria-busy', 'true');
     try {
-      var result = await Promise.all([import('/js/nm-run-game.mjs?v=b884e0c2a2'), stylesheet()]);
+      var result = await Promise.all([import('/js/nm-run-game.mjs?v=7aa7f3f6e8'), stylesheet()]);
       game = result[0]; game.openGame();
     } catch (error) {
       if (door) { door.title = 'Could not load the game. Click to try again.'; door.setAttribute('aria-label', door.title); }
@@ -25,12 +25,12 @@
     } finally { loading = false; if (door) door.removeAttribute('aria-busy'); }
   }
   var footer = document.querySelector('main > section.h-lvh');
-  if (footer && !footer.querySelector('.nm-run-door')) {
-    door = document.createElement('button'); door.type = 'button'; door.className = 'nm-run-door';
-    door.setAttribute('aria-label', 'Play Cloud Run'); door.setAttribute('aria-haspopup', 'dialog');
-    door.title = 'Feeling lucky?';
-    door.innerHTML = '<img src="/media/runner/cloud-door.svg?v=e28dff298c" width="200" height="100" loading="lazy" alt="">';
-    door.addEventListener('click', open); footer.appendChild(door);
+  if (footer) {
+    door = footer.querySelector('.nm-run-door');
+    footer.addEventListener('click', function (event) {
+      var target = event.target.closest('.nm-run-door');
+      if (target) { door = target; open(); }
+    });
   }
   window.__nmRun = { open: open, close: function () { if (game) game.closeGame(); } };
   function hash() { if (location.hash === '#run') open(); }

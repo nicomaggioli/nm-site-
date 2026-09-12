@@ -2,8 +2,8 @@ import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mj
 
 import {RUN_FRAME_COUNT,runFrame,drawStar} from './nm-run-motion.mjs?v=aef6e20195';
 
-const RUN_SHEET='/media/runner/runner-stills.png?v=8cfa26d5fe';
-const CHARACTER='/media/runner/runner-character-v2.png?v=1f0cad7cbd';
+const RUN_SHEET='/media/runner/runner-ravi-stills.png?v=e41c2a3ee3';
+const CHARACTER='/media/runner/runner-ravi-actions.png?v=3d2ee0f116';
 const SKY='/media/runner/sky-atlas.png?v=ea731a709a';
 // Each running frame is a complete character illustration.
 // The previous sheet supplies idle, aerial, duck and reaction poses.

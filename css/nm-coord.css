@@ -30,6 +30,7 @@
   right:max(clamp(12px, 7.8px + 1.07vw, 24px), 1.25vw);
   width:min(max(360px, 18.75vw), calc(100vw - 24px));
   background:#101010; border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
   /* 300, not 120. The homepage stacks two full-viewport page-transition veils
      at z-[200] (one black, one white). They are pointer-events:none and sit at
      opacity 0 almost always -- but they are ABOVE 120, so any moment one is
@@ -108,3 +109,8 @@
   #nm-coord .nm-c-name{ display:none; }
   #nm-coord:hover .nm-c-num{ opacity:1; visibility:visible; }
 }
+
+/* Keep the original panel appearance in the browser's top layer, independent
+   of the hero's WebGL compositing surface. */
+.nm-c-panel[popover]{margin:0;left:auto;bottom:auto;overflow:visible}
+.nm-c-panel::backdrop{background:transparent;pointer-events:none}

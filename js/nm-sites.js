@@ -10,6 +10,21 @@
 
   var PW = 380, PH = Math.round(PW * 10 / 16), PAD = 24;
   var peek = null, img = null, host = null, active = '', raf = 0, px = 0, py = 0;
+  var shots = new Map(), pointerInside = false;
+
+  function screenshot(src) {
+    if (shots.has(src)) return shots.get(src);
+    var image = new Image();
+    image.alt = '';
+    image.decoding = 'async';
+    image.fetchPriority = 'low';
+    image.src = src;
+    // Retain the decoded element itself, rather than only warming the HTTP
+    // cache and asking a fresh <img> to decode on the first pointerover.
+    if (image.decode) image.decode().catch(function () {});
+    shots.set(src, image);
+    return image;
+  }
 
   function panel() {
     /* re-created if anything ever detaches it from <body> */
@@ -27,7 +42,6 @@
   }
 
   function place() {
-    raf = 0;
     if (!peek) return;
     var vw = innerWidth, vh = innerHeight;
     /* the panel scales with the page above 1920, so its metrics must too */
@@ -40,61 +54,89 @@
     peek.style.top  = y + 'px';
   }
 
-  document.addEventListener('pointerover', function (e) {
-    if (!enabled.matches) return;
-    var row = e.target.closest && e.target.closest('#nm-sites .nm-site');
-    if (!row) return;
-    var p = panel(), shot = row.getAttribute('data-shot') || '';
+  function rowAt(target) {
+    return target && target.closest ? target.closest('#nm-sites .nm-site') : null;
+  }
+
+  function hide() { if (peek) peek.classList.remove('is-on'); }
+
+  function show(row) {
+    var shot = row && row.getAttribute('data-shot');
+    if (!enabled.matches || !shot) { hide(); return; }
+    var p = panel();
     if (shot !== active) {
-      img.src = shot;
+      var ready = screenshot(shot);
+      img.replaceWith(ready);
+      img = ready;
       host.textContent = (row.href || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
       active = shot;
     }
-    /* seed the position from this event: arriving by scroll or keyboard means no
-       pointermove has fired yet, and the panel would flash at wherever it sat last */
-    px = e.clientX; py = e.clientY;
     place();
     p.classList.add('is-on');
-  }, true);
+  }
 
-  document.addEventListener('pointermove', function (e) {
-    if (!peek || !peek.classList.contains('is-on')) return;
+  function update() {
+    raf = 0;
+    if (!pointerInside || !enabled.matches) { hide(); return; }
+    // Recheck the painted row, including when it moves under a stationary
+    // cursor during smooth scrolling. The preview never captures pointer hits.
+    show(rowAt(document.elementFromPoint(px, py)));
+  }
+
+  function schedule() { if (!raf) raf = requestAnimationFrame(update); }
+
+  function pointer(e) {
+    if (e.pointerType === 'touch') { leave(); return; }
+    pointerInside = true;
     px = e.clientX; py = e.clientY;
-    if (!raf) raf = requestAnimationFrame(place);
-  }, true);
+    schedule();
+  }
 
+  function leave() {
+    pointerInside = false;
+    hide();
+  }
+
+  document.addEventListener('pointerover', pointer, { passive: true, capture: true });
+  document.addEventListener('pointermove', pointer, { passive: true, capture: true });
   document.addEventListener('pointerout', function (e) {
-    if (!peek) return;
-    var row = e.target.closest && e.target.closest('#nm-sites .nm-site');
-    if (!row) return;
-    if (e.relatedTarget && row.contains(e.relatedTarget)) return;   // still inside the row
-    peek.classList.remove('is-on');
+    if (!e.relatedTarget) leave();
+    else schedule();
   }, true);
+  document.addEventListener('pointercancel', leave, true);
+  window.addEventListener('blur', leave);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) leave();
+  });
 
-  /* Warm the screenshots once the page is idle. Hovering a row then costs
-     nothing, and a visitor who never scrolls this far never pays for them. */
+  /* These eight display-sized previews total about 165 KB. Start after the
+     initial page setup, with a deadline so animation cannot starve the job.
+     Approaching About also starts it immediately during a fast scroll. */
   function warm() {
-    var rows = document.querySelectorAll('#nm-sites .nm-site'), seen = {};
+    if (!enabled.matches || (navigator.connection && navigator.connection.saveData)) return false;
+    var rows = document.querySelectorAll('#nm-sites .nm-site');
     if (!rows.length) return false;
     for (var i = 0; i < rows.length; i++) {
       var s = rows[i].getAttribute('data-shot');
-      if (s && !seen[s]) { seen[s] = 1; (new Image()).src = s; }
+      if (s) screenshot(s);
     }
     return true;
   }
-  var section = document.getElementById('nm-sites');
+  var section = document.getElementById('about') || document.getElementById('nm-sites');
   if (section && 'IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function (entries) {
       if (entries[0].isIntersecting && enabled.matches && !(navigator.connection && navigator.connection.saveData)) {
-        (window.requestIdleCallback || function (fn) { setTimeout(fn, 0); })(warm);
+        warm();
         observer.disconnect();
       }
-    }, { rootMargin: '200px' });
+    }, { rootMargin: '1000px' });
     observer.observe(section);
   }
-  function hide() { if (peek) peek.classList.remove('is-on'); }
-  window.addEventListener('scroll', hide, { passive: true });
-  window.addEventListener('resize', hide, { passive: true });
+  if (window.requestIdleCallback) window.requestIdleCallback(warm, { timeout: 700 });
+  else setTimeout(warm, 0);
+  enabled.addEventListener('change', function () { warm(); schedule(); });
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule, { passive: true });
 })();
 
 });

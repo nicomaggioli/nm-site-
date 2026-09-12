@@ -21,7 +21,7 @@
     return true;
   }
   function header() {
-    var h = document.querySelectorAll('header[class*="z-50"], header.nm-hdr');
+    var h = document.querySelectorAll('header[data-nm-header], header.nm-hdr');
     for (var i = 0; i < h.length; i++) if (rendered(h[i])) return h[i];
     return null;
   }
