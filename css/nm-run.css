@@ -39,28 +39,24 @@ html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
 @media(max-width:600px){.nm-run-milestone{top:58px;font-size:7px}}
 @media(max-height:520px) and (orientation:landscape){.nm-run-milestone{top:42px;font-size:6px;padding:3px 6px}}
 
-.nm-run-key,.nm-run-b{display:none}
-.nm-run-actions,.nm-run-system{display:flex;align-items:center}
+.nm-run-key{display:none}
 .nm-run-control-label{pointer-events:none}
 .nm-run-touch.is-held{filter:brightness(1.18)}
 
-/* Thumb controls: the entire cross is Duck; A jumps and B also ducks. */
+/* Three thumb controls, in reading order: Duck, Pause, Jump. */
 @media(pointer:coarse),(max-width:900px){
  .nm-run-bottom{display:block}
  .nm-run-help{display:none}
- .nm-run-controls{--pad:clamp(76px,21vw,96px);--action:clamp(52px,15vw,64px);width:100%;min-height:148px;display:grid;grid-template-columns:var(--pad) 1fr auto;align-items:center;gap:8px;padding:12px 14px 24px;background:#15171b;border:1px solid #363940;border-radius:16px 16px 32px 16px}
+ .nm-run-controls{--action:clamp(56px,16vw,68px);width:100%;min-height:128px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;justify-items:center;gap:8px;padding:12px 14px 24px;background:#15171b;border:1px solid #363940;border-radius:16px 16px 32px 16px}
  .nm-run-key{display:block;pointer-events:none}
  .nm-run-controls .nm-run-touch{position:relative;min-width:0;min-height:0;padding:0;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
- .nm-run-dpad{grid-column:1;grid-row:1;width:var(--pad);height:var(--pad);border:0;background:transparent!important;box-shadow:none!important}
- .nm-run-dpad::before{content:'';position:absolute;inset:0;background:linear-gradient(145deg,#4a505b,#23272e);clip-path:polygon(32% 0,68% 0,68% 32%,100% 32%,100% 68%,68% 68%,68% 100%,32% 100%,32% 68%,0 68%,0 32%,32% 32%);box-shadow:inset 0 3px 0 #67707e,inset 0 -5px 0 #090b0e}
- .nm-run-dpad .nm-run-key{position:relative;font-size:26px;color:#e0e6ee;text-shadow:0 2px #000}
- .nm-run-actions{grid-column:3;grid-row:1;gap:12px;align-items:center;min-height:96px;padding-bottom:12px}
  .nm-run-controls .nm-run-a,.nm-run-controls .nm-run-b{display:flex;width:var(--action);height:var(--action);border-radius:50%;border:2px solid #db6a95;background:linear-gradient(145deg,#b83c70,#782548);box-shadow:0 5px 0 #400f27,0 7px 0 #080a0d;color:#fff1f5}
  .nm-run-a .nm-run-key,.nm-run-b .nm-run-key{font-size:22px}
- .nm-run-b{margin-top:32px}
+ .nm-run-b{grid-column:1;grid-row:1}
+ .nm-run-a{grid-column:3;grid-row:1}
+ .nm-run-controls .nm-run-b{background:linear-gradient(145deg,#c84052,#852737);border-color:#e8757f;box-shadow:0 5px 0 #480d1d,0 7px 0 #080a0d}
  .nm-run-controls .nm-run-control-label{position:absolute;top:calc(100% + 9px);left:50%;transform:translateX(-50%);font-size:7px;color:#bec6d4;line-height:1.5}
- .nm-run-system{grid-column:2;grid-row:1;justify-content:center;align-self:end;min-height:44px}
- .nm-run-pause{min-width:48px;min-height:44px;border-radius:20px;padding:4px 6px;font-size:6px;background:#30343c;border-color:#6b717b;box-shadow:0 3px 0 #090b0e}
+ .nm-run-pause{grid-column:2;grid-row:1;min-width:48px;min-height:44px;border-radius:20px;padding:4px 6px;font-size:6px;background:#30343c;border-color:#6b717b;box-shadow:0 3px 0 #090b0e}
  .nm-run-controls .nm-run-touch:active,.nm-run-controls .nm-run-touch.is-held{transform:translateY(3px);filter:brightness(1.22)}
  .nm-run-controls .nm-run-touch:focus-visible{outline-offset:4px}
 }
@@ -68,19 +64,14 @@ html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
  .nm-run{gap:10px;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
  .nm-run-eyebrow,.nm-run-footnote{display:none}
  .nm-run h2{margin:0}
- .nm-run-controls{min-height:120px;padding:8px 10px 20px;--pad:76px;--action:52px}
- .nm-run-actions{min-height:84px}
+ .nm-run-controls{min-height:120px;padding:8px 10px 20px;--action:52px}
 }
 @media(max-height:520px) and (orientation:landscape){
  .nm-run{gap:8px}
  .nm-run-stage{width:min(100%,780px,calc((100svh - 174px)*2.6470588))}
  .nm-run-bottom{width:min(100%,780px)}
- .nm-run-controls{--pad:60px;--action:48px;min-height:86px;padding:0 8px 16px;border:0;border-radius:0;background:transparent}
- .nm-run-actions{gap:16px;min-height:68px;padding-bottom:0}
- .nm-run-b{margin-top:16px}
- .nm-run-system{align-self:center}
+ .nm-run-controls{--action:48px;min-height:86px;padding:0 8px 16px;border:0;border-radius:0;background:transparent}
  .nm-run-controls .nm-run-control-label{font-size:6px;top:calc(100% + 6px)}
- .nm-run-dpad .nm-run-key{font-size:22px}
  .nm-run-a .nm-run-key,.nm-run-b .nm-run-key{font-size:18px}
  .nm-run-panel{gap:6px;padding-top:34px;padding-bottom:8px}
  .nm-run-panel h3{font-size:14px;line-height:1.4}

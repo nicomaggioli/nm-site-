@@ -178,12 +178,12 @@ export function openGame(){
   milestone=node('div','nm-run-milestone');milestone.hidden=true;stage.append(milestone);
   panel=node('div','nm-run-panel');heading=node('h3');description=node('p');action=button('Loading...','pri',start);panel.append(heading,description,action);stage.append(panel);root.append(stage);
   const bottom=node('div','nm-run-bottom'),help=node('p','nm-run-help');help.innerHTML='<kbd>Space / ↑</kbd> jump <kbd>↓</kbd> duck<br>Hold jump to go higher.';bottom.append(help);
-  const controls=node('div','nm-run-controls'),actions=node('div','nm-run-actions'),system=node('div','nm-run-system');
-  const jumpButton=padButton('A','Jump','nm-run-touch nm-run-a'),duckButton=padButton('↓','Duck','nm-run-touch nm-run-dpad'),bButton=padButton('B','Duck','nm-run-touch nm-run-b');
-  pauseButton=button('Pause','nm-run-pause',togglePause);system.append(pauseButton);actions.append(bButton,jumpButton);controls.append(duckButton,actions,system);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Hold jump to go higher. Best saved on this device.'));
+  const controls=node('div','nm-run-controls');
+  const jumpButton=padButton('A','Jump','nm-run-touch nm-run-a'),duckButton=padButton('B','Duck','nm-run-touch nm-run-b');
+  pauseButton=button('Pause','nm-run-pause',togglePause);controls.append(duckButton,pauseButton,jumpButton);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Hold jump to go higher. Best saved on this device.'));
   status=node('div','nm-run-sr');status.setAttribute('role','status');status.setAttribute('aria-live','polite');root.append(status);document.body.append(root);
   document.documentElement.classList.add('nm-run-open');window.__nmLenis?.stop();window.dispatchEvent(new Event('nm:gamechange'));window.__nmDialog?.capture(root);
-  touchControl(jumpButton,holdJump,'a');touchControl(duckButton,holdDuck,'dpad');touchControl(bButton,holdDuck,'b');touchControl(canvas,holdJump,'canvas');
+  touchControl(jumpButton,holdJump,'a');touchControl(duckButton,holdDuck,'b');touchControl(canvas,holdJump,'canvas');
   document.addEventListener('keydown',press,{signal});document.addEventListener('keyup',release,{signal});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();},{signal});
   window.addEventListener('blur',()=>{pause();clearControls();},{signal});

@@ -43,7 +43,11 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'Start run',exact:true}).click();
     await page.evaluate(()=>{__testRunner.next=100;});
-    const jump=await page.locator('.nm-run-a').boundingBox(),duck=await page.locator('.nm-run-dpad').boundingBox(),b=await page.locator('.nm-run-b').boundingBox();
+    assert.equal(await page.locator('.nm-run-controls button').count(),3,'only Duck, Pause and Jump');
+    const order=await page.locator('.nm-run-controls button').evaluateAll(buttons=>buttons.map(b=>({label:b.getAttribute('aria-label')||b.textContent,x:b.getBoundingClientRect().x})));
+    assert.deepEqual(order.map(b=>b.label),['Duck','Pause','Jump']);
+    assert.ok(order[0].x<order[1].x&&order[1].x<order[2].x,'Duck is left, Pause centered, Jump right');
+    const jump=await page.locator('.nm-run-a').boundingBox(),duck=await page.locator('.nm-run-b').boundingBox();
     await page.mouse.move(jump.x+jump.width/2,jump.y+jump.height/2);await page.mouse.down();
     assert.equal(await page.evaluate(()=>__testRunner.jumpHeld),true,'A holds jump');
     await page.mouse.move(10,10);await page.mouse.up();
@@ -52,19 +56,20 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
     await page.keyboard.down('ArrowDown');await page.mouse.up();
     assert.equal(await page.evaluate(()=>__testRunner.duck),true,'releasing one input must not cancel another held duck input');
     await page.keyboard.up('ArrowDown');assert.equal(await page.evaluate(()=>__testRunner.duck),false);
-    await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();
-    assert.equal(await page.evaluate(()=>__testRunner.duck),true,'B also ducks');
+    await page.mouse.move(duck.x+duck.width/2,duck.y+duck.height/2);await page.mouse.down();
+    assert.equal(await page.evaluate(()=>__testRunner.duck),true,'the red B button ducks');
     await page.keyboard.press('KeyP');
     assert.equal(await page.evaluate(()=>__testRunner.duck),false,'pause releases held controls');
     assert.equal(await page.locator('.nm-run-controls .is-held').count(),0);
     await page.mouse.up();await page.getByRole('button',{name:'Resume',exact:true}).last().click();
     if(engine==='chromium'){
       const cdp=await page.context().newCDPSession(page);
-      const first={x:duck.x+duck.width/2,y:duck.y+duck.height/2,id:1},second={x:b.x+b.width/2,y:b.y+b.height/2,id:2};
+      const first={x:jump.x+jump.width/2,y:jump.y+jump.height/2,id:1},second={x:duck.x+duck.width/2,y:duck.y+duck.height/2,id:2};
       await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[first]});
       await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[first,second]});
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[second]});
-      assert.equal(await page.evaluate(()=>__testRunner.duck),true,'second thumb keeps duck active after the first lifts');
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[first]});
+      assert.equal(await page.evaluate(()=>__testRunner.duck),true,'duck stays held when the jump thumb lifts');
+      assert.equal(await page.evaluate(()=>__testRunner.jumpHeld),false,'lifting jump releases it independently');
       await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
       assert.equal(await page.evaluate(()=>__testRunner.duck),false,'OS gesture cancellation clears held buttons');
       await cdp.detach();
