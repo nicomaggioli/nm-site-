@@ -43,10 +43,10 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'Start run',exact:true}).click();
     await page.evaluate(()=>{__testRunner.next=100;});
-    assert.equal(await page.locator('.nm-run-controls button').count(),3,'only Duck, Pause and Jump');
+    assert.equal(await page.locator('.nm-run-controls button').count(),2,'only Duck and Jump');
     const order=await page.locator('.nm-run-controls button').evaluateAll(buttons=>buttons.map(b=>({label:b.getAttribute('aria-label')||b.textContent,x:b.getBoundingClientRect().x})));
-    assert.deepEqual(order.map(b=>b.label),['Duck','Pause','Jump']);
-    assert.ok(order[0].x<order[1].x&&order[1].x<order[2].x,'Duck is left, Pause centered, Jump right');
+    assert.deepEqual(order.map(b=>b.label),['Duck','Jump']);
+    assert.ok(order[0].x<order[1].x,'Duck is left and Jump right');
     const jump=await page.locator('.nm-run-a').boundingBox(),duck=await page.locator('.nm-run-b').boundingBox();
     await page.mouse.move(jump.x+jump.width/2,jump.y+jump.height/2);await page.mouse.down();
     assert.equal(await page.evaluate(()=>__testRunner.jumpHeld),true,'A holds jump');
@@ -85,7 +85,7 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
       assert.equal(await page.locator('.nm-run-milestone').isVisible(),true);
       assert.equal(await page.locator('.nm-run-score b').nth(2).textContent(),String(level));
     }
-    await page.getByRole('button',{name:'Pause',exact:true}).click();
+    await page.keyboard.press('KeyP');
     const paused=await page.evaluate(()=>__testRunner.time);
     await page.waitForTimeout(150);
     assert.equal(await page.evaluate(()=>__testRunner.time),paused,'pause freezes progression');

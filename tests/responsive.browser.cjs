@@ -86,10 +86,10 @@ for (const engine of ['webkit','chromium']) {
         if(width>height)assert.ok(bounds.buttons.every(b=>b.top>=0&&b.bottom<=height&&b.left>=0&&b.right<=width),`${width}×${height}: controls do not fit`);
       }
       await page.setViewportSize({width:568,height:320});
-      await start.click();await page.getByRole('button',{name:'Pause',exact:true}).click();
+      await start.click();await page.keyboard.press('KeyP');
       assert.equal(await page.locator('.nm-run').getAttribute('data-state'),'paused');
       const pause=await page.getByRole('button',{name:'Resume',exact:true}).last().boundingBox();
-      assert.ok(pause.x>=0&&pause.x+pause.width<=568,'third game control fits in compact landscape');
+      assert.ok(pause.x>=0&&pause.x+pause.width<=568,'resume overlay button fits in compact landscape');
       await page.getByRole('button',{name:'Exit',exact:true}).click();
       assert.equal(await page.locator('.nm-run').count(),0);
       assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('nm-run-open')),false);

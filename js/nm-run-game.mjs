@@ -11,7 +11,7 @@ const POSES={idle:8,jump:9,duck:10,hit:11,dead:12};
 const PIVOTS={idle:153,jump:144,duck:143,hit:145,dead:151};
 const SKY_CELLS={bird1:[15,390,290,318],bird2:[330,400,280,315],star:[965,420,270,298],platform:[0,735,1254,470]};
 function put(n,value){value=String(value);if(n.textContent!==value)n.textContent=value;}
-let root=null,game=null,canvas,ctx,panel,action,heading,description,pauseButton,scoreLabel,bestLabel,starLabel,levelLabel,milestone,status;
+let root=null,game=null,canvas,ctx,panel,action,heading,description,scoreLabel,bestLabel,starLabel,levelLabel,milestone,status;
 let sprites=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
 let shownLevel=1,shownBonus=-1,bannerUntil=0;
 const jumpSources=new Set(),duckSources=new Set();let controlResets=[];
@@ -82,8 +82,7 @@ function sync(){
     put(milestone,'Shooting star! +75');say('Shooting star collected. 75 bonus points.');
   }
   milestone.hidden=game.state!=='running'||game.time>=bannerUntil;
-  const state=game.state;panel.hidden=state==='running'||state==='hit';pauseButton.hidden=state==='ready'||state==='over'||state==='hit';
-  put(pauseButton,state==='paused'?'Resume':'Pause');
+  const state=game.state;panel.hidden=state==='running'||state==='hit';
   if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump low. Duck high. Catch stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
   if(state==='paused'){heading.textContent='Paused.';description.textContent='Catch your breath up here.';action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
   if(state==='over'){saveBest();heading.textContent='One more run?';description.textContent=`${game.score} points · ${game.stars} stars · level ${game.level}`;action.textContent='Run again';action.disabled=false;say(`Run over. ${game.score} points. ${game.stars} stars. Level ${game.level}. Best ${best}.`);}
@@ -180,7 +179,7 @@ export function openGame(){
   const bottom=node('div','nm-run-bottom'),help=node('p','nm-run-help');help.innerHTML='<kbd>Space / ↑</kbd> jump <kbd>↓</kbd> duck<br>Hold jump to go higher.';bottom.append(help);
   const controls=node('div','nm-run-controls');
   const jumpButton=padButton('A','Jump','nm-run-touch nm-run-a'),duckButton=padButton('B','Duck','nm-run-touch nm-run-b');
-  pauseButton=button('Pause','nm-run-pause',togglePause);controls.append(duckButton,pauseButton,jumpButton);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Hold jump to go higher. Best saved on this device.'));
+  controls.append(duckButton,jumpButton);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Hold jump to go higher. Best saved on this device.'));
   status=node('div','nm-run-sr');status.setAttribute('role','status');status.setAttribute('aria-live','polite');root.append(status);document.body.append(root);
   document.documentElement.classList.add('nm-run-open');window.__nmLenis?.stop();window.dispatchEvent(new Event('nm:gamechange'));window.__nmDialog?.capture(root);
   touchControl(jumpButton,holdJump,'a');touchControl(duckButton,holdDuck,'b');touchControl(canvas,holdJump,'canvas');
