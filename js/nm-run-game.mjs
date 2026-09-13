@@ -1,6 +1,6 @@
-import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=24df8d9907';
+import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mjs?v=77fbd74b3a';
 
-import {RUN_FRAME_COUNT,runFrame,drawStar,drawShootingStar,balloonArt} from './nm-run-motion.mjs?v=02eb725c39';
+import {RUN_FRAME_COUNT,runFrame,drawStar,drawShootingStar,drawBirdSignal} from './nm-run-motion.mjs?v=6495b779e2';
 
 const RUN_SHEET='/media/runner/runner-ravi-stills.png?v=e41c2a3ee3';
 const CHARACTER='/media/runner/runner-ravi-actions.png?v=3d2ee0f116';
@@ -9,11 +9,15 @@ const SKY='/media/runner/sky-atlas.png?v=ea731a709a';
 // The previous sheet supplies idle, aerial, duck and reaction poses.
 const POSES={idle:8,jump:9,duck:10,hit:11,dead:12};
 const PIVOTS={idle:153,jump:144,duck:143,hit:145,dead:151};
-const SKY_CELLS={bird1:[15,390,290,318],bird2:[330,400,280,315],plane:[640,405,300,305],star:[965,420,270,298],platform:[0,735,1254,470]};
+const SKY_CELLS={bird1:[15,390,290,318],bird2:[330,400,280,315],star:[965,420,270,298],platform:[0,735,1254,470]};
 function put(n,value){value=String(value);if(n.textContent!==value)n.textContent=value;}
 let root=null,game=null,canvas,ctx,panel,action,heading,description,pauseButton,scoreLabel,bestLabel,starLabel,levelLabel,milestone,status;
 let sprites=null,artPromise=null,raf=0,last=0,acc=0,best=0,announced='',saved=false,abort=null,resizeObserver=null;
 let shownLevel=1,shownBonus=-1,bannerUntil=0;
+const jumpSources=new Set(),duckSources=new Set();let controlResets=[];
+function clearControls(){controlResets.forEach(reset=>reset());jumpSources.clear();duckSources.clear();game?.releaseJump();game?.setDuck(false);}
+function holdJump(source,value){if(value){if(!jumpSources.size)jump();jumpSources.add(source);}else{jumpSources.delete(source);if(!jumpSources.size)game?.releaseJump();}}
+function holdDuck(source,value){if(value)duckSources.add(source);else duckSources.delete(source);duck(duckSources.size>0);}
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 try {best=Number(localStorage.getItem('nm-cloud-run-best'))||0;}catch{}
 function node(tag,cls,text){const n=document.createElement(tag);n.className=cls||'';if(text)n.textContent=text;return n;}
@@ -49,7 +53,6 @@ function loadArt(){
       result[name]={...extract(character,[x,y,right-x,bottom-y]),pivot:PIVOTS[name],baseline:282};
     });
     for(const [name,rect] of Object.entries(SKY_CELLS))result[name]=extract(sky,rect);
-    result.balloon=balloonArt(()=>document.createElement('canvas'));
     const frames=[];
     for(let i=0;i<RUN_FRAME_COUNT;i++){
       const col=i%4,row=Math.floor(i/4),x=Math.floor(col*running.width/4),y=Math.floor(row*running.height/3);
@@ -85,8 +88,8 @@ function sync(){
   if(state==='paused'){heading.textContent='Paused.';description.textContent='Catch your breath up here.';action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
   if(state==='over'){saveBest();heading.textContent='One more run?';description.textContent=`${game.score} points · ${game.stars} stars · level ${game.level}`;action.textContent='Run again';action.disabled=false;say(`Run over. ${game.score} points. ${game.stars} stars. Level ${game.level}. Best ${best}.`);}
 }
-function start(){if(!sprites)return;if(game.state==='paused')game.resume();else{game.reset();game.start();saved=false;shownLevel=1;shownBonus=-1;bannerUntil=0;}panel.hidden=true;canvas.focus({preventScroll:true});say('Running. Space or tap to jump. Down or Duck to crouch. The sky gets busier as you go.');sync();wake();}
-function pause(){if(!game||game.state!=='running')return;game.pause();cancelAnimationFrame(raf);raf=0;acc=0;sync();draw();}
+function start(){if(!sprites)return;if(game.state==='paused')game.resume();else{clearControls();game.reset();game.start();saved=false;shownLevel=1;shownBonus=-1;bannerUntil=0;}panel.hidden=true;canvas.focus({preventScroll:true});say('Running. Space or tap to jump. Down or Duck to crouch. The sky gets busier as you go.');sync();wake();}
+function pause(){if(!game||game.state!=='running')return;game.pause();clearControls();cancelAnimationFrame(raf);raf=0;acc=0;sync();draw();}
 function togglePause(){if(game.state==='paused')start();else pause();}
 function jump(){if(!sprites)return;if(game.state==='ready'||game.state==='over'||game.state==='paused')start();game.jump();wake();}
 function duck(value){if(!game)return;game.setDuck(value);if(game.state==='running')wake();}
@@ -109,13 +112,12 @@ function landscape(){
 function draw(){
   if(!ctx||!game)return;landscape();
   for(const o of game.obstacles){
-    if(o.kind==='plane'||o.kind==='balloon'){
-      const r=game.obstacleBounds(o);sprite(o.kind,r.x,r.y,r.w,r.h);continue;
-    }
+    const clearance=game.birdClearance(o);
+    drawBirdSignal(ctx,o,game.laser(o),clearance);
     const frame=1+Math.floor(game.time*7)%2,s=sprites&&sprites['bird'+frame];
     if(s){const anchor=frame===1?[45,178]:[43,149],scale=.18;
       // Anchor the beak/body rather than the changing wing silhouette.
-      sprite('bird'+frame,o.x+5+(s.left-anchor[0])*scale,GROUND-o.clearance-12+(s.top-anchor[1])*scale,s.width*scale,s.height*scale);
+      sprite('bird'+frame,o.x+5+(s.left-anchor[0])*scale,GROUND-clearance-12+(s.top-anchor[1])*scale,s.width*scale,s.height*scale);
     }
   }
   for(const star of game.tokens)if(sprites){
@@ -141,18 +143,33 @@ function wake(){if(!raf&&root&&['running','hit'].includes(game.state)){last=perf
 function press(e){
   if(e.key==='Escape'){e.preventDefault();closeGame();return;}
   if(e.target.closest('button')&&(e.code==='Space'||e.code==='Enter'))return;
-  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(!e.repeat)jump();}
-  if(e.code==='ArrowDown'){e.preventDefault();duck(true);}
+  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(!e.repeat)holdJump('key:'+e.code,true);}
+  if(e.code==='ArrowDown'){e.preventDefault();holdDuck('key:'+e.code,true);}
   if(e.code==='KeyP'){e.preventDefault();if(!e.repeat)togglePause();}
 }
-function release(e){if(e.code==='Space'||e.code==='ArrowUp')game.releaseJump();if(e.code==='ArrowDown')duck(false);}
-function touchControl(b,down,up){
-  b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);down();});
-  ['pointerup','pointercancel','lostpointercapture'].forEach(type=>b.addEventListener(type,up));
-  b.addEventListener('click',e=>{if(e.detail===0){down();setTimeout(up,170);}});
+function release(e){if(e.code==='Space'||e.code==='ArrowUp')holdJump('key:'+e.code,false);if(e.code==='ArrowDown')holdDuck('key:'+e.code,false);}
+function touchControl(b,control,name){
+  const owner=root,pointers=new Set();let keyboardTimer=0;
+  const release=id=>{if(!pointers.delete(id))return;control(name+':'+id,false);if(!pointers.size)b.classList.remove('is-held');};
+  b.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;e.preventDefault();b.setPointerCapture(e.pointerId);
+    // Starting a run clears earlier inputs, so register this pointer afterward.
+    control(name+':'+e.pointerId,true);pointers.add(e.pointerId);b.classList.add('is-held');
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(type=>b.addEventListener(type,e=>release(e.pointerId)));
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('click',e=>{
+    if(e.detail===0&&root===owner){control(name+':keyboard',true);clearTimeout(keyboardTimer);keyboardTimer=setTimeout(()=>{if(root===owner)control(name+':keyboard',false);},170);}
+  });
+  controlResets.push(()=>{clearTimeout(keyboardTimer);pointers.clear();b.classList.remove('is-held');});
+}
+function padButton(key,label,cls){
+  const b=button('',cls,()=>{});b.setAttribute('aria-label',label);
+  const symbol=node('span','nm-run-key',key);symbol.setAttribute('aria-hidden','true');
+  b.append(symbol,node('span','nm-run-control-label',label));return b;
 }
 export function openGame(){
-  if(root)return;game=new Runner();saved=false;announced='';shownLevel=1;shownBonus=-1;bannerUntil=0;abort=new AbortController();const signal=abort.signal;
+  if(root)return;controlResets=[];jumpSources.clear();duckSources.clear();game=new Runner();saved=false;announced='';shownLevel=1;shownBonus=-1;bannerUntil=0;abort=new AbortController();const signal=abort.signal;
   root=node('div','nm-run');root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','nm-run-title');root.tabIndex=-1;
   const top=node('div','nm-run-top'),brand=node('div');brand.append(node('p','nm-run-eyebrow','You found it.'));const title=node('h2','','Cloud Run');title.id='nm-run-title';brand.append(title);top.append(brand,button('Exit','',closeGame));root.append(top);
   const stage=node('div','nm-run-stage');canvas=node('canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','Cloud Run playing field. Space or tap to jump; Down or Duck to crouch; P to pause; Escape to leave.');stage.append(canvas);ctx=canvas.getContext('2d');
@@ -161,19 +178,21 @@ export function openGame(){
   milestone=node('div','nm-run-milestone');milestone.hidden=true;stage.append(milestone);
   panel=node('div','nm-run-panel');heading=node('h3');description=node('p');action=button('Loading...','pri',start);panel.append(heading,description,action);stage.append(panel);root.append(stage);
   const bottom=node('div','nm-run-bottom'),help=node('p','nm-run-help');help.innerHTML='<kbd>Space / ↑</kbd> jump <kbd>↓</kbd> duck<br>Hold jump to go higher.';bottom.append(help);
-  const controls=node('div','nm-run-controls'),jumpButton=button('Jump','nm-run-touch',()=>{}),duckButton=button('Duck','nm-run-touch',()=>{});pauseButton=button('Pause','',togglePause);controls.append(duckButton,jumpButton,pauseButton);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Made for a little daydream. Best saved on this device.'));
+  const controls=node('div','nm-run-controls'),actions=node('div','nm-run-actions'),system=node('div','nm-run-system');
+  const jumpButton=padButton('A','Jump','nm-run-touch nm-run-a'),duckButton=padButton('↓','Duck','nm-run-touch nm-run-dpad'),bButton=padButton('B','Duck','nm-run-touch nm-run-b');
+  pauseButton=button('Pause','nm-run-pause',togglePause);system.append(pauseButton);actions.append(bButton,jumpButton);controls.append(duckButton,actions,system);bottom.append(controls);root.append(bottom,node('p','nm-run-footnote','Hold jump to go higher. Best saved on this device.'));
   status=node('div','nm-run-sr');status.setAttribute('role','status');status.setAttribute('aria-live','polite');root.append(status);document.body.append(root);
   document.documentElement.classList.add('nm-run-open');window.__nmLenis?.stop();window.dispatchEvent(new Event('nm:gamechange'));window.__nmDialog?.capture(root);
-  touchControl(jumpButton,jump,()=>game?.releaseJump());touchControl(duckButton,()=>duck(true),()=>duck(false));touchControl(canvas,jump,()=>game?.releaseJump());
+  touchControl(jumpButton,holdJump,'a');touchControl(duckButton,holdDuck,'dpad');touchControl(bButton,holdDuck,'b');touchControl(canvas,holdJump,'canvas');
   document.addEventListener('keydown',press,{signal});document.addEventListener('keyup',release,{signal});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();},{signal});
-  window.addEventListener('blur',()=>{pause();game?.releaseJump();duck(false);},{signal});
+  window.addEventListener('blur',()=>{pause();clearControls();},{signal});
   window.addEventListener('resize',layout,{signal});resizeObserver=new ResizeObserver(layout);resizeObserver.observe(stage);
   layout();sync();
   loadArt().then(()=>{if(root){draw();sync();action.focus({preventScroll:true});}}).catch(error=>{if(root){heading.textContent='Still loading.';description.textContent='Check your connection, then try again.';action.textContent='Try again';action.disabled=false;action.onclick=()=>{closeGame();openGame();};say('Artwork could not load. Try again or return to the site.');}console.error('Cloud Run artwork:',error);});
 }
 export function closeGame(){
-  if(!root)return;cancelAnimationFrame(raf);raf=0;abort.abort();resizeObserver?.disconnect();game.releaseJump();game.setDuck(false);
+  if(!root)return;cancelAnimationFrame(raf);raf=0;abort.abort();resizeObserver?.disconnect();clearControls();controlResets=[];
   saveBest();const closing=root;root=null;window.__nmDialog?.release(closing);closing.remove();document.documentElement.classList.remove('nm-run-open');window.__nmLenis?.start();window.dispatchEvent(new Event('nm:gamechange'));
   if(location.hash==='#run')history.replaceState(null,'',location.pathname+location.search);
   ctx=null;canvas=null;game=null;

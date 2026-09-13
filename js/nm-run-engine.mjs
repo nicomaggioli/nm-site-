@@ -3,19 +3,20 @@ export const GROUND = 212;
 export const VIEW_HEIGHT = 340;
 export const PLAYER_X = 72;
 export const DUCK_HEIGHT = 36;
+export const LASER_CHARGE = .7;
 export const KINDS = {
   bird_low:{w:46,h:28,clearance:34,action:'jump'},
   bird_high:{w:46,h:28,clearance:58,action:'duck'},
-  plane:{w:64,h:44,clearance:42,action:'duck'},
-  balloon:{w:38,h:58,clearance:12,action:'jump'}
+  bird_laser:{w:46,h:28,clearance:48,action:'duck'},
+  bird_wave:{w:46,h:28,clearance:58,action:'time'}
 };
 const STAGES = [
   {at:0,name:'Clear skies',notice:'Jump low birds',pool:['bird_low'],intro:'bird_low'},
   {at:12,name:'Bird crossing',notice:'High birds ahead. Duck!',pool:['bird_low','bird_high'],intro:'bird_high'},
-  {at:25,name:'Air traffic',notice:'Paper planes ahead. Duck!',pool:['bird_low','bird_high','plane'],intro:'plane'},
-  {at:45,name:'Balloon drift',notice:'Balloons ahead. Jump!',pool:['bird_low','bird_high','plane','balloon'],intro:'balloon'},
-  {at:70,name:'Shooting stars',notice:'Shooting stars are worth 3!',pool:['bird_low','bird_high','plane','balloon','shooting_star'],intro:'shooting_star'},
-  {at:105,name:'Rush hour',notice:'Rush hour. Keep up!',pool:['bird_low','bird_high','plane','balloon','shooting_star']}
+  {at:25,name:'Laser beaks',notice:'Glowing beak? Duck the laser!',pool:['bird_low','bird_high','bird_laser'],intro:'bird_laser'},
+  {at:45,name:'Diving birds',notice:'Diving birds. Watch their height!',pool:['bird_low','bird_high','bird_laser','bird_wave'],intro:'bird_wave'},
+  {at:70,name:'Shooting stars',notice:'Shooting stars are worth 3!',pool:['bird_low','bird_high','bird_laser','bird_wave','shooting_star'],intro:'shooting_star'},
+  {at:105,name:'Rush hour',notice:'Rush hour. Keep up!',pool:['bird_low','bird_high','bird_laser','bird_wave','shooting_star']}
 ];
 export function difficultyAt(seconds) {
   const t=Math.max(0,seconds);
@@ -48,21 +49,26 @@ export class Runner {
   pause() {if(this.state==='running'){this.state='paused';this.jumpHeld=false;this.duck=false;}}
   resume() {if(this.state==='paused')this.state='running';}
   playerBox() {const h=this.duck&&this.y===0?DUCK_HEIGHT:58;return {x:PLAYER_X+9,y:GROUND+this.y-h,w:26,h:h-3};}
+  birdClearance(o,age=o.age) {
+    return o.kind==='bird_wave'?o.clearance+28*Math.sin(age*2.3+o.phase):o.clearance;
+  }
   obstacleBounds(o) {
-    const bob=o.kind==='balloon'?Math.sin(o.age*2)*3:0;
-    return {x:o.x,y:GROUND-o.clearance-o.h+bob,w:o.w,h:o.h};
+    return {x:o.x,y:GROUND-this.birdClearance(o)-o.h,w:o.w,h:o.h};
   }
   obstacleBox(o) {
-    const r=this.obstacleBounds(o);
-    if(o.kind==='plane')return {x:r.x+8,y:r.y+20,w:46,h:19};
-    if(o.kind==='balloon')return {x:r.x+5,y:r.y+3,w:28,h:49};
-    // Long wing tips remain forgiving during a flap.
-    return {x:o.x+9,y:GROUND-o.clearance-16,w:29,h:18};
+    // The collider and sprite share the moving body; wing tips stay forgiving.
+    return {x:o.x+9,y:GROUND-this.birdClearance(o)-16,w:29,h:18};
+  }
+  laser(o) {
+    if(o.kind!=='bird_laser'||o.chargeAge===null)return null;
+    const x=o.x+5,y=GROUND-this.birdClearance(o)-12;
+    return {x,y,charge:Math.min(1,o.chargeAge/LASER_CHARGE),active:o.chargeAge>=LASER_CHARGE,
+      box:{x:0,y:y-5,w:Math.max(0,x),h:10}};
   }
   spawn(kind) {
     const d=KINDS[kind];
     if(!d)throw new Error('Unknown Cloud Run obstacle: '+kind);
-    const o={kind,x:this.width+24,age:0,...d};this.obstacles.push(o);return o;
+    const o={kind,x:this.width+24,age:0,phase:kind==='bird_wave'?this.random()*Math.PI*2:0,chargeAge:null,...d};this.obstacles.push(o);return o;
   }
   encounter(kind) {
     if(kind==='shooting_star') {
@@ -73,8 +79,11 @@ export class Runner {
       return 24;
     }
     const o=this.spawn(kind),duckStar=o.action==='duck';
-    if(duckStar||this.random()<.7)this.tokens.push({x:o.x+o.w/2,y:GROUND-(duckStar?24:96),duck:duckStar,collected:false});
-    return o.w;
+    // Reserve extra space BEFORE a laser bird, since its beam reaches the
+    // runner before its body. Also delay the following encounter equally.
+    const approach=o.kind==='bird_laser'?this.speed*.8:0;o.x+=approach;
+    if(o.kind!=='bird_wave'&&(duckStar||this.random()<.7))this.tokens.push({x:o.x+o.w/2,y:GROUND-(duckStar?24:96),duck:duckStar,collected:false});
+    return o.w+approach;
   }
   update(dt) {
     if(this.state==='hit') {this.deadTime+=dt;if(this.deadTime>=.55)this.state='over';return;}
@@ -93,12 +102,22 @@ export class Runner {
       const kind=d.stage>this.introduced&&d.intro?d.intro:d.pool[Math.min(d.pool.length-1,Math.floor(this.random()*d.pool.length))];
       this.introduced=d.stage;
       const width=this.encounter(kind);
-      // All threats share a scroll speed. Keep a full landing/reaction window
-      // after each body passes, even for balloon -> plane at maximum speed.
+      // Birds share a scroll speed. Laser approach space is included so
+      // a beam cannot catch the player landing from the previous encounter.
       this.next=(width+42)/this.speed+d.recovery+this.random()*.3;
     }
     const p=this.playerBox();
-    for(const o of this.obstacles){o.x-=dx;o.age+=dt;if(overlaps(p,this.obstacleBox(o))){this.state='hit';this.deadTime=0;}}
+    for(const o of this.obstacles){
+      o.x-=dx;o.age+=dt;
+      if(o.kind==='bird_laser'){
+        // Charge only when the beak is on screen and approaching the player.
+        // Phones receive the same full warning duration as desktops.
+        if(o.chargeAge===null&&o.x+5<=this.width-12&&(o.x+5-(PLAYER_X+22))/this.speed<=1.4)o.chargeAge=0;
+        else if(o.chargeAge!==null)o.chargeAge+=dt;
+      }
+      const laser=this.laser(o);
+      if(overlaps(p,this.obstacleBox(o))||(laser?.active&&overlaps(p,laser.box))){this.state='hit';this.deadTime=0;}
+    }
     for(const star of this.tokens){
       star.x-=dx;
       if(star.kind==='shooting_star')star.y=star.startY+(star.startX-star.x)*star.slope;

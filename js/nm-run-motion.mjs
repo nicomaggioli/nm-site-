@@ -25,18 +25,30 @@ export function drawShootingStar(ctx,art,star,time) {
   ctx.restore();drawStar(ctx,art,star.x,star.y,time);
 }
 
-export function balloonArt(makeCanvas) {
-  // Native pixel artwork, built once alongside the existing sprite atlas.
-  const image=makeCanvas();image.width=40;image.height=62;
-  const c=image.getContext('2d');
-  const rect=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
-  const ink='#283d69',edge='#425b89';
-  [[12,0,16,2],[6,2,28,4],[2,6,36,6],[0,12,40,16],[2,28,36,6],[6,34,28,4],[10,38,20,4],[14,42,12,4]].forEach(r=>rect(...r,ink));
-  [[12,2,16,2],[6,6,28,2],[4,8,32,20],[6,28,28,6],[10,34,20,4],[14,38,12,4]].forEach(r=>rect(...r,'#ed7855'));
-  rect(8,8,6,22,'#f5b966');rect(14,4,10,32,'#ffe5a1');rect(16,36,8,6,'#efb763');
-  rect(24,8,8,22,'#d94e4c');rect(26,30,4,4,'#b74e58');rect(4,12,4,14,'#ffc982');
-  rect(12,6,4,4,'#fff3cf');rect(16,4,8,4,'#fff3cf');rect(6,10,2,8,'#ffe3ad');
-  rect(10,40,2,10,ink);rect(28,40,2,10,ink);rect(12,48,2,5,edge);rect(26,48,2,5,edge);
-  rect(12,52,16,10,ink);rect(14,54,12,6,'#c58b52');rect(14,54,12,2,'#ffe0a0');rect(18,56,2,4,'#8b5d4b');rect(24,56,2,4,'#8b5d4b');
-  return {image,width:40,height:62};
+export function drawBirdSignal(ctx,bird,laser,clearance) {
+  ctx.save();
+  if(bird.kind==='bird_wave'){
+    // Cyan guide marks show the vertical path without another animated sprite.
+    ctx.fillStyle='#34738d';ctx.globalAlpha=.65;
+    for(let y=GROUND_GUIDE_TOP;y<GROUND_GUIDE_BOTTOM;y+=10)ctx.fillRect(Math.round(bird.x+22),y,2,4);
+    ctx.globalAlpha=1;ctx.fillStyle='#b0f6ff';
+    ctx.fillRect(Math.round(bird.x+19),Math.round(212-clearance-24),8,3);
+  }
+  if(laser&&laser.x>0){
+    const x=Math.round(laser.x),y=Math.round(laser.y);
+    if(laser.active){
+      ctx.fillStyle='#ee4265';ctx.fillRect(0,y-6,x,12);
+      ctx.fillStyle='#ffb576';ctx.fillRect(0,y-3,x,6);
+      ctx.fillStyle='#fff4cb';ctx.fillRect(0,y-1,x,2);
+    }else{
+      ctx.fillStyle='#d98533';ctx.globalAlpha=.45;
+      for(let i=x-12;i>0;i-=14)ctx.fillRect(i,y-1,6,2);
+      ctx.globalAlpha=1;
+    }
+    const size=3+Math.round(laser.charge*4);
+    ctx.fillStyle=laser.active?'#fff4cb':'#ffce73';ctx.fillRect(x-size,y-size,size*2,size*2);
+    ctx.fillStyle='#fff7d1';ctx.fillRect(x-2,y-2,4,4);
+  }
+  ctx.restore();
 }
+const GROUND_GUIDE_TOP=105,GROUND_GUIDE_BOTTOM=189;

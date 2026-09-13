@@ -7,7 +7,7 @@
     if (existing) return Promise.resolve();
     return new Promise(function (resolve, reject) {
       var link = document.createElement('link');
-      link.rel = 'stylesheet'; link.href = '/css/nm-run.css?v=258f7f4382'; link.dataset.nmGameStyle = '';
+      link.rel = 'stylesheet'; link.href = '/css/nm-run.css?v=3f6e8db5e3'; link.dataset.nmGameStyle = '';
       link.onload = resolve; link.onerror = function () { link.remove(); reject(new Error('Game styles failed to load')); };
       document.head.appendChild(link);
     });
@@ -17,7 +17,7 @@
     loading = true;
     if (door) door.setAttribute('aria-busy', 'true');
     try {
-      var result = await Promise.all([import('/js/nm-run-game.mjs?v=685043229b'), stylesheet()]);
+      var result = await Promise.all([import('/js/nm-run-game.mjs?v=e344a2147d'), stylesheet()]);
       game = result[0]; game.openGame();
     } catch (error) {
       if (door) { door.title = 'Could not load the game. Click to try again.'; door.setAttribute('aria-label', door.title); }

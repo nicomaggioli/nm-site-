@@ -22,7 +22,7 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
     await page.goto(origin+'/#run',{waitUntil:'domcontentloaded'});
     await page.getByRole('button',{name:'Start run',exact:true}).waitFor();
     await page.evaluate(()=>document.fonts.ready);
-    for(const [width,height] of [[320,568],[390,844],[480,320],[568,320],[768,1024],[1920,1080]]){
+    for(const [width,height] of [[320,480],[320,568],[390,844],[480,320],[568,320],[844,390],[768,1024],[1920,1080]]){
       await page.setViewportSize({width,height});
       await page.waitForTimeout(100);
       const layout=await page.locator('.nm-run-stage').evaluate(stage=>{
@@ -35,10 +35,41 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
       assert.equal(layout.visible,true,`${width}×${height}: panel and HUD must fit inside the stage`);
       assert.equal(layout.scoreOverlap,false,`${width}×${height}: HUD columns overlap`);
       assert.equal(layout.overflow,false,`${width}×${height}: horizontal overflow`);
+      const controls=await page.locator('.nm-run-controls').evaluate(el=>[...el.querySelectorAll('button')].filter(b=>getComputedStyle(b).display!=='none').map(b=>{
+        const r=b.getBoundingClientRect();return {inside:r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth,w:r.width,h:r.height};
+      }));
+      assert.ok(controls.every(b=>b.inside&&b.w>=44&&b.h>=44),`${width}×${height}: thumb controls must fit and have 44px targets`);
     }
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'Start run',exact:true}).click();
-    for(const [time,level,kind,notice] of [[12,2,'bird_high','High birds'],[25,3,'plane','Paper planes'],[45,4,'balloon','Balloons'],[70,5,'shooting_star','Shooting stars']]){
+    await page.evaluate(()=>{__testRunner.next=100;});
+    const jump=await page.locator('.nm-run-a').boundingBox(),duck=await page.locator('.nm-run-dpad').boundingBox(),b=await page.locator('.nm-run-b').boundingBox();
+    await page.mouse.move(jump.x+jump.width/2,jump.y+jump.height/2);await page.mouse.down();
+    assert.equal(await page.evaluate(()=>__testRunner.jumpHeld),true,'A holds jump');
+    await page.mouse.move(10,10);await page.mouse.up();
+    assert.equal(await page.evaluate(()=>__testRunner.jumpHeld),false,'releasing outside A still releases jump');
+    await page.mouse.move(duck.x+duck.width/2,duck.y+duck.height/2);await page.mouse.down();
+    await page.keyboard.down('ArrowDown');await page.mouse.up();
+    assert.equal(await page.evaluate(()=>__testRunner.duck),true,'releasing one input must not cancel another held duck input');
+    await page.keyboard.up('ArrowDown');assert.equal(await page.evaluate(()=>__testRunner.duck),false);
+    await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();
+    assert.equal(await page.evaluate(()=>__testRunner.duck),true,'B also ducks');
+    await page.keyboard.press('KeyP');
+    assert.equal(await page.evaluate(()=>__testRunner.duck),false,'pause releases held controls');
+    assert.equal(await page.locator('.nm-run-controls .is-held').count(),0);
+    await page.mouse.up();await page.getByRole('button',{name:'Resume',exact:true}).last().click();
+    if(engine==='chromium'){
+      const cdp=await page.context().newCDPSession(page);
+      const first={x:duck.x+duck.width/2,y:duck.y+duck.height/2,id:1},second={x:b.x+b.width/2,y:b.y+b.height/2,id:2};
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[first]});
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[first,second]});
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[second]});
+      assert.equal(await page.evaluate(()=>__testRunner.duck),true,'second thumb keeps duck active after the first lifts');
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+      assert.equal(await page.evaluate(()=>__testRunner.duck),false,'OS gesture cancellation clears held buttons');
+      await cdp.detach();
+    }
+    for(const [time,level,kind,notice] of [[12,2,'bird_high','High birds'],[25,3,'bird_laser','Glowing beak'],[45,4,'bird_wave','Diving birds'],[70,5,'shooting_star','Shooting stars']]){
       const spawned=await page.evaluate(time=>{
         const g=__testRunner;g.time=time-.01;g.obstacles=[];g.tokens=[];g.next=0;g.y=0;g.vy=0;g.update(1/30);
         return {kind:g.obstacles[0]?.kind||g.tokens[0]?.kind,speed:g.speed};
@@ -64,7 +95,7 @@ for(const engine of ['webkit','chromium'])test(`${engine}: Cloud Run unlocks, HU
     await page.waitForFunction(()=>__testRunner.stars===3);
     assert.match(await page.locator('.nm-run-milestone').textContent(),/\+75/);
     assert.equal(await page.locator('.nm-run-score b').nth(1).textContent(),'3');
-    await page.evaluate(()=>{const g=__testRunner;g.obstacles=[];g.spawn('balloon').x=80;});
+    await page.evaluate(()=>{const g=__testRunner;g.obstacles=[];g.spawn('bird_low').x=80;});
     await page.getByRole('button',{name:'Run again',exact:true}).waitFor();
     assert.match(await page.locator('.nm-run-panel p').textContent(),/3 stars · level 5/);
     await page.getByRole('button',{name:'Run again',exact:true}).click();
