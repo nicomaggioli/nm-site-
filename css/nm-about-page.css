@@ -1,7 +1,8 @@
-/* A static, readable About page using the portfolio's shared fonts and header. */
+/* A static, readable About page using the portfolio's shared fonts and header.
+   Keep the outer gutter on the same curve as the shared navbar at every width. */
 .nm-about-page *,.nm-about-page *::before,.nm-about-page *::after{box-sizing:border-box}
 html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
-.nm-about-page{--about-gutter:4vw;--about-space:max(80px,6.25vw);margin:0;background:#0a0a0a;color:#f5f5f5;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-size:max(18px,.9375vw);line-height:1.6}
+.nm-about-page{--about-gutter:max(clamp(12px,7.8px + 1.07vw,24px),1.25vw);--about-space:max(80px,6.25vw);margin:0;background:#0a0a0a;color:#f5f5f5;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-size:max(18px,.9375vw);line-height:1.6}
 .nm-about-page h1,.nm-about-page h2,.nm-about-page h3,.nm-about-page h4,.nm-about-page p,.nm-about-page figure{margin:0}
 .nm-about-page h1,.nm-about-page h2,.nm-about-page h3,.nm-about-page h4{font-weight:650;letter-spacing:-.045em;line-height:1.08}
 .nm-about-page a{color:inherit;text-decoration:none}
@@ -74,7 +75,7 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
 @media(min-width:2400px){.about-intro h1{font-size:10.5vw}.about-contact h2{font-size:8.3vw}}
 @media(max-width:1100px){.about-intro-grid{gap:4vw}.about-job-top{display:block}.about-job-meta{text-align:left;margin-top:16px!important}.about-product figcaption{display:block}.about-product figcaption span{display:block}}
 @media(max-width:900px){
- .nm-about-page{--about-gutter:24px;--about-space:64px;font-size:18px}
+ .nm-about-page{--about-space:64px;font-size:18px}
  .about-intro{padding-top:140px}.about-topline{margin-bottom:36px}.about-meta{max-width:24ch}
  .about-intro-grid{grid-template-columns:1fr;gap:34px}.about-intro h1{font-size:clamp(76px,16vw,140px)}
  .about-intro-copy{max-width:650px;padding:0}.about-intro-copy .about-lead{font-size:30px}
@@ -87,7 +88,7 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
  .about-contact h2{font-size:clamp(60px,11vw,96px)}.about-contact-bottom{display:block}.about-contact-bottom .about-link{margin-top:24px}
 }
 @media(max-width:560px){
- .nm-about-page{--about-gutter:20px;--about-space:52px;font-size:17px}
+ .nm-about-page{--about-space:52px;font-size:17px}
  .about-intro{padding-top:122px}.about-topline{align-items:flex-start;gap:12px}.about-tag{font-size:10px;padding:7px 12px}.about-meta{font-size:9px;max-width:18ch}
  .about-intro h1{font-size:clamp(74px,21vw,116px)}.about-intro-copy .about-lead{font-size:27px}.about-intro-copy > p + p{margin-top:20px}
  .about-actions{gap:26px;margin-top:24px}.about-focus h2{font-size:36px;line-height:1.1}
