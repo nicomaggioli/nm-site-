@@ -8,7 +8,7 @@ This repository is a static Next.js export served by GitHub Pages. It does not c
 
 The homepage's server-rendered desktop/mobile links and Flight navigation data both point to `/about/`. `nm-burger.js` and the archive/proposal headers use the same destination. `nm-sync.js` redirects legacy `/#about` links with `location.replace` so Back cannot get stuck on the old anchor. `nm-navact.js` also supports an About button from an older cached homepage.
 
-The résumé was recovered from `d7bf9a89a5b5ad503ef02080bf22bee9d11b4a7b:index.html`, lines 2751–2881 (July 24, 2026). Roles, dates, descriptions, education, skills, leadership, and honors retain that source's information; ongoing role dates were not inferred from the new biography. Update the webpage and `tools/build-resume.py` together when details change. Build the downloadable `media/resume/nico-maggioli-resume.pdf` with `python3 tools/build-resume.py` (ReportLab and fonttools with WOFF support). It embeds static instances of the site's Geist fonts and includes clickable site/email contacts. Render and inspect both pages after rebuilding.
+The résumé was recovered from `d7bf9a89a5b5ad503ef02080bf22bee9d11b4a7b:index.html`, lines 2751–2881 (July 24, 2026). Roles, dates, descriptions, education, skills, leadership, and honors retain that source's information; ongoing role dates were not inferred from the new biography. Update the webpage and `tools/build-resume.py` together when details change. The About page presents the résumé inline without a download option. If a PDF is needed separately, build `media/resume/nico-maggioli-resume.pdf` with `python3 tools/build-resume.py` (ReportLab and fonttools with WOFF support). It embeds static instances of the site's Geist fonts and includes clickable site/email contacts. Render and inspect both pages after rebuilding.
 
 ## Initialization and scrolling
 
@@ -52,7 +52,7 @@ Serve the repository as static files (`python3 -m http.server 8814`) and check `
 
 With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs tests/responsive.browser.cjs tests/about.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
 
-The About suite checks layouts from 320px to 2560px, navigation/history and legacy redirects, PDF downloads, keyboard menu focus, and content without JavaScript in both engines.
+The About suite checks layouts from 320px to 2560px, navigation/history and legacy redirects, keyboard menu focus, and content without JavaScript in both engines.
 
 For Cloud Run changes, also run `node --test tests/runner.browser.cjs`. It checks later unlocks, score/bonus UI, pause, rotation, restart, and panel/HUD clipping, 44px touch targets, held controls and cancellation in both browser engines. Chromium also checks two simultaneous touch contacts. The unit suite simulates ten-minute mixed runs with several random seeds at phone and desktop stage widths to check reaction gaps and jump/duck sequences.
 

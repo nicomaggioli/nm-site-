@@ -7,7 +7,7 @@ const origin = process.env.NM_TEST_URL || 'http://127.0.0.1:8814';
 const screenshots = process.env.NM_ABOUT_SCREENSHOTS;
 
 for (const engine of ['webkit', 'chromium']) {
-  test(`${engine}: About remains readable, navigable and downloadable across layouts`, {timeout: 120000}, async () => {
+  test(`${engine}: About remains readable and navigable across layouts`, {timeout: 120000}, async () => {
     const options = {headless: true};
     if (engine === 'chromium' && process.env.CHROMIUM_EXECUTABLE) options.executablePath = process.env.CHROMIUM_EXECUTABLE;
     const browser = await playwright[engine].launch(options);
@@ -41,7 +41,6 @@ for (const engine of ['webkit', 'chromium']) {
         await page.waitForURL('**/about/#resume');
         const resume = await page.locator('.about-resume-heading').boundingBox();
         assert.ok(resume.y >= layout.headerBottom && resume.y < height / 2, `${width}×${height}: résumé heading hidden below header`);
-        assert.ok(await page.getByRole('link', {name: 'Download PDF'}).isVisible());
         if (screenshots) await page.screenshot({path: path.join(screenshots, `${engine}-${width}-resume.png`)});
         await page.locator('.about-product img').scrollIntoViewIfNeeded();
         await page.waitForFunction(() => {const img=document.querySelector('.about-product img');return img.complete && img.naturalWidth > 0;});
@@ -55,7 +54,7 @@ for (const engine of ['webkit', 'chromium']) {
         await context.close();
       }
 
-      const context = await browser.newContext({viewport: {width:1440,height:900}, acceptDownloads: true});
+      const context = await browser.newContext({viewport: {width:1440,height:900}});
       const page = await context.newPage();
       await page.goto(origin, {waitUntil: 'domcontentloaded'});
       await page.locator('header a[href="/about/"]:visible').click();
@@ -69,20 +68,6 @@ for (const engine of ['webkit', 'chromium']) {
       await page.waitForURL('**/index/');
       await page.locator('.nm-nav a[href="/about/"]').click();
       await page.waitForURL('**/about/');
-
-      const downloadLink = page.getByRole('link', {name:'Download PDF'});
-      const pdfUrl = await downloadLink.getAttribute('href');
-      const response = await context.request.get(origin + pdfUrl);
-      assert.equal(response.status(), 200);
-      assert.match(response.headers()['content-type'], /application\/pdf/);
-      const pdf = await response.body();
-      assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
-      assert.ok(pdf.length > 1000, 'résumé PDF is not empty');
-      const pendingDownload = page.waitForEvent('download');
-      await downloadLink.click();
-      const download = await pendingDownload;
-      assert.equal(download.suggestedFilename(), 'Nico-Maggioli-Resume.pdf');
-      assert.equal(await download.failure(), null);
 
       for (const legacy of ['/#about', '/index.html#about']) {
         await page.goto(origin + legacy, {waitUntil:'domcontentloaded'});
@@ -108,7 +93,6 @@ for (const engine of ['webkit', 'chromium']) {
       assert.equal(await staticPage.locator('.about-job').count(), 4, 'experience is available without JavaScript');
       await staticPage.getByRole('link', {name:'My résumé',exact:true}).click();
       await staticPage.waitForURL('**/about/#resume');
-      assert.ok(await staticPage.getByRole('link', {name:'Download PDF'}).isVisible());
       await staticPage.locator('.wordmark').click();
       await staticPage.waitForURL(origin + '/');
       await noJs.close();
