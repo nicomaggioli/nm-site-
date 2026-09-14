@@ -2,7 +2,19 @@
 
 This repository is a static Next.js export served by GitHub Pages. It does not contain the original React source project or a package/build manifest. Files in `_next/static/chunks/` are production bundles, so changes to React-owned markup must also match the server HTML and embedded Flight data in `index.html`.
 
-## About page and résumé
+## Search metadata and static fallback
+
+`tools/build-seo.py` owns the three public pages' titles, descriptions, canonical URLs, social cards and JSON-LD. The homepage's matching Next Flight metadata must change together with its HTML head or hydration can restore old metadata. Keep the Person, WebSite, ProfilePage and Service facts consistent with visible content; the sharing image shows footwear and must not be used as the Person's portrait. The generated sitemap lists the three canonical routes plus original images actually displayed on those pages. Do not add private proposals, guessed update dates, or duplicate HTML aliases.
+
+The shipped template's project drawer and original mosaic components are disabled. Their unused Flight `projects`, `homeMosaicMedias` and `homeProjectItems` arrays are empty; the authored portfolio content lives in the custom scripts. Do not remove additional Flight fields without testing the actual component dependencies and hydration.
+
+`tools/build-home-fallback.py` builds a readable no-JavaScript homepage from the current service descriptions, six service images and live-site links in `nm-brands.js`. Its short introduction matches the regular homepage. This fallback is parsed only with scripts disabled and loads `css/nm-nojs.css` only then; the animated homepage stays unchanged. Insert it before the actual final closing body, not every occurrence of `</body>`: an earlier occurrence is inside the file:// launcher's JavaScript string. If the main introduction changes, update the fallback copy too.
+
+After changing these sources, run the fallback generator, then the SEO generator, then refresh CSS/JS content-version URLs. Run both static validators and the SEO browser tests. The generators are idempotent.
+
+`404.html` keeps unknown public URLs on a usable noindex page with recovery links and the host's HTTP 404 response. It still forwards the existing `/clients/SLUG` proposal links. `robots.txt` excludes the `/clients` prefix; this is crawl control, not authentication or a guarantee that a URL cannot appear in search.
+
+## About page and resume
 
 `/about/` is a static page authored in `about/index.html` and `css/nm-about-page.css`. It uses the shared header, menu, location facts, fonts, and focus manager, without loading the homepage's React/WebGL/video bundles. The introduction and footwear process are based on Nico's September 14 draft. The homepage's short statement remains in place, while About navigation opens the standalone page.
 
@@ -38,13 +50,18 @@ Each homepage video has a real poster image with width/height attributes in the 
 
 Shared CSS/JS references in HTML carry content-version query strings. Refresh these after editing their source. Changed production bundles use new filenames; update every reference in HTML and other chunks whenever changing a bundle's cache identity.
 
+The header logo's Next Link sets `prefetch:false` in `nm-scenes-*`. GitHub Pages has no React Server Component endpoint; default prefetch previously downloaded four complete homepage copies as `?_rsc` requests. Keep this disabled. The hero mask preload uses `crossorigin="anonymous"` to match Three's image loader and avoid a second download.
+
+The two static center photos reuse existing 512px/768px variants with `sizes` matching their grid fractions. In the phone intro cache, wait for the mounted responsive image's `decode()` before reading `currentSrc`: Chromium can initially return an empty string, causing a separate full-size fallback download. Preserve the mounted image dimensions and original URLs so the collage geometry and cached older pages remain stable.
+
 ## Validation
 
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs tests/intro-surface.test.cjs tests/media-work.test.cjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs tests/intro-surface.test.cjs tests/media-work.test.cjs tests/seo-routing.test.cjs
 python3 tests/validate_static.py
+python3 tests/validate_seo.py
 git diff --check
 ```
 
@@ -53,6 +70,8 @@ Serve the repository as static files (`python3 -m http.server 8814`) and check `
 With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs tests/responsive.browser.cjs tests/about.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
 
 The About suite checks layouts from 320px to 2560px, navigation/history and legacy redirects, keyboard menu focus, and content without JavaScript in both engines.
+
+`node --test tests/seo.browser.cjs` checks metadata after hydration on all three pages, a readable homepage and its six photos without JavaScript at 320–2560px, and navigation to About. It also prevents unwanted RSC prefetch and fallback stylesheet requests in the normal site. Index and About use a labeled nav wrapper around the list, and their focus-visible skip links target the main content.
 
 For Cloud Run changes, also run `node --test tests/runner.browser.cjs`. It checks later unlocks, score/bonus UI, pause, rotation, restart, and panel/HUD clipping, 44px touch targets, held controls and cancellation in both browser engines. Chromium also checks two simultaneous touch contacts. The unit suite simulates ten-minute mixed runs with several random seeds at phone and desktop stage widths to check reaction gaps and jump/duck sequences.
 

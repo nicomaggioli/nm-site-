@@ -5,18 +5,25 @@ const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../js/nm-intro-surface.js'), 'utf8');
 
-function environment({phone=true, reduced=false, fail=false}={}) {
+function environment({phone=true, reduced=false, fail=false, responsive=false}={}) {
   const window = new EventTarget(), frames = new Map(), canvases = [], loaded = [], classes = new Set();
   const mobile = new EventTarget(), reduce = new EventTarget();
   mobile.matches = phone; reduce.matches = reduced;
   let width=390, height=1312, sequence=0, clock=0, invalidations=0, appended=0;
   window.devicePixelRatio=3;
   window.__nmMade=()=>{invalidations++;};
-  const cells=Array.from({length:7},(_,i)=>({
-    querySelector:()=>i<5?{poster:'/poster-'+i+'.webp'}:{src:'/photo-'+i+'.webp'},
-    getBoundingClientRect:()=>({left:(i%2)*width/2*.12,top:370+Math.floor(i/2)*height/4*.12,
-      width:width/2*.12,height:height/4*.12})
-  }));
+  const cells=Array.from({length:7},(_,i)=>{
+    const media=i<5?{poster:'/poster-'+i+'.webp'}:{src:'/photo-'+i+'.webp'};
+    if(responsive&&i>=5)Object.assign(media,{
+      srcset:'/phone-'+i+'.webp 768w',currentSrc:'',
+      decode(){return Promise.resolve().then(()=>{this.currentSrc='/phone-'+i+'.webp';});}
+    });
+    return {
+      querySelector:()=>media,
+      getBoundingClientRect:()=>({left:(i%2)*width/2*.12,top:370+Math.floor(i/2)*height/4*.12,
+        width:width/2*.12,height:height/4*.12})
+    };
+  });
   const tiles=Array.from({length:112},(_,i)=>({style:{gridArea:`${1+Math.floor(i/15)} / ${1+i%15} / ${2+Math.floor(i/15)} / ${2+i%15}`},
     querySelector:()=>({src:'/tile-'+(i%33)+'.webp'})}));
   const ring={querySelectorAll:()=>tiles};
@@ -86,4 +93,15 @@ test('failed images and reduced motion retain the original content', async()=>{
     const env=environment(options);await env.settle();
     assert.equal(env.loaded.length,0);assert.equal(env.window.__nmIntroSurface(0,844),false);
   }
+});
+
+test('responsive images finish source selection before the collage copies them', async()=>{
+  const env=environment({responsive:true});await env.settle();
+  const sources=env.loaded.map(image=>image.src);
+  assert.ok(sources.includes('/phone-5.webp'));
+  assert.ok(sources.includes('/phone-6.webp'));
+  assert.ok(!sources.includes('/photo-5.webp'));
+  assert.ok(!sources.includes('/photo-6.webp'),'an initially empty currentSrc must not download the large fallback');
+  assert.equal(env.loaded.length,40,'responsive sources retain the shared decode cache');
+  assert.equal(env.window.__nmIntroSurface(.5,844),true);
 });

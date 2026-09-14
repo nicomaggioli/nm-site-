@@ -1,0 +1,25 @@
+/* Loaded only when scripts are disabled. The animated page is unchanged. */
+html,body{height:auto!important;overflow:auto!important;background:#0a0a0a!important;color:#fff!important}
+body{margin:0!important;opacity:1!important;visibility:visible!important}
+body > :not(noscript){display:none!important}
+.nm-nojs{padding:24px max(clamp(12px,7.8px + 1.07vw,24px),1.25vw);font:18px/1.6 'Geist',system-ui,sans-serif}
+.nm-nojs *{box-sizing:border-box}
+.nm-nojs header,.nm-nojs nav{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.nm-nojs a{color:inherit;display:inline-flex;align-items:center;min-height:44px;text-underline-offset:.2em}
+.nm-nojs a:focus-visible{outline:2px solid #ff7820;outline-offset:5px}
+.nm-nojs-brand{font-size:24px;font-weight:700;text-transform:uppercase;text-decoration:none}
+.nm-nojs main{padding:64px 0}
+.nm-nojs h1{font-size:clamp(36px,5.5vw,100px);line-height:1.08;letter-spacing:-.04em;max-width:18ch;margin:0 0 32px}
+.nm-nojs h2{font-size:clamp(28px,3vw,48px);line-height:1.15;margin:0 0 24px}
+.nm-nojs h3{font-size:24px;line-height:1.2;margin:0 0 16px}
+.nm-nojs h1,.nm-nojs h2,.nm-nojs h3{font-weight:650}
+.nm-nojs p{max-width:65ch;color:#bbb;margin:0 0 20px}
+.nm-nojs-lead{font-size:24px}
+.nm-nojs section,.nm-nojs footer{border-top:1px solid #444;padding:44px 0 0;margin-top:44px}
+.nm-nojs-work{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.nm-nojs-work a{display:block}
+.nm-nojs-work img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:18px}
+.nm-nojs-services{display:grid;grid-template-columns:1fr 1fr;gap:24px 48px;list-style:none;padding:0}
+.nm-nojs-sites{display:flex;flex-wrap:wrap;gap:12px 32px;list-style:none;padding:0}
+.nm-nojs footer>a{font-size:30px;color:#ff7820;margin-bottom:32px}
+@media(max-width:600px){.nm-nojs{font-size:17px}.nm-nojs main{padding-top:44px}.nm-nojs nav{gap:20px}.nm-nojs-work{grid-template-columns:1fr 1fr}.nm-nojs-services{grid-template-columns:1fr}.nm-nojs-lead{font-size:22px}}

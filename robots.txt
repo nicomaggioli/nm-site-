@@ -1,11 +1,7 @@
 User-agent: *
-Allow: /
-
-# Client proposals are private. The pages carry noindex themselves;
-# clients.json is a JSON file and cannot, so it is named here — it is
-# only ciphertext, but the slug list should not be crawlable either.
-Disallow: /clients/
-Disallow: /clients.json
-Disallow: /clients.html
+# Keep proposal pages, the legacy /clients alias and the encrypted JSON
+# inventory out of crawls. A single prefix covers /clients, /clients.html,
+# /clients.json and everything under /clients/. HTML pages also carry noindex.
+Disallow: /clients
 
 Sitemap: https://nicomaggioli.com/sitemap.xml

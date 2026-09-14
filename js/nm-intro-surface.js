@@ -88,6 +88,7 @@
     var cells = Array.from(grid.querySelectorAll('.idx-cell')).map(function (cell) {
       var media = cell.querySelector('img,video'), box = cell.getBoundingClientRect();
       return {src:media.poster || media.currentSrc || media.src,
+        responsive:media.srcset ? media : null,
         x:(box.left-bounds.left)/scale, y:(box.top-bounds.top)/scale,
         width:box.width/scale, height:box.height/scale};
     });
@@ -100,7 +101,14 @@
     });
     var core, surround;
     try {
-      var sources = await Promise.all(cells.concat(tiles).map(function (box) { return load(box.src); }));
+      var sources = await Promise.all(cells.concat(tiles).map(function (box) {
+        // Chromium can leave currentSrc empty until a responsive image loads.
+        // Let the mounted image select its source before making a plain-image
+        // copy for canvas, so preparation never downloads the large fallback.
+        return box.responsive ? box.responsive.decode().then(function () {
+          return load(box.responsive.currentSrc || box.src);
+        }) : load(box.src);
+      }));
       if (current !== revision) return;
       core = layer(width, height, 1.5);
       surround = layer(rw, rh, 1);
