@@ -37,10 +37,10 @@ for (const engine of ['webkit', 'chromium']) {
         assert.equal(await page.locator('.about-job').count(), 4);
         if (screenshots) await page.screenshot({path: path.join(screenshots, `${engine}-${width}-intro.png`)});
 
-        await page.getByRole('link', {name: 'My résumé', exact: true}).click();
+        await page.getByRole('link', {name: 'My resume', exact: true}).click();
         await page.waitForURL('**/about/#resume');
         const resume = await page.locator('.about-resume-heading').boundingBox();
-        assert.ok(resume.y >= layout.headerBottom && resume.y < height / 2, `${width}×${height}: résumé heading hidden below header`);
+        assert.ok(resume.y >= layout.headerBottom && resume.y < height / 2, `${width}×${height}: resume heading hidden below header`);
         if (screenshots) await page.screenshot({path: path.join(screenshots, `${engine}-${width}-resume.png`)});
         await page.locator('.about-product img').scrollIntoViewIfNeeded();
         await page.waitForFunction(() => {const img=document.querySelector('.about-product img');return img.complete && img.naturalWidth > 0;});
@@ -50,7 +50,7 @@ for (const engine of ['webkit', 'chromium']) {
         }
         assert.deepEqual(errors, [], `${width}×${height}: JavaScript/console errors`);
         assert.deepEqual(failed, [], `${width}×${height}: failed HTTP responses`);
-        console.log(`${engine} ${width}×${height}: About fits, résumé anchor visible, image loaded`);
+        console.log(`${engine} ${width}×${height}: About fits, resume anchor visible, image loaded`);
         await context.close();
       }
 
@@ -91,7 +91,7 @@ for (const engine of ['webkit', 'chromium']) {
       await staticPage.goto(origin + '/about/');
       assert.equal(await staticPage.locator('main h1').textContent(), 'Hey,I’m Nico!');
       assert.equal(await staticPage.locator('.about-job').count(), 4, 'experience is available without JavaScript');
-      await staticPage.getByRole('link', {name:'My résumé',exact:true}).click();
+      await staticPage.getByRole('link', {name:'My resume',exact:true}).click();
       await staticPage.waitForURL('**/about/#resume');
       await staticPage.locator('.wordmark').click();
       await staticPage.waitForURL(origin + '/');
