@@ -1,0 +1,10 @@
+/* Inlined: the mask itself is the existing WebGL scene, not an overlay. */
+html.nm-opening [data-nm-header],
+html.nm-opening [data-nm-hero-caption]{opacity:0!important;visibility:hidden;pointer-events:none!important}
+html.nm-opening-reveal [data-nm-header]{animation:nm-opening-ui .45s ease-out both}
+html.nm-opening-reveal [data-nm-hero-caption]{animation:nm-opening-ui .45s .07s ease-out both}
+@keyframes nm-opening-ui{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  html.nm-opening-reveal [data-nm-header],
+  html.nm-opening-reveal [data-nm-hero-caption]{animation:none}
+}
