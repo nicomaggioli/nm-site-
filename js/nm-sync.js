@@ -2,6 +2,16 @@
    observer: text changes and scrolling must never remount the page. */
 (function () {
   'use strict';
+  // Keep links shared from the previous one-page site pointing at the bio.
+  function legacyAbout() {
+    if ((location.pathname === '/' || location.pathname === '/index.html') && location.hash === '#about') {
+      location.replace('/about/');
+      return true;
+    }
+    return false;
+  }
+  if (legacyAbout()) return;
+  window.addEventListener('hashchange', legacyAbout);
   var ready = false, starting = false, queue = [], errors = [];
   function invoke(fn) {
     try { fn(); }

@@ -19,7 +19,7 @@ class Assets(HTMLParser):
             self.paths.append(attrs['href'])
 
 paths=[]
-for name in ('index.html','index/index.html'):
+for name in ('index.html','index/index.html','about/index.html'):
     parser=Assets();parser.feed((ROOT/name).read_text());paths+=parser.paths
 for name in ('nm-home-content.js','nm-brands.js'):
     source=(ROOT/'js'/name).read_text()
@@ -46,7 +46,8 @@ for block in re.findall(r'<script>(.*?)</script>',home,re.S):
         mobile_menu=re.search(r'id="mobile-menu".*?</div>',home,re.S)[0]
         assert 'href="/index/"' in mobile_menu, 'Both exported menus must match the shared navigation payload'
         nav=data[0][3]['navigation']['headerNavigation']
-        assert [item['url'] for item in nav] == ['#work','/index/','#about','#contact']
+        assert [item['url'] for item in nav] == ['#work','/index/','/about/','#contact']
+        assert 'href="/about/"' in server_header and 'href="/about/"' in mobile_menu, 'About links must agree with hydration data'
         assert 'opacity:0' not in server_header, 'Header must be visible on first paint'
         copy=data[0][3]['homepage']['homeWorldwideTitle']
         assert copy in home, 'Server and client About copy must match'

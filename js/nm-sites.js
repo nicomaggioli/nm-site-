@@ -83,7 +83,9 @@
     show(rowAt(document.elementFromPoint(px, py)));
   }
 
-  function schedule() { if (!raf) raf = requestAnimationFrame(update); }
+  function schedule() {
+    if (enabled.matches && pointerInside && !raf) raf = requestAnimationFrame(update);
+  }
 
   function pointer(e) {
     if (e.pointerType === 'touch') { leave(); return; }
@@ -109,9 +111,9 @@
     if (document.hidden) leave();
   });
 
-  /* These eight display-sized previews total about 165 KB. Start after the
-     initial page setup, with a deadline so animation cannot starve the job.
-     Approaching About also starts it immediately during a fast scroll. */
+  /* Warm the eight display-sized previews before the section reaches the
+     viewport. Keep their downloads and decoding out of the opening intro. */
+  var nearby = false;
   function warm() {
     if (!enabled.matches || (navigator.connection && navigator.connection.saveData)) return false;
     var rows = document.querySelectorAll('#nm-sites .nm-site');
@@ -122,19 +124,19 @@
     }
     return true;
   }
-  var section = document.getElementById('about') || document.getElementById('nm-sites');
+  var section = document.getElementById('nm-sites') || document.getElementById('about');
   if (section && 'IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function (entries) {
-      if (entries[0].isIntersecting && enabled.matches && !(navigator.connection && navigator.connection.saveData)) {
-        warm();
-        observer.disconnect();
-      }
+      nearby = entries[0].isIntersecting;
+      if (nearby && warm()) observer.disconnect();
     }, { rootMargin: '1000px' });
     observer.observe(section);
-  }
-  if (window.requestIdleCallback) window.requestIdleCallback(warm, { timeout: 700 });
-  else setTimeout(warm, 0);
-  enabled.addEventListener('change', function () { warm(); schedule(); });
+  } else warm();
+  enabled.addEventListener('change', function () {
+    if (nearby) warm();
+    if (!enabled.matches) hide();
+    schedule();
+  });
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule, { passive: true });
 })();

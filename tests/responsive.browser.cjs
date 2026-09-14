@@ -64,9 +64,9 @@ for (const engine of ['webkit','chromium']) {
       assert.equal(await page.evaluate(()=>document.activeElement.textContent),'contact');
       await page.keyboard.press('Tab');
       assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Close menu');
-      await page.locator('.nm-burger-panel a[data-anchor="about"]').click();
-      await page.waitForURL('**/#about');await page.waitForSelector('#about');
-      await page.waitForFunction(()=>Math.abs(document.querySelector('#about').getBoundingClientRect().top)<2);
+      await page.locator('.nm-burger-panel a[href="/about/"]').click();
+      await page.waitForURL('**/about/');await page.waitForSelector('#about-title');
+      assert.equal(await page.locator('#about-title').innerText(),'Hey,\nI’m Nico!');
       assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('nm-menu-open')),false);
       await locationToMenu();
 

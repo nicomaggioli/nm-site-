@@ -8,7 +8,7 @@
   var mobile = matchMedia('(max-width: 767px)');
   var coarse = matchMedia('(pointer:coarse)');
   var hero = document.querySelector('main > section.h-svh');
-  var startAt = Infinity;
+  var startAt = Infinity, pastIntro = false, dirty = true;
   var connection = navigator.connection;
   videos.forEach(function (video) {
     var frameRequest = 0;
@@ -40,9 +40,16 @@
     frame = 0;
     // Finish the touch-screen zoom before decoding and compositing video frames.
     // Read layout once, before any video writes, rather than for every tile.
-    startAt = (hero ? hero.offsetHeight : innerHeight) * ((mobile.matches || coarse.matches) ? 1 : .25);
+    if (dirty) {
+      startAt = (hero ? hero.offsetHeight : innerHeight) * ((mobile.matches || coarse.matches) ? 1 : .25);
+      dirty = false;
+    }
+    pastIntro = window.scrollY >= startAt;
     videos.forEach(function (video) {
-      if (!video.isConnected || !allowed(video)) { video.pause(); return; }
+      if (!video.isConnected || !allowed(video)) {
+        if (!video.paused || pending.has(video)) video.pause();
+        return;
+      }
       if (!video.getAttribute('src')) {
         video.src = mobile.matches ? video.dataset.mobileSrc : video.dataset.src;
         video.load();
@@ -59,6 +66,12 @@
     });
   }
   function schedule() { if (!frame) frame = requestAnimationFrame(update); }
+  function invalidate() { dirty = true; schedule(); }
+  function scroll() {
+    // Tile visibility comes from the observer. Scrolling only changes playback
+    // eligibility when it crosses the intro boundary, not on every frame.
+    if ((window.scrollY >= startAt) !== pastIntro) schedule();
+  }
   if ('IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -69,8 +82,9 @@
     }, { rootMargin: '0px', threshold: .01 });
     videos.forEach(function (video) { observer.observe(video); });
   } else videos.forEach(function (video) { visible.add(video); });
-  window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule, { passive: true });
+  window.addEventListener('scroll', scroll, { passive: true });
+  window.addEventListener('resize', invalidate, { passive: true });
+  if (hero && 'ResizeObserver' in window) new ResizeObserver(invalidate).observe(hero);
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) videos.forEach(function (video) { video.pause(); });
     else schedule();
@@ -79,7 +93,9 @@
     cancelAnimationFrame(frame); frame = 0;
     videos.forEach(function (video) { video.pause(); });
   });
-  window.addEventListener('pageshow', schedule);
+  window.addEventListener('pageshow', invalidate);
+  mobile.addEventListener('change', invalidate);
+  coarse.addEventListener('change', invalidate);
   reduce.addEventListener('change', schedule);
   if (connection) connection.addEventListener('change', schedule);
   schedule();

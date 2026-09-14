@@ -10,7 +10,7 @@
 (function () {
   var LINKS = [
     { label: 'index',   href: '/index/' },
-    { label: 'about',   href: '/#about', anchor: 'about' },
+    { label: 'about',   href: '/about/' },
     { label: 'contact', href: 'mailto:nicomaggioli@gmail.com' }
   ];
   var btn = null, panel = null;
@@ -79,7 +79,7 @@
       LINKS.forEach(function (l) {
         var a = document.createElement('a');
         a.href = l.href; a.textContent = l.label;
-        if (l.anchor) a.setAttribute('data-anchor', l.anchor);
+        if (l.href === location.pathname) a.setAttribute('aria-current', 'page');
         nav.appendChild(a);
       });
       panel.appendChild(nav);
@@ -123,23 +123,6 @@
 
     var a = e.target.closest && e.target.closest('.nm-burger-panel a');
     if (!a) return;
-    var anchor = a.getAttribute('data-anchor');
-    /* On the homepage the about section is on this page, so scroll rather than
-       reload. Anywhere else the href is a real navigation and is left alone. */
-    if (anchor) {
-      var el = document.getElementById(anchor);
-      if (el && rendered(el)) {
-        e.preventDefault();
-        close();
-        var y = el.getBoundingClientRect().top + (window.scrollY || 0);
-        var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-        /* Lenis owns the scroll on the homepage and swallows native smooth
-           behaviour, so hand it the target when it is present. */
-        if (window.__nmLenis) window.__nmLenis.scrollTo(y, { immediate: reduce });
-        else window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
-        return;
-      }
-    }
     close();          // real navigation: let it happen, but drop the overlay
   }, true);
 

@@ -2,11 +2,19 @@
 
 This repository is a static Next.js export served by GitHub Pages. It does not contain the original React source project or a package/build manifest. Files in `_next/static/chunks/` are production bundles, so changes to React-owned markup must also match the server HTML and embedded Flight data in `index.html`.
 
+## About page and résumé
+
+`/about/` is a static page authored in `about/index.html` and `css/nm-about-page.css`. It uses the shared header, menu, location facts, fonts, and focus manager, without loading the homepage's React/WebGL/video bundles. The introduction and footwear process are based on Nico's September 14 draft. The homepage's short statement remains in place, while About navigation opens the standalone page.
+
+The homepage's server-rendered desktop/mobile links and Flight navigation data both point to `/about/`. `nm-burger.js` and the archive/proposal headers use the same destination. `nm-sync.js` redirects legacy `/#about` links with `location.replace` so Back cannot get stuck on the old anchor. `nm-navact.js` also supports an About button from an older cached homepage.
+
+The résumé was recovered from `d7bf9a89a5b5ad503ef02080bf22bee9d11b4a7b:index.html`, lines 2751–2881 (July 24, 2026). Roles, dates, descriptions, education, skills, leadership, and honors retain that source's information; ongoing role dates were not inferred from the new biography. Update the webpage and `tools/build-resume.py` together when details change. Build the downloadable `media/resume/nico-maggioli-resume.pdf` with `python3 tools/build-resume.py` (ReportLab and fonttools with WOFF support). It embeds static instances of the site's Geist fonts and includes clickable site/email contacts. Render and inspect both pages after rebuilding.
+
 ## Initialization and scrolling
 
 `nm-sync.js` queues custom extensions until the homepage React component emits `nm:hydrated`. Static pages initialize at DOMContentLoaded. Extensions mount once; they must not rewrite React text or use document-wide mutation observers to repair content. The dialog focus observer only reacts to overlay classes.
 
-Public `#work`, `#about`, `#nm-services` and `#contact` links resolve after the custom sections mount and their layout is ready. Any wheel, touch, pointer or key input cancels the startup correction so it cannot pull a visitor away from their own scroll.
+Public `#work`, `#nm-services` and `#contact` links resolve after the custom sections mount and their layout is ready. The old `#about` destination redirects as described above. Any wheel, touch, pointer or key input cancels the startup correction so it cannot pull a visitor away from their own scroll.
 
 The homepage extensions now live in `/js/nm-home-content.js`, `nm-home-scroll.js`, `nm-brands.js`, `nm-anchors.js`, `nm-navact.js`, `nm-magnet.js`, and `nm-sites.js`. The extracted homepage styling is `/css/nm-home.css`.
 
@@ -24,6 +32,8 @@ Homepage loops have posters and deferred `data-src` / `data-mobile-src` attribut
 
 Phones and coarse-pointer tablets retain posters until the opening zoom finishes, avoiding video startup and decoding during the zoom. Desktop playback still starts at 25% of the hero distance. Returning to the intro pauses all loops, including a late-resolving play request.
 
+Video visibility is maintained by IntersectionObserver. The scroll handler schedules playback work only when crossing the intro threshold; hero sizing is cached and invalidated on real size/input changes. Avoid restoring layout reads and repeated pause calls on every scroll frame.
+
 Each homepage video has a real poster image with width/height attributes in the grid flow. The video is absolutely positioned over it and stays transparent until `requestVideoFrameCallback` confirms a presented frame (or `playing` with decoded data on older browsers). Keep the image mounted underneath. Safari drops native poster dimensions between `play()` and metadata loading: allowing the video to size an auto grid row collapses the mobile collage and shifts the whole scroll runway. Errors/reloads restore the poster; buffering keeps the last video frame.
 
 Shared CSS/JS references in HTML carry content-version query strings. Refresh these after editing their source. Changed production bundles use new filenames; update every reference in HTML and other chunks whenever changing a bundle's cache identity.
@@ -33,14 +43,16 @@ Shared CSS/JS references in HTML carry content-version query strings. Refresh th
 Run from the repository root:
 
 ```sh
-node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs tests/intro-surface.test.cjs
+node --test tests/runtime.test.cjs tests/runner.test.mjs tests/touch-previews.test.cjs tests/intro-surface.test.cjs tests/media-work.test.cjs
 python3 tests/validate_static.py
 git diff --check
 ```
 
-Serve the repository as static files (`python3 -m http.server 8814`) and check `/` and `/index/`. The existing `serve.py` supports media range requests if needed. Check narrow phones, portrait and landscape, repeated complete down/up scrolls, visible/offscreen video playback, menu close/focus restoration, About navigation from both pages, and gallery next/previous/close. Do not test the exported HTML through a file:// URL.
+Serve the repository as static files (`python3 -m http.server 8814`) and check `/`, `/index/`, and `/about/`. The existing `serve.py` supports media range requests if needed. Check narrow phones, portrait and landscape, repeated complete down/up scrolls, visible/offscreen video playback, menu close/focus restoration, About navigation from both pages, and gallery next/previous/close. Do not test the exported HTML through a file:// URL.
 
-With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs tests/responsive.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
+With Playwright and its WebKit/Chromium browsers installed, run `node --test tests/video-reveal.browser.cjs tests/responsive.browser.cjs tests/about.browser.cjs` against that preview. `NM_TEST_URL`, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, and `CHROMIUM_EXECUTABLE` can select an existing environment. This regression delays MP4 responses, checks that photos remain visible, and samples every frame for layout collapse through loading/playback on phone, tablet, and desktop. Chromium alone did not reproduce the iPhone failure; include WebKit.
+
+The About suite checks layouts from 320px to 2560px, navigation/history and legacy redirects, PDF downloads, keyboard menu focus, and content without JavaScript in both engines.
 
 For Cloud Run changes, also run `node --test tests/runner.browser.cjs`. It checks later unlocks, score/bonus UI, pause, rotation, restart, and panel/HUD clipping, 44px touch targets, held controls and cancellation in both browser engines. Chromium also checks two simultaneous touch contacts. The unit suite simulates ten-minute mixed runs with several random seeds at phone and desktop stage widths to check reaction gaps and jump/duck sequences.
 
@@ -72,7 +84,7 @@ The shared focus manager must include `.nm-run` in its active-dialog query, so m
 
 The Services section is authored in `nm-brands.js` and controlled by `nm-services.js`. Desktop buttons select one image/description on pointer movement, focus or click. Images overlap in the right grid column; each description expands directly below its own title in the left column. Pointer selection requires changed coordinates, so expanding text beneath a stationary cursor cannot start a selection loop. The plus/minus icons align at the right edge of the list. At 900px and below the panels expand independently beneath their buttons, with text above the image, so opening a lower item does not collapse content above it. Arrow keys navigate the service buttons. Responsive images load near the section; there is no scroll listener or animation loop. Keep `aria-expanded`, `aria-hidden` and the visual open state synchronized when modifying the controls.
 
-`nm-sites.js` retains decoded display-sized WebP images, tracks the current pointer position, and checks the row underneath on scroll. Do not unconditionally hide the panel on scroll: trackpad momentum would hide it until the pointer re-enters a row. The coordinates popup, site preview cards and enlarged archive images use an 18px corner radius.
+`nm-sites.js` retains decoded display-sized WebP images, tracks the current pointer position, and checks the row underneath on scroll. It warms the eight previews when the site list comes within 1000px of the viewport, without startup idle downloads. Cursor updates run only for an active fine pointer; inactive and touch previews do not schedule frames. Do not unconditionally hide the panel on scroll: trackpad momentum would hide it until the pointer re-enters a row. The coordinates popup, site preview cards and enlarged archive images use an 18px corner radius.
 
 The Index gallery is a continuous edge-to-edge image wall: no horizontal padding, no column or tile gaps, and square tile corners. Keep the existing image aspect ratios and 2/3/4/5-column breakpoints. Shared large-screen rules must not reintroduce rounded tile corners or spacing.
 
