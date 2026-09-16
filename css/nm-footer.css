@@ -1,0 +1,27 @@
+/* The homepage composition on static pages, without loading its hero/app. */
+.nm-footer{position:relative;height:100lvh;min-height:360px;background:#0a0a0a;color:#fff;isolation:isolate;-webkit-text-size-adjust:100%;text-size-adjust:100%;font-family:'Geist',system-ui,sans-serif}
+.nm-footer-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;visibility:hidden}
+.nm-footer.is-ready .nm-footer-canvas{visibility:visible}
+.nm-footer .nm-run-door{position:absolute;z-index:1;left:50%;top:42%;transform:translate(-50%,-50%);width:32%;height:32%;border:0;border-radius:24px;padding:0;background:none;cursor:pointer;touch-action:manipulation}
+.nm-footer .nm-run-door img{display:block;width:100%;height:100%;object-fit:contain}
+.nm-footer.is-ready .nm-run-door img{visibility:hidden}
+.nm-footer .nm-run-door:focus-visible{outline:2px dashed #ff7820;outline-offset:8px}
+.nm-footer .nm-run-door[aria-busy="true"]{cursor:progress}
+.nm-footer .nm-footer-cta{position:absolute;top:67%;left:50%;transform:translateX(-50%);width:max-content;max-width:92vw;margin:0;font-size:max(min(54px,6.2vw),2.8125vw);font-weight:700;line-height:1;letter-spacing:normal;text-transform:uppercase;text-align:center;white-space:nowrap}
+.nm-footer .nm-footer-cta a{color:inherit;text-decoration:underline;text-underline-offset:auto}
+.nm-footer-meta{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:24px max(clamp(12px,7.8px + 1.07vw,24px),1.25vw);font-size:max(12px,.625vw);font-weight:400;line-height:1.1;letter-spacing:normal;text-transform:uppercase}
+.nm-footer-meta p{margin:0;color:rgba(255,255,255,.62)}
+.nm-footer-email{position:relative;border:0;padding:0;background:none;color:inherit;font:inherit;text-transform:inherit;cursor:pointer;margin-left:auto}
+.nm-footer-email .nm-footer-copied{position:absolute;inset:0;text-align:right;visibility:hidden}
+.nm-footer-email.is-copied > span:first-child{visibility:hidden}
+.nm-footer-email.is-copied .nm-footer-copied{visibility:visible}
+@media(max-width:767px){
+ .nm-footer{height:100svh}
+ .nm-footer .nm-run-door{width:64%;height:28%}
+ .nm-footer .nm-footer-cta{line-height:1.05}
+ .nm-footer-meta{font-size:clamp(10px,3.1vw,12px)}
+ .nm-footer-email{min-height:44px;display:inline-flex;align-items:center;margin-top:-15px;margin-bottom:-15px}
+ .nm-footer-email .nm-footer-copied{display:flex;align-items:center;justify-content:flex-end}
+}
+@media(max-height:500px) and (max-width:1024px){.nm-footer .nm-footer-cta{font-size:min(6.2vw,7svh);line-height:1.05}}
+@media print{.nm-footer{display:none!important}}

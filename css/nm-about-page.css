@@ -12,7 +12,7 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
 .nm-about-page .nm-nav a[aria-current="page"]{color:var(--nm-orange)}
 .about-skip{position:fixed;z-index:500;top:12px;left:12px;padding:12px 18px;background:#fff;color:#0a0a0a!important;transform:translateY(-180%)}
 .about-skip:focus{transform:none}
-.about-intro,.about-focus,.about-process,.about-resume,.about-contact{margin:0 var(--about-gutter)}
+.about-intro,.about-focus,.about-process,.about-resume{margin:0 var(--about-gutter)}
 .about-intro{padding:max(160px,11vw) 0 var(--about-space)}
 .about-topline{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:max(50px,4vw)}
 .about-tag,.about-meta,.about-number,.about-resume-label,.about-job-meta,.about-product figcaption{font-family:'Geist Mono',monospace;font-size:max(11px,.625vw);font-weight:400;line-height:1.7;letter-spacing:.07em;text-transform:uppercase}
@@ -64,15 +64,8 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
 .about-leadership li + li{margin-top:26px}
 .about-leadership h4{font-size:max(20px,1.2vw);line-height:1.3;color:#eee;letter-spacing:-.02em}
 .about-leadership p{margin-top:8px;font-size:.85em}
-.about-contact{border-top:1px solid #555;padding:var(--about-space) 0}
-.about-contact h2{font-size:clamp(64px,8.3vw,220px);margin:34px 0 38px;line-height:1.02;letter-spacing:-.06em}
-.about-contact h2 a{color:var(--nm-orange);text-decoration:underline;text-decoration-thickness:.045em;text-underline-offset:.13em}
-.about-contact-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;color:#aaa}
-.about-contact-bottom .about-link{color:#f5f5f5;overflow-wrap:anywhere;min-width:0}
-.about-footer{display:flex;justify-content:space-between;gap:18px;margin:0 var(--about-gutter);padding:24px 0 max(28px,env(safe-area-inset-bottom));border-top:1px solid #333;color:#999;font-size:max(12px,.625vw);text-transform:uppercase}
-.about-footer a{display:inline-flex;align-items:center;min-height:44px;margin:-14px 0;color:#fff;gap:12px}
-@media(hover:hover){.about-link:hover,.about-footer a:hover{color:var(--nm-orange)!important;border-color:var(--nm-orange)}.about-contact h2 a:hover{color:#fff}}
-@media(min-width:2400px){.about-intro h1{font-size:10.5vw}.about-contact h2{font-size:8.3vw}}
+@media(hover:hover){.about-link:hover{color:var(--nm-orange)!important;border-color:var(--nm-orange)}}
+@media(min-width:2400px){.about-intro h1{font-size:10.5vw}}
 @media(max-width:1100px){.about-intro-grid{gap:4vw}.about-job-top{display:block}.about-job-meta{text-align:left;margin-top:16px!important}.about-product figcaption{display:block}.about-product figcaption span{display:block}}
 @media(max-width:900px){
  .nm-about-page{--about-space:64px;font-size:18px}
@@ -85,7 +78,6 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
  .about-process-list{gap:24px}.about-process-list h3{font-size:24px}.about-process-list p{font-size:16px}
  .about-resume{grid-template-columns:1fr;gap:44px}.about-resume-heading{position:static}.about-resume-heading h2{font-size:54px}
  .about-job-top{display:flex}.about-job-meta{text-align:right;margin-top:0!important}
- .about-contact h2{font-size:clamp(60px,11vw,96px)}.about-contact-bottom{display:block}.about-contact-bottom .about-link{margin-top:24px}
 }
 @media(max-width:560px){
  .nm-about-page{--about-space:52px;font-size:17px}
@@ -96,14 +88,12 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
  .about-section-top h2{font-size:29px}.about-process-list{grid-template-columns:1fr;gap:30px}.about-process-list li{position:relative;padding:24px 0 0 40px}.about-process-list .about-number{position:absolute;left:0;top:28px}.about-process-list h3{margin:0 0 14px;font-size:27px}.about-process-list p{max-width:none;font-size:17px}
  .about-job-top{display:block}.about-job-meta{text-align:left;margin-top:14px!important}.about-job h4,.about-detail h4{font-size:27px}
  .about-expertise{gap:16px;font-size:16px}.about-expertise h4{font-size:22px}
- .about-contact h2{font-size:clamp(54px,13vw,72px)}.about-contact-bottom .about-link{font-size:16px;gap:12px}
- .about-footer{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.about-link{transition:none}}
 @media print{
  @page{size:A4;margin:18mm}
  html:has(.nm-about-page),.nm-about-page{background:#fff!important;color:#111!important;font-size:10pt}
- .nm-about-page .nm-hdr,.about-skip,.about-intro,.about-focus,.about-process,.about-contact,.about-footer,.nm-c-panel,.nm-burger-panel,.about-resume-heading .about-link{display:none!important}
+ .nm-about-page .nm-hdr,.about-skip,.about-intro,.about-focus,.about-process,.nm-c-panel,.nm-burger-panel,.about-resume-heading .about-link{display:none!important}
  .about-resume{display:block;border:0;margin:0;padding:0}.about-resume-heading{position:static}.about-resume-heading .about-tag{border:0;padding:0;color:#333}.about-resume-heading h2{font-size:30pt;margin:10pt 0 24pt}.about-resume-heading h2::before{content:'Nico Maggioli / ';font-weight:700}
  .about-resume-label{font-size:9pt;color:#a43c00}.about-job,.about-detail,.about-leadership li{break-inside:avoid}.about-job{padding:16pt 0}.about-job-top{display:flex}.about-job h4,.about-detail h4{font-size:17pt}.about-job-meta{font-size:8pt}.about-resume-content p,.about-expertise ul,.about-leadership,.about-leadership h4{color:#333}.about-resume-section{margin-top:24pt}.about-expertise h4{font-size:14pt}.about-leadership h4{font-size:12pt}
 }

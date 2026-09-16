@@ -23,7 +23,7 @@ for (const engine of ['webkit', 'chromium']) {
         await page.goto(origin + '/about/', {waitUntil: 'networkidle'});
         await page.evaluate(() => document.fonts.ready);
         const layout = await page.evaluate(() => {
-          const outside = [...document.querySelectorAll('main h1,main h2,main h3,main h4,main p,main a,main img,main li,.about-footer')]
+          const outside = [...document.querySelectorAll('main h1,main h2,main h3,main h4,main p,main a,main img,main li,.nm-footer-meta')]
             .filter(el => { const r=el.getBoundingClientRect(); return r.width && (r.left < -1 || r.right > innerWidth + 1); })
             .map(el => ({tag:el.tagName, text:el.textContent.trim().slice(0,70), width:el.getBoundingClientRect().width}));
           return {width: innerWidth, scrollWidth: document.documentElement.scrollWidth, outside,
@@ -44,9 +44,30 @@ for (const engine of ['webkit', 'chromium']) {
         if (screenshots) await page.screenshot({path: path.join(screenshots, `${engine}-${width}-resume.png`)});
         await page.locator('.about-product img').scrollIntoViewIfNeeded();
         await page.waitForFunction(() => {const img=document.querySelector('.about-product img');return img.complete && img.naturalWidth > 0;});
-        if (width === 320 && screenshots) {
-          await page.locator('.about-contact').scrollIntoViewIfNeeded();
-          await page.screenshot({path: path.join(screenshots, `${engine}-${width}-contact.png`)});
+        await page.locator('[data-nm-footer]').scrollIntoViewIfNeeded();
+        await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+        await page.waitForSelector('[data-nm-footer].is-ready');
+        const footer=await page.locator('[data-nm-footer]').evaluate(el=>{
+          const c=el.querySelector('canvas'),title=el.querySelector('h2').getBoundingClientRect(),r=el.getBoundingClientRect();
+          return {height:r.height,ratio:(title.top-r.top)/r.height,left:title.left,right:title.right,canvas:c.width>0&&c.height>0};
+        });
+        assert.ok(Math.abs(footer.height-height)<1,'footer retains the homepage full-height composition');
+        assert.ok(Math.abs(footer.ratio-.67)<.001,'CTA remains at the homepage position');
+        assert.ok(footer.left>=0&&footer.right<=width&&footer.canvas,'cloud and heading fit');
+        assert.equal(await page.locator('.about-contact,.about-footer').count(),0,'previous closing section removed');
+        if(screenshots) await page.screenshot({path:path.join(screenshots,`${engine}-${width}-footer.png`)});
+        if(width===390){
+          const door=page.getByRole('button',{name:'Play Cloud Run'});
+          await door.focus();await page.keyboard.press('Enter');
+          await page.getByRole('dialog',{name:'Cloud Run'}).waitFor();
+          await page.getByRole('button',{name:'Exit',exact:true}).click();
+          assert.equal(await page.locator('.nm-run').count(),0);
+          assert.equal(await door.evaluate(el=>el===document.activeElement),true,'closing the game restores focus');
+          await page.emulateMedia({reducedMotion:'reduce'});
+          await page.setViewportSize({width:844,height:390});
+          await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+          await page.waitForTimeout(200);
+          assert.equal(await page.locator('[data-nm-footer]').evaluate(el=>el.classList.contains('is-ready')),true,'cloud survives rotation');
         }
         assert.deepEqual(errors, [], `${width}×${height}: JavaScript/console errors`);
         assert.deepEqual(failed, [], `${width}×${height}: failed HTTP responses`);

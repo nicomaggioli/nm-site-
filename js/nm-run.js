@@ -24,7 +24,7 @@
       console.error('Cloud Run could not load:', error);
     } finally { loading = false; if (door) door.removeAttribute('aria-busy'); }
   }
-  var footer = document.querySelector('main > section.h-lvh');
+  var footer = document.querySelector('main > section.h-lvh, [data-nm-footer]');
   if (footer) {
     door = footer.querySelector('.nm-run-door');
     footer.addEventListener('click', function (event) {

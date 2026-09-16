@@ -115,7 +115,7 @@ The Services section is authored in `nm-brands.js` and controlled by `nm-service
 
 The Index gallery is a continuous edge-to-edge image wall: no horizontal padding, no column or tile gaps, and square tile corners. Keep the existing image aspect ratios and 2/3/4/5-column breakpoints. Shared large-screen rules must not reintroduce rounded tile corners or spacing.
 
-The homepage footer uses the original centered cloud, tagline and metadata. The Cloud Run button exists in both server HTML and the footer React component so resizing cannot remove it. Cloud hover deformation stays disabled.
+The homepage footer uses the original centered cloud, tagline and metadata. About uses the same full-height composition, cloud point data, sprite, camera and color conversion through `css/nm-footer.css` and `js/nm-footer.js`, without loading the homepage hero or React bundles. Its cloud fetches near the footer, stops offscreen, in hidden tabs and during Cloud Run, and renders a still for reduced motion. Keep the static mark fallback and both contact actions available if WebGL is unavailable. The shared `nm-run.js` door supports both pages. The Cloud Run button exists in both server HTML and the footer React component so resizing cannot remove it. Cloud hover deformation stays disabled.
 
 ## Responsive layouts
 
