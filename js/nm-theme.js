@@ -1,13 +1,13 @@
 /* Design preview switcher (local branch only; removed when a direction is chosen).
 
-   ?theme=nebula | horizon | atlas  picks a direction and remembers it in this
+   ?theme=nebula | horizon | atlas | cosmati  picks a direction and remembers it in this
    browser; ?theme=current (or the pill's "Current") returns to the live design.
    The chosen direction loads /css/theme-NAME.css and /js/theme-NAME.js and sets
    <html data-nm-theme="NAME"> before first paint, so theme CSS can key off it.
    Runs synchronously from <head>; everything it adds is outside React's text. */
 (function () {
   'use strict';
-  var THEMES = { nebula: 'Nebula', horizon: 'Horizon', atlas: 'Atlas' };
+  var THEMES = { nebula: 'Nebula', horizon: 'Horizon', atlas: 'Atlas', cosmati: 'Cosmati' };
   var KEY = 'nm-theme-preview';
   var theme = null;
   try {

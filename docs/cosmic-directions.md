@@ -1,4 +1,4 @@
-# Cosmic redesign: three directions (local branch `design/cosmic`)
+# Cosmic redesign: four directions (local branch `design/cosmic`)
 
 Nico's brief, in his words: the site copies the Podium template too closely. Add colour
 and differentiation so it is unmistakably his. He loves an airbrushed zip hoodie (flowing,
@@ -31,7 +31,7 @@ orange, but the hoodie palette must lead.
 
 ## How the preview works
 
-- `js/nm-theme.js` (sync, in each page's head) reads `?theme=nebula|horizon|atlas` (remembered
+- `js/nm-theme.js` (sync, in each page's head) reads `?theme=nebula|horizon|atlas|cosmati` (remembered
   in localStorage; `?theme=current` returns to the live design), sets
   `<html data-nm-theme="NAME">` before first paint, creates `window.NMThemeConfig = {}`, then
   loads, in order and without blocking: `/css/theme-NAME.css`, `/js/theme-NAME.js`,
@@ -99,7 +99,7 @@ Reads `NMThemeConfig.stars`, `NMThemeConfig.airbrush`, `NMThemeConfig.grain` on
   nm-home). Keep the previous bundle files in place. The current hero bundle is
   `nm-home-a0a65c8c3e9d.js` (includes the interactive "lava" hero, `js/nm-lava.js`).
 
-## The three directions
+## The four directions
 
 Each direction owns only `css/theme-NAME.css` and `js/theme-NAME.js` (plus new assets
 under `media/theme-NAME/` or self-hosted OFL fonts under `fonts/` with their licence).
@@ -136,6 +136,38 @@ annotations frame existing content: services get catalogue IDs, the live sites l
 a catalogue of known worlds with the coordinates styling the site already uses, gallery tiles
 show plate numbers on hover. The footer black hole is annotated like a diagram plate (event
 horizon, photon ring, accretion disk labels with leader lines). Starfield behind everything.
+
+### 4. Cosmati: the universe, inlaid (ultra-detailed)
+
+Nico's follow-up: "a super ultra-detailed version, kind of like Italian tiles, super detailed,
+like Persian carpets." The bridge to the cosmic brief is real: Cosmatesque pavements (the
+Great Pavement at Westminster, Roman basilica floors) are the cosmos laid in stone, Persian
+carpet medallions stand for the heavens, and Islamic girih tilings are built from stars. So
+this version is ornament at every scale, drawn with the rigour of real tile and carpet work:
+
+- Ground: a deep carpet field with a faint all-over micro-pattern (a small-scale girih or
+  star-and-cross tiling at low contrast) so even empty space rewards a close look.
+- Borders: sections framed like carpet borders: a main border band (palmette/meander or
+  star-and-cross tiles) flanked by thin guard stripes (reciprocal triangles, beading, cord).
+  Corner pieces (spandrels) where borders meet.
+- Tile bands: majolica-style tile strips as section dividers: 4-fold symmetric tiles
+  (rosettes, quatrefoils, 8/12-point stars) glazed in the hoodie palette, with hand-painted
+  life: slight line wobble, glaze pooling and colour bleed (the hoodie's airbrush becomes
+  glaze), a hairline craquelure.
+- Hero: the NM collage sits inside a medallion: a girih star rosette frame with corner
+  spandrels, like the centre of a carpet.
+- Work images: thin inlay frames (tessera strips) around gallery/service images; the
+  gallery wall itself stays edge-to-edge and unobstructed.
+- Footer: the black hole is the central medallion of a Cosmati roundel: concentric rings of
+  interlaced guilloche and tesserae spiralling into the singularity.
+- Colour: hoodie palette as glazes (cream/warm-white grounds, coral and deep coral, ice and
+  sky blue, the violet fleck as a rare accent), plus one deep ink (indigo-black or oxblood)
+  for linework and the carpet field. Crisp at every DPR.
+- Type: an elegant classical display face for headings is welcome (self-host an OFL font
+  under fonts/ with its licence); body stays Geist.
+- Build the ornament procedurally (exact geometry in SVG/canvas, rendered once to pattern
+  images and reused), not as heavy live DOM; any motion is slow and minimal (a medallion
+  ring turning imperceptibly, a few stars in the tiling glinting).
 
 ## Non-negotiables for every direction
 
