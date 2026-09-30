@@ -115,6 +115,21 @@ highlight, the active service title and key words; pills and hairlines pick up s
 coral-to-ice gradients. Small cosmic touches in the framing (a star glyph on section tags,
 faint orbit arcs in margins). Black hole footer. Gallery wall stays edge-to-edge.
 
+**Nebula also gets the heat-map type** (Nico's reference: bencho.dev "Heat map" block,
+`?c=heat-word&theme=dark`). There, a soft, blurred grey word heats up under the pointer:
+where the pointer passes, the letters take on a thermal-camera colour map (hotter at the glyph
+rims, cooler in the cores), the heat spreads a little and slowly decays back to grey. Its
+controls are Heat (intensity), Area (brush radius) and Softness (blur/diffusion). The hoodie
+already looks like a heat map, so map heat through the hoodie palette: cold = the text's
+normal cream/white, then ice, peach, coral, deep coral, with the violet fleck only at the very
+hottest. Apply it to the big display type: the homepage statement ("I turn ideas into brands
+and products..."), About's "Hey, I'm Nico!", and the footer "WHERE VISIONS COME TRUE". Keep
+the real DOM text for accessibility/SEO/selection (visually replaced only while the effect is
+running; plain text on no-WebGL / reduced motion), align the canvas exactly to the text's line
+boxes and fonts, re-layout on resize/font load, run only while visible and while any heat
+remains, and let touch drags heat it on phones (plus a slow ambient warm spot so phones see
+it without touching).
+
 ### 2. Horizon: from the wonders of the world to the wonders of the universe
 
 A scroll journey from day to night. The top of each page is bright airbrushed ground like the
