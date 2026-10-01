@@ -37,7 +37,7 @@
     // layers (stars, airbrush, grain) and the footer black hole that read it.
     var mods = ['/js/theme-' + theme + '.js', '/js/nm-cosmos.js', '/js/nm-blackhole.js'];
     // the shooting star that cuts the hero logo
-    if (theme === 'stars') mods.push('/js/nm-starcut.js');
+    if (theme === 'stars') mods.push('/js/nm-starcut.js', '/js/nm-warp.js');   // + the fast-scroll warp
     mods.forEach(function (src) {
       var js = document.createElement('script');
       js.src = src + bust;
