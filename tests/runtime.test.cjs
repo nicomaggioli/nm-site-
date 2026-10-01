@@ -113,7 +113,9 @@ test('static archive initializes without any React hydration event', () => {
   assert.equal(runs,1);
 });
 
-test('leaving the footer hides its frozen canvas and returning to the hero restores rendering', () => {
+// The homepage WebGL canvas renders at the hero and, for the Cloud design's footer cloud, at the footer.
+// Night Sky (window.__nmTheme) does not mount that cloud, so there the canvas stops at the footer too.
+function footerCanvasScenario(stars) {
   const root=path.join(__dirname,'..');
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const bundleName=html.match(/nm-scenes-[a-f0-9]+\.js/)[0];
@@ -126,7 +128,9 @@ test('leaving the footer hides its frozen canvas and returning to the hero resto
   document.documentElement={classList:{contains:()=>gameOpen}};
   document.querySelector=selector=>selector.endsWith('h-svh')
     ?{offsetHeight:900}:{getBoundingClientRect:()=>({top:footerTop})};
-  const context={document,scrollY:0,innerHeight:900,matchMedia:()=>mobile,
+  if(stars)window.__nmTheme='stars';
+  const footer=!stars;
+  const context={window,document,scrollY:0,innerHeight:900,matchMedia:()=>mobile,
     addEventListener:window.addEventListener.bind(window),removeEventListener:window.removeEventListener.bind(window),
     requestAnimationFrame:fn=>{frames.set(++sequence,fn);return sequence;},cancelAnimationFrame:id=>frames.delete(id),
     l:{useState(initial){const i=cursor++;if(!(i in state))state[i]=initial;return [state[i],value=>{state[i]=value;}];},
@@ -143,7 +147,7 @@ test('leaving the footer hides its frozen canvas and returning to the hero resto
     assert.equal(result.props.children.props.frameloop,visible?'always':'never');
   };
   verify(true);
-  context.scrollY=5370;footerTop=0;window.dispatchEvent(new Event('scroll'));flush();verify(true);
+  context.scrollY=5370;footerTop=0;window.dispatchEvent(new Event('scroll'));flush();verify(footer);
   context.scrollY=3570;footerTop=1800;window.dispatchEvent(new Event('scroll'));flush();verify(false);
   context.scrollY=0;footerTop=5370;window.dispatchEvent(new Event('scroll'));flush();verify(true);
   gameOpen=true;window.dispatchEvent(new Event('nm:gamechange'));flush();verify(false);
@@ -151,12 +155,20 @@ test('leaving the footer hides its frozen canvas and returning to the hero resto
   document.hidden=true;document.dispatchEvent(new Event('visibilitychange'));verify(false);
   document.hidden=false;document.dispatchEvent(new Event('visibilitychange'));verify(true);
   mobile.matches=true;context.innerHeight=844;
-  context.scrollY=5370;footerTop=0;window.dispatchEvent(new Event('resize'));flush();verify(true);
+  context.scrollY=5370;footerTop=0;window.dispatchEvent(new Event('resize'));flush();verify(footer);
   assert.deepEqual(Array.from(view().props.children.props.dpr),[1,1.25]);
   gameOpen=true;window.dispatchEvent(new Event('nm:gamechange'));verify(false);
-  gameOpen=false;window.dispatchEvent(new Event('nm:gamechange'));verify(true);
+  gameOpen=false;window.dispatchEvent(new Event('nm:gamechange'));verify(footer);
   footerTop=1800;context.scrollY=3570;window.dispatchEvent(new Event('scroll'));flush();verify(false);
   context.scrollY=0;footerTop=5370;window.dispatchEvent(new Event('scroll'));flush();verify(true);
+}
+
+test('leaving the footer hides its frozen canvas and returning to the hero restores rendering', () => {
+  footerCanvasScenario(false);
+});
+
+test('under Night Sky the hero canvas also stops at the footer, which has no cloud, and restarts at the hero', () => {
+  footerCanvasScenario(true);
 });
 
 test('one failed extension does not prevent the rest from initializing', () => {
