@@ -1,4 +1,4 @@
-// Space Run: the footer game as it appears in the Night Sky preview (?theme=stars only).
+// Space Run: the footer game as it appears under Night Sky (html[data-nm-theme="stars"]).
 // The engine, timing, hit boxes and difficulty are Cloud Run's; only the words and pictures change.
 // The stand-in pixel art is painted once into small canvases when the game opens; the loop only copies them.
 import {GROUND,VIEW_HEIGHT} from './nm-run-engine.mjs?v=77fbd74b3a';

@@ -13,7 +13,7 @@
       copyTimer = setTimeout(function () { email.classList.remove('is-copied'); }, 1800);
     } catch (_) { location.href = 'mailto:nicomaggioli@gmail.com'; }
   });
-  if (window.__nmTheme) return; // design previews draw the black hole here (nm-blackhole.js)
+  if (window.__nmTheme) return; // Night Sky forms the footer NM from stars instead (nm-space.js, nm-sky.js)
 
   var canvas = host.querySelector('canvas'), gl = canvas.getContext('webgl', {alpha:false,antialias:false,depth:false,powerPreference:'low-power'});
   if (!gl) return; // The static mark and contact links remain available.

@@ -1,4 +1,4 @@
-/* Night sky engine v4 for the ?theme=stars preview. Brief: docs/night-sky.md.
+/* Night sky engine v4 for the Night Sky design. Brief: docs/night-sky.md.
 
    The live site, unchanged, inside a particle space you dive through (js/nm-space.js,
    window.NMSpace: the sheets, wisps, dust and specks, the footer NM gather). This engine is

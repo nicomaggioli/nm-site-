@@ -22,7 +22,7 @@
 (function () {
   var host = document.querySelector('.foot-mark');
   if (!host || !window.requestAnimationFrame) return;
-  if (window.__nmTheme) return; // design previews draw the black hole here (nm-blackhole.js)
+  if (window.__nmTheme) return; // Night Sky forms the footer NM from stars instead (nm-space.js, nm-sky.js)
 
   /* Not DRAWN on phones -- 5,500 sprites at 30fps over a 176-image grid is
      real work for no return, and the homepage drops its own footer cloud at

@@ -1,4 +1,4 @@
-/* NM Space: the particle space behind the ?theme=stars preview (brief: docs/night-sky.md).
+/* NM Space: the particle space behind the Night Sky design (brief: docs/night-sky.md).
 
    A full-viewport WebGL scene on the page's near-black ground: a great many fine luminous
    particles forming soft, undulating, layered sheets and wisps at many depths (a misty

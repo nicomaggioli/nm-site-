@@ -2,7 +2,7 @@
 (window.__nmReady || function (fn) { fn(); })(function () {
   'use strict';
   var door, loading = false, game = null;
-  // The Night Sky preview plays Space Run: the same game with its own words and art (nm-run-space.mjs).
+  // Night Sky plays Space Run: the same game with its own words and art (nm-run-space.mjs).
   var space = document.documentElement.dataset.nmTheme === 'stars';
   function stylesheet() {
     var existing = document.querySelector('link[data-nm-game-style]');
@@ -19,7 +19,7 @@
     loading = true;
     if (door) door.setAttribute('aria-busy', 'true');
     try {
-      var result = await Promise.all([import('/js/nm-run-game.mjs?v=f797e9577c'), stylesheet(), space ? import('/js/nm-run-space.mjs?v=92e8b512a2') : null]);
+      var result = await Promise.all([import('/js/nm-run-game.mjs?v=f797e9577c'), stylesheet(), space ? import('/js/nm-run-space.mjs?v=0f7db150b8') : null]);
       game = result[0]; game.openGame(result[2]);
     } catch (error) {
       if (door) { door.title = 'Could not load the game. Click to try again.'; door.setAttribute('aria-label', door.title); }

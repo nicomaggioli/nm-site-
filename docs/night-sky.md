@@ -1,4 +1,4 @@
-# Night Sky (preview theme `?theme=stars`, local branch `design/cosmic`)
+# Night Sky (the site's design, live since 2026-10-01)
 
 ## What Nico asked for (his words, condensed)
 
@@ -76,8 +76,8 @@ original site plus a believable sky. Realism and restraint are the whole brief.
 
 ## Engine requirements (`js/nm-sky.js`)
 
-- One fixed, full-viewport canvas behind all content (below `#global-canvas`, like the NMCosmos
-  page layers at negative z-index), `pointer-events: none`, `aria-hidden`. Sections that paint
+- One fixed, full-viewport canvas behind all content (below `#global-canvas`, at a negative
+  z-index), `pointer-events: none`, `aria-hidden`. Sections that paint
   the flat #0a0a0a are made transparent in `css/theme-stars.css` so the sky shows; text stays
   readable (the sky is dim).
 - Real sky, projected stereographically around the view centre; the page's flat dark grey stays

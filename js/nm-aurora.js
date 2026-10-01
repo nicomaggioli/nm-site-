@@ -1,4 +1,4 @@
-/* Night Sky: faint aurora and colour in the far sky (?theme=stars, loaded by js/theme-stars.js).
+/* Night Sky: faint aurora and colour in the far sky (loaded by js/nm-theme.js).
 
    Nico: "boreal kind of lights in the background, but super subtle, like some magentas and
    greens and cyans". Three aurora curtains hang from soft, wandering lower edges (green at
