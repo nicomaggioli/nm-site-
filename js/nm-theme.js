@@ -1,13 +1,14 @@
 /* Design preview switcher (local branch only; removed when a direction is chosen).
 
-   ?theme=nebula | horizon | atlas | cosmati  picks a direction and remembers it in this
+   ?theme=stars | nebula | horizon | atlas | cosmati  picks a direction and remembers it in this
    browser; ?theme=current (or the pill's "Current") returns to the live design.
    The chosen direction loads /css/theme-NAME.css and /js/theme-NAME.js and sets
    <html data-nm-theme="NAME"> before first paint, so theme CSS can key off it.
    Runs synchronously from <head>; everything it adds is outside React's text. */
 (function () {
   'use strict';
-  var THEMES = { nebula: 'Nebula', horizon: 'Horizon', atlas: 'Atlas', cosmati: 'Cosmati' };
+  var THEMES = { stars: 'Night Sky', nebula: 'Nebula', horizon: 'Horizon', atlas: 'Atlas', cosmati: 'Cosmati' };
+  var PILL = ['stars'];   // directions offered in the pill (others stay reachable by URL)
   var KEY = 'nm-theme-preview';
   var theme = null;
   try {
@@ -61,7 +62,7 @@
     var label = document.createElement('span');
     label.textContent = 'Preview';
     pill.appendChild(label);
-    [['current', 'Current']].concat(Object.keys(THEMES).map(function (k) { return [k, THEMES[k]]; })).forEach(function (t) {
+    [['current', 'Current']].concat(PILL.map(function (k) { return [k, THEMES[k]]; })).forEach(function (t) {
       var a = document.createElement('a');
       var u = new URL(location.href);
       u.searchParams.set('theme', t[0]);

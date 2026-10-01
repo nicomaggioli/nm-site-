@@ -1,0 +1,13 @@
+/* Night Sky: the live design, unchanged, with a real night sky behind it (js/nm-sky.js).
+   Removed on request: the hero captions, the header coordinates/location pill, and the
+   footer headline. Everything else keeps its live styling. */
+html[data-nm-theme="stars"] #nm-coord,
+html[data-nm-theme="stars"] #nm-location-panel { display: none !important; }
+
+/* hero captions: "Design & Manufacturing" and "Scroll Down" */
+html[data-nm-theme="stars"] main > section.fixed.inset-0.z-10 { visibility: hidden !important; }
+
+/* footer headline: "Where visions come true / Work with me" (home, About, Index) */
+html[data-nm-theme="stars"] #contact .grid-layout > .absolute.left-1\/2,
+html[data-nm-theme="stars"] .nm-footer-cta,
+html[data-nm-theme="stars"] footer > .foot-cta { display: none !important; }
