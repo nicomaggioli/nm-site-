@@ -23,6 +23,10 @@
   var blobs = [], cuts = [], bites = [];
   var outB = new Float32Array(MAXB * 4), outC = new Float32Array(MAXC * 4), outW = new Float32Array(MAXC), outI = new Float32Array(MAXI * 4);
   var outK = new Float32Array(MAXN * 4), outKW = new Float32Array(MAXN), outBox = new Float32Array(4), outN = new Float32Array(4);
+  // How far each piece has drifted from home, in canvas uv (the shader shifts its slice of the
+  // collage snapshot by this, so a piece carries its own picture instead of sliding over others).
+  var outO = new Float32Array(MAXB * 4), outKO = new Float32Array(MAXN * 4);
+  var snap = null, snapCtx = null, snapV = 0, snapOn = 0, snapKey = '', hadPieces = false;
   var still = matchMedia('(prefers-reduced-motion:reduce)');
   var frame = null;               // latest mapping parameters from the shader
   var sdf = null, SDFN = 512;     // green channel of the mark texture
@@ -164,7 +168,11 @@
   function root(b) { return [b.hx, b.hy + (b.top ? .082 : -.082)]; }
   function beads(p) {
     // the thinning strand gathers into droplets before it snaps
-    for (var s = 0; s < 2; s++) blob({ kind: 'bead', parent: p, h: s ? .64 : .34, r: .013 + Math.random() * .004 + s * .003, k: .22 });
+    var ra = root(p);
+    for (var s = 0; s < 2; s++) {
+      var h = s ? .64 : .34;
+      blob({ kind: 'bead', parent: p, h: h, x: ra[0] + (p.x - ra[0]) * h, y: ra[1] + (p.y - ra[1]) * h, r: .013 + Math.random() * .004 + s * .003, k: .22 });
+    }
   }
   function seep(b, dirx, diry, w) {
     // a small blob squeezes out where the cut leaves the stroke, dragged along by the swipe
@@ -328,6 +336,43 @@
     if (o && o.reason === 'complete' && !still.matches) { demo.pending = true; demo.at = -1; }
   });
 
+  /* ---------- the collage under the mark, captured for the pieces ---------- */
+  // The work collage is DOM (#nm-made) under the transparent mark, so a moving piece would
+  // only reveal whatever tile is behind it. Capture what the visitor sees there at the moment
+  // pieces appear (posters at the top of the page, same crops as object-fit: cover).
+  function takeSnap() {
+    var made = document.getElementById('nm-made'), r = canvasRect();
+    if (!made || !r || r.width < 2) return false;
+    var W = r.width, H = r.height, d = Math.min(1.5, window.devicePixelRatio || 1);
+    if (!snap) { snap = document.createElement('canvas'); snapCtx = snap.getContext('2d'); }
+    var cw = Math.round(W * d), ch = Math.round(H * d);
+    if (snap.width !== cw || snap.height !== ch) { snap.width = cw; snap.height = ch; }
+    var c = snapCtx;
+    c.setTransform(d, 0, 0, d, 0, 0);
+    c.clearRect(0, 0, W, H);
+    var bg = getComputedStyle(made).backgroundColor;
+    if (bg && !/rgba\(.*,\s*0\)$|^transparent$/.test(bg)) { c.fillStyle = bg; c.fillRect(0, 0, W, H); }
+    var els = made.querySelectorAll('img, video, canvas');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], b = el.getBoundingClientRect();
+      if (b.width <= 0 || b.right <= r.left || b.bottom <= r.top || b.left >= r.right || b.top >= r.bottom) continue;
+      var cs = getComputedStyle(el), op = +cs.opacity;
+      if (!op || cs.visibility === 'hidden' || cs.display === 'none') continue;
+      var tag = el.tagName, sw = el.naturalWidth || el.videoWidth || el.width, sh = el.naturalHeight || el.videoHeight || el.height;
+      if (!sw || !sh || (tag === 'IMG' && !el.complete) || (tag === 'VIDEO' && el.readyState < 2)) continue;
+      var sx = 0, sy = 0, sW = sw, sH = sh;
+      if (cs.objectFit === 'cover') {
+        var k = Math.max(b.width / sw, b.height / sh);
+        sW = b.width / k; sH = b.height / k; sx = (sw - sW) / 2; sy = (sh - sH) / 2;
+      }
+      c.globalAlpha = op;
+      try { c.drawImage(el, sx, sy, sW, sH, b.left - r.left, b.top - r.top, b.width, b.height); } catch (e) { /* tainted or not ready: that tile stays see-through */ }
+    }
+    c.globalAlpha = 1;
+    snapV++;
+    return true;
+  }
+
   /* ---------- per-frame step, called by the hero shader ---------- */
   function ease(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
   function step(f) {
@@ -371,11 +416,11 @@
         var p = b.parent;
         if (!p || blobs.indexOf(p) < 0) { remove(i); continue; }
         var ra = root(p);
-        if (!p.broke && !b.free) {
+        if (!p.broke && b.free == null) {
           b.x = ra[0] + (p.x - ra[0]) * b.h + wobx * .3; b.y = ra[1] + (p.y - ra[1]) * b.h + woby * .3;
           b.r = b.r0 * ease(b.age / .8);
         } else {
-          if (!b.free) { b.free = b.age; b.sx = b.x; b.sy = b.y; }
+          if (b.free == null) { b.free = b.age; b.sx = b.x; b.sy = b.y; }
           var ft = b.age - b.free, tx = b.h < .5 ? ra[0] : p.x, ty = b.h < .5 ? ra[1] : p.y, e = ease(ft / 1.8);
           b.x = b.sx + (tx - b.sx) * e; b.y = b.sy + (ty - b.sy) * e;
           b.r = b.r0 * (1 - ease((ft - 1.1) / .7));
@@ -394,18 +439,40 @@
         if (b.age > dur) remove(i);
       }
     }
+    var pieces = blobs.length > 0, top = (f.scroll || 0) < .01, key = innerWidth + 'x' + innerHeight;
+    if (pieces && top && (!hadPieces || key !== snapKey)) { try { if (takeSnap()) snapKey = key; } catch (e) { /* plain window behaviour */ } }
+    hadPieces = pieces;
+    snapOn = snap && snapKey ? Math.max(0, 1 - (f.scroll || 0) / .02) : 0;
+    for (var q2 = blobs.length - 1; q2 >= 0; q2--) {
+      var z = blobs[q2];
+      if (!isFinite(z.x) || !isFinite(z.y) || !isFinite(z.r)) remove(q2);
+    }
     for (var c = cuts.length - 1; c >= 0; c--) { cuts[c].age += dt; if (cuts[c].age > 3.6) cuts.splice(c, 1); }
     for (var j = bites.length - 1; j >= 0; j--) { var q = bites[j]; if (blobs.indexOf(q.link) < 0 || q.link.merging >= 0) bites.splice(j, 1); }
     return write(f.lava);
   }
+  function drift(b) {
+    if (b.kind === 'bead') {
+      var p = b.parent; if (!p) return [0, 0];
+      var po = drift(p); return [po[0] * (b.h || .5), po[1] * (b.h || .5)];
+    }
+    if (b.hx == null) return [0, 0];
+    return [b.x - b.hx, b.y - b.hy];
+  }
   function write(amt) {
-    outB.fill(0); outC.fill(0); outW.fill(0); outI.fill(0); outK.fill(0); outKW.fill(0); outN.fill(0);
+    outB.fill(0); outC.fill(0); outW.fill(0); outI.fill(0); outK.fill(0); outKW.fill(0); outN.fill(0); outO.fill(0); outKO.fill(0);
     outBox[0] = outBox[1] = 1e3; outBox[2] = outBox[3] = -1e3;
     if (!amt) return 0;
-    function grow(x0, y0, x1, y1) { outBox[0] = Math.min(outBox[0], x0); outBox[1] = Math.min(outBox[1], y0); outBox[2] = Math.max(outBox[2], x1); outBox[3] = Math.max(outBox[3], y1); }
+    function grow(x0, y0, x1, y1) { if (!(isFinite(x0) && isFinite(y0) && isFinite(x1) && isFinite(y1))) return; outBox[0] = Math.min(outBox[0], x0); outBox[1] = Math.min(outBox[1], y0); outBox[2] = Math.max(outBox[2], x1); outBox[3] = Math.max(outBox[3], y1); }
     var n = 0, strands = [];
+    // shapeUv -> canvas uv scale at the top of the page (the mapping is affine there)
+    var r0 = canvasRect(), A = toShape(r0.left, r0.top), B = toShape(r0.right, r0.bottom);
+    var su = A && B && B[0] !== A[0] ? 1 / (B[0] - A[0]) : 0, sv = A && B && B[1] !== A[1] ? 1 / (B[1] - A[1]) : 0;
     for (var i = 0; i < blobs.length; i++) {
       var b = blobs[i]; if (b.r <= 1e-4) continue;
+      var off = drift(b);
+      b.ou = off[0] * su; b.ov = off[1] * sv;
+      outO[n * 4] = b.ou; outO[n * 4 + 1] = b.ov;
       outB[n * 4] = b.x; outB[n * 4 + 1] = b.y; outB[n * 4 + 2] = b.r * amt; outB[n * 4 + 3] = Math.min(.45, b.k) * amt;
       var m = b.r * 1.5 + .06; grow(b.x - m, b.y - m, b.x + m, b.y + m); n++;
       if (b.nw > 2e-4) strands.push(b);
@@ -435,6 +502,7 @@
     for (var s = 0; s < sn; s++) {
       var o = strands[s], ra = o.kind === 'bulb' ? root(o) : [o.hx, o.hy];
       outK[s * 4] = ra[0]; outK[s * 4 + 1] = ra[1]; outK[s * 4 + 2] = o.x; outK[s * 4 + 3] = o.y; outKW[s] = o.nw * amt;
+      outKO[s * 4] = o.ou || 0; outKO[s * 4 + 1] = o.ov || 0;
       grow(Math.min(ra[0], o.x) - .05, Math.min(ra[1], o.y) - .05, Math.max(ra[0], o.x) + .05, Math.max(ra[1], o.y) + .05);
     }
     outN[3] = sn;
@@ -442,6 +510,7 @@
   }
 
   window.__nmLava = { step: step, bubbles: outB, cuts: outC, cutW: outW, bites: outI, necks: outK, neckW: outKW, box: outBox, counts: outN,
+    offs: outO, neckOffs: outKO, get snap() { return snap; }, get snapV() { return snapV; }, get snapOn() { return snapOn; },
     // diagnostics and tests
     _state: function () { return { bubbles: blobs.length, cuts: cuts.length, bites: bites.length, necks: outN[3], away: Object.keys(away).length, sdf: !!sdf, frame: frame, crossings: crossings.slice() }; },
     _toShape: toShape, _inside: inside, _slice: slice, _strike: strike, _pop: pop, _ambient: ambient };
