@@ -107,10 +107,12 @@ html[data-nm-theme="stars"] .nm-sky-door {
 html[data-nm-theme="stars"] .nm-sky-door:focus-visible { outline: 2px dashed #ff7820; outline-offset: 8px; }
 html[data-nm-theme="stars"] .nm-sky-door[aria-busy="true"] { cursor: progress; }
 /* Index: the mark's box is kept on phones too (it is the door), with room above it
-   for the sky (the Big Dipper sits there on a phone) */
+   for the sky: the Big Dipper and Thuban sit there, the one open stretch of sky below
+   the image wall */
 html[data-nm-theme="stars"] footer .foot-mark {
-  display: block; position: relative; min-height: 0;
-  height: calc(max(min(426px, 62vw), 22.1875vw) / 2.01 + clamp(56px, 7vw, 120px) + clamp(40px, 5vw, 88px));
+  display: block; position: relative; min-height: 0; box-sizing: border-box;
+  padding-top: clamp(190px, 22vw, 380px);
+  height: calc(max(min(426px, 62vw), 22.1875vw) / 2.01 + clamp(190px, 22vw, 380px) + clamp(40px, 5vw, 88px));
 }
 @media (max-width: 767px) {
   html[data-nm-theme="stars"] footer .foot-mark { padding: 190px 0 40px; height: calc(62vw / 2.01 + 230px); }

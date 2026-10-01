@@ -1622,10 +1622,10 @@
     [23.926, 47.3558, 6.0, 1.16]
   ],
   "featured": [
-    {"id": "polaris", "name": "Polaris", "designation": "α Ursae Minoris", "ra": 2.5302, "dec": 89.2642, "vmag": 2.02, "bv": 0.6, "coords": "RA 02h 31m 49s · Dec +89° 15′ 51″", "distance": "about 430 light-years", "fact": "The North Star, and a Cepheid variable: it pulses gently in brightness about every four days."},
-    {"id": "mizar", "name": "Mizar", "designation": "ζ Ursae Majoris", "ra": 13.3987, "dec": 54.9253, "vmag": 2.27, "bv": 0.02, "coords": "RA 13h 23m 56s · Dec +54° 55′ 31″", "distance": "83 light-years", "fact": "Look for faint Alcor right beside it: seeing both was a traditional test of good eyesight."},
-    {"id": "dubhe", "name": "Dubhe", "designation": "α Ursae Majoris", "ra": 11.0621, "dec": 61.7508, "vmag": 1.79, "bv": 1.07, "coords": "RA 11h 03m 44s · Dec +61° 45′ 03″", "distance": "123 light-years", "fact": "One of the Pointers: a line from Merak through Dubhe, extended about five times, leads to Polaris."},
-    {"id": "thuban", "name": "Thuban", "designation": "α Draconis", "ra": 14.0731, "dec": 64.3758, "vmag": 3.65, "bv": -0.05, "coords": "RA 14h 04m 23s · Dec +64° 22′ 33″", "distance": "300 light-years", "fact": "It was the pole star when the ancient Egyptians were building their pyramids."}
+    {"id": "polaris", "name": "Polaris", "designation": "α Ursae Minoris", "ra": 2.5302, "dec": 89.2642, "vmag": 2.02, "bv": 0.6, "coords": "RA 02h 31m 49s · Dec +89° 15′ 51″", "distance": "about 445 light-years", "fact": "The North Star, and a Cepheid variable: it pulses gently in brightness about every four days."},
+    {"id": "mizar", "name": "Mizar", "designation": "ζ Ursae Majoris", "ra": 13.3987, "dec": 54.9253, "vmag": 2.27, "bv": 0.02, "coords": "RA 13h 23m 56s · Dec +54° 55′ 31″", "distance": "about 83 light-years", "fact": "Look for faint Alcor right beside it: telling the two apart was a traditional test of eyesight."},
+    {"id": "dubhe", "name": "Dubhe", "designation": "α Ursae Majoris", "ra": 11.0621, "dec": 61.7508, "vmag": 1.79, "bv": 1.07, "coords": "RA 11h 03m 44s · Dec +61° 45′ 04″", "distance": "about 123 light-years", "fact": "One of the Pointers: extend the line from Merak through Dubhe about five times its length to reach Polaris."},
+    {"id": "thuban", "name": "Thuban", "designation": "α Draconis", "ra": 14.0731, "dec": 64.3758, "vmag": 3.65, "bv": -0.05, "coords": "RA 14h 04m 23s · Dec +64° 22′ 33″", "distance": "about 280 light-years", "fact": "It was the pole star about 4,500 years ago, when the Egyptians built the pyramids at Giza."}
   ],
   "source": "Yale Bright Star Catalogue, 5th revised ed. (Hoffleit & Warren 1991), CDS catalogue V/50; facts: see docs/night-sky-facts.md"
 }

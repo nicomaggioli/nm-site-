@@ -1784,7 +1784,7 @@
   "featured": [
     {"id": "vega", "name": "Vega", "designation": "α Lyrae", "ra": 18.6156, "dec": 38.7836, "vmag": 0.03, "bv": 0.0, "coords": "RA 18h 36m 56s · Dec +38° 47′ 01″", "distance": "25 light-years", "fact": "In July 1850, at Harvard, it became the first star other than the Sun to be photographed."},
     {"id": "deneb", "name": "Deneb", "designation": "α Cygni", "ra": 20.6905, "dec": 45.2803, "vmag": 1.25, "bv": 0.09, "coords": "RA 20h 41m 26s · Dec +45° 16′ 49″", "distance": "about 1,400–2,600 light-years", "fact": "Its name is Arabic for “tail”: it marks the swan’s tail. Few stars the eye can see are as luminous."},
-    {"id": "altair", "name": "Altair", "designation": "α Aquilae", "ra": 19.8464, "dec": 8.8683, "vmag": 0.77, "bv": 0.22, "coords": "RA 19h 50m 47s · Dec +08° 52′ 06″", "distance": "16.7 light-years", "fact": "It spins once in under eight hours, so fast that it is over 20% wider at the equator than pole to pole."},
+    {"id": "altair", "name": "Altair", "designation": "α Aquilae", "ra": 19.8464, "dec": 8.8683, "vmag": 0.77, "bv": 0.22, "coords": "RA 19h 50m 47s · Dec +08° 52′ 06″", "distance": "16.7 light-years", "fact": "It spins in less than half a day, so fast that it is over 20% wider at the equator than pole to pole."},
     {"id": "albireo", "name": "Albireo", "designation": "β Cygni", "ra": 19.512, "dec": 27.9597, "vmag": 3.08, "bv": 1.13, "coords": "RA 19h 30m 43s · Dec +27° 57′ 35″", "distance": "about 400 light-years", "fact": "One star to the eye; a small telescope splits it into a gold star and a fainter blue one."}
   ],
   "source": "Yale Bright Star Catalogue, 5th revised ed. (Hoffleit & Warren 1991), CDS catalogue V/50; facts: see docs/night-sky-facts.md"
