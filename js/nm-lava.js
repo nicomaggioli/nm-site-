@@ -50,6 +50,9 @@
         sdf = g;
       } catch (e) { sdf = null; }
     };
+    // the same CORS mode as index.html's preload and the file's other loaders (the hero's,
+    // nm-space's), so they can all share one download and decode
+    img.crossOrigin = 'anonymous';
     img.src = '/textures/nm-mark-sdf.png';
   })();
   function tex(u, v) {
@@ -338,20 +341,26 @@
 
   /* ---------- the collage under the mark, captured for the pieces ---------- */
   // The work collage is DOM (#nm-made) under the transparent mark, so a moving piece would
-  // only reveal whatever tile is behind it. Capture what the visitor sees there at the moment
-  // pieces appear (posters at the top of the page, same crops as object-fit: cover).
-  function takeSnap() {
+  // only reveal whatever tile is behind it. The pieces carry a capture of what the visitor sees
+  // there (posters at the top of the page, same crops as object-fit: cover).
+  // Drawing the ~120 tiles costs ~50 ms the first time (each image is decoded for the canvas),
+  // which used to stall the frame where the first pieces appear. So the capture is made ahead
+  // of time, a few tiles per idle slice while the visitor is at the top and nothing is cut, and
+  // kept while it still matches the page. A cheap scan (~0.2 ms) checks that in idle time and
+  // again when pieces appear, and redraws only the tiles that changed (an image that finished
+  // loading, a video frame), so a piece never carries a stale or wrong tile.
+  var snapList = null, snapView = '', snapJob = null, snapIdle = 0, snapNext = 0;
+  var snapStats = { full: 0, patch: 0, slices: 0, sync: 0 };
+  var idle = window.requestIdleCallback
+    ? function (fn) { return requestIdleCallback(fn, { timeout: 1000 }); }
+    : function (fn) { return setTimeout(function () { var t0 = performance.now(); fn({ timeRemaining: function () { return Math.max(0, 8 - (performance.now() - t0)); } }); }, 40); };
+  // what the capture would draw right now, in order, each tile with a signature of its state
+  function snapScan() {
     var made = document.getElementById('nm-made'), r = canvasRect();
-    if (!made || !r || r.width < 2) return false;
-    var W = r.width, H = r.height, d = Math.min(1.5, window.devicePixelRatio || 1);
-    if (!snap) { snap = document.createElement('canvas'); snapCtx = snap.getContext('2d'); }
-    var cw = Math.round(W * d), ch = Math.round(H * d);
-    if (snap.width !== cw || snap.height !== ch) { snap.width = cw; snap.height = ch; }
-    var c = snapCtx;
-    c.setTransform(d, 0, 0, d, 0, 0);
-    c.clearRect(0, 0, W, H);
+    if (!made || !r || r.width < 2) return null;
+    var W = r.width, H = r.height, d = Math.min(1.5, window.devicePixelRatio || 1), list = [];
     var bg = getComputedStyle(made).backgroundColor;
-    if (bg && !/rgba\(.*,\s*0\)$|^transparent$/.test(bg)) { c.fillStyle = bg; c.fillRect(0, 0, W, H); }
+    if (!bg || /rgba\(.*,\s*0\)$|^transparent$/.test(bg)) bg = '';
     var els = made.querySelectorAll('img, video, canvas');
     for (var i = 0; i < els.length; i++) {
       var el = els[i], b = el.getBoundingClientRect();
@@ -365,11 +374,124 @@
         var k = Math.max(b.width / sw, b.height / sh);
         sW = b.width / k; sH = b.height / k; sx = (sw - sW) / 2; sy = (sh - sH) / 2;
       }
-      c.globalAlpha = op;
-      try { c.drawImage(el, sx, sy, sW, sH, b.left - r.left, b.top - r.top, b.width, b.height); } catch (e) { /* tainted or not ready: that tile stays see-through */ }
+      var x = b.left - r.left, y = b.top - r.top;
+      // a playing video (or a canvas) changes every frame: it is redrawn whenever pieces appear
+      var live = tag === 'CANVAS' || (tag === 'VIDEO' && !el.paused);
+      list.push({ el: el, sx: sx, sy: sy, sW: sW, sH: sH, x: x, y: y, w: b.width, h: b.height, op: op, live: live, px: sw * sh,
+        sig: (el.currentSrc || '') + '|' + sw + 'x' + sh + '|' + x + ',' + y + ',' + b.width + ',' + b.height + '|' + op + '|' + cs.objectFit + (tag === 'VIDEO' && !live ? '|' + el.currentTime : '') });
     }
+    return { view: W + 'x' + H + '@' + d + '|' + bg, W: W, H: H, d: d, bg: bg, list: list };
+  }
+  function paint(c, e) {
+    c.globalAlpha = e.op;
+    try { c.drawImage(e.el, e.sx, e.sy, e.sW, e.sH, e.x, e.y, e.w, e.h); } catch (err) { /* tainted or not ready: that tile stays see-through */ }
+  }
+  // a whole new capture: cleared now, tiles drawn by snapWork (in idle slices, or all at once)
+  function snapBegin(s) {
+    if (!snap) { snap = document.createElement('canvas'); snapCtx = snap.getContext('2d'); }
+    var cw = Math.round(s.W * s.d), ch = Math.round(s.H * s.d);
+    if (snap.width !== cw || snap.height !== ch) { snap.width = cw; snap.height = ch; }
+    var c = snapCtx;
+    c.setTransform(s.d, 0, 0, s.d, 0, 0);
     c.globalAlpha = 1;
-    snapV++;
+    c.clearRect(0, 0, s.W, s.H);
+    if (s.bg) { c.fillStyle = s.bg; c.fillRect(0, 0, s.W, s.H); }
+    snapList = null;                // incomplete; the shader keeps the last finished one until snapV moves
+    snapJob = { s: s, i: 0 };
+    snapStats.full++;
+  }
+  // The canvas only records draws; images are decoded when the recording is rasterised (once
+  // enough has piled up, or at the hero's texture upload), which would put all the decoding in
+  // one long task. Drawing the capture into a 1 px canvas rasterises it now, inside this slice.
+  var flushCv = null;
+  function snapFlush() {
+    if (!flushCv) { flushCv = document.createElement('canvas'); flushCv.width = flushCv.height = 1; }
+    var fc = flushCv.getContext('2d');
+    try { fc.drawImage(snap, 0, 0, 1, 1); } catch (e) { /* nothing to gain */ }
+    fc.clearRect(0, 0, 1, 1);
+  }
+  function snapWork(deadline) {
+    var s = snapJob.s, list = s.list, c = snapCtx, pend = 0;
+    c.setTransform(s.d, 0, 0, s.d, 0, 0);
+    while (snapJob.i < list.length) {
+      var e = list[snapJob.i++];
+      paint(c, e);
+      if (!deadline) continue;
+      // decode a handful of small images at a time; a big one gets a slice of its own
+      pend += e.px;
+      if (pend > 2.5e5) { snapFlush(); pend = 0; }
+      if (deadline.timeRemaining() < 3 || (snapJob.i < list.length && list[snapJob.i].px > 2.5e5)) break;
+    }
+    if (pend) snapFlush();
+    c.globalAlpha = 1;
+    snapStats.slices++;
+    if (snapJob.i < list.length) return false;
+    snapList = list; snapView = s.view; snapJob = null; snapV++;
+    return true;
+  }
+  // Bring the finished capture up to date by redrawing only the regions of tiles that changed
+  // (every tile under a region is redrawn in page order, clipped to whole pixels, so the result
+  // is the same as a full capture). False when only a full capture will do.
+  function snapPatch(s, withLive) {
+    if (!snapList || s.view !== snapView) return false;
+    var was = new Map(), now2 = new Map(), dirty = [], last = -1, i, e, o;
+    for (i = 0; i < snapList.length; i++) was.set(snapList[i].el, i);
+    for (i = 0; i < s.list.length; i++) {
+      e = s.list[i]; now2.set(e.el, e);
+      if (!was.has(e.el)) { dirty.push(e); continue; }
+      var j = was.get(e.el); if (j < last) return false; last = j;   // reordered
+      o = snapList[j];
+      if (o.sig !== e.sig) dirty.push(o, e); else if (withLive && e.live) dirty.push(e);
+    }
+    for (i = 0; i < snapList.length; i++) if (!now2.has(snapList[i].el)) dirty.push(snapList[i]);
+    if (!dirty.length) return true;
+    if (dirty.length > 24) return false;
+    var c = snapCtx, d = s.d, done = {};
+    for (i = 0; i < dirty.length; i++) {
+      var q = dirty[i];
+      var X0 = Math.max(0, Math.floor(q.x * d) - 1), Y0 = Math.max(0, Math.floor(q.y * d) - 1);
+      var X1 = Math.min(snap.width, Math.ceil((q.x + q.w) * d) + 1), Y1 = Math.min(snap.height, Math.ceil((q.y + q.h) * d) + 1);
+      var id = X0 + ',' + Y0 + ',' + X1 + ',' + Y1;
+      if (X1 <= X0 || Y1 <= Y0 || done[id]) continue;
+      done[id] = 1;
+      c.save();
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.beginPath(); c.rect(X0, Y0, X1 - X0, Y1 - Y0); c.clip();
+      c.clearRect(X0, Y0, X1 - X0, Y1 - Y0);
+      c.setTransform(d, 0, 0, d, 0, 0);
+      if (s.bg) { c.globalAlpha = 1; c.fillStyle = s.bg; c.fillRect(0, 0, s.W, s.H); }
+      var u0 = X0 / d, v0 = Y0 / d, u1 = X1 / d, v1 = Y1 / d;
+      for (var k = 0; k < s.list.length; k++) { e = s.list[k]; if (e.x < u1 && e.x + e.w > u0 && e.y < v1 && e.y + e.h > v0) paint(c, e); }
+      c.restore();
+    }
+    snapList = s.list; snapV++; snapStats.patch++;
+    return true;
+  }
+  // idle time at the top with nothing cut: check the capture, and (re)draw it a few tiles at a time
+  function snapTick(deadline) {
+    snapIdle = 0;
+    if (blobs.length || !frame || !frame.lava || (frame.scroll || 0) >= .01 || document.hidden) return;
+    try {
+      if (snapJob) {
+        var r = canvasRect(), s0 = snapJob.s;
+        if (r.width !== s0.W || r.height !== s0.H || Math.min(1.5, window.devicePixelRatio || 1) !== s0.d) snapJob = null;
+      }
+      if (!snapJob) {
+        var s = snapScan();
+        if (!s) { snapNext = performance.now() + 1000; return; }
+        if (snapPatch(s, false)) { snapNext = performance.now() + 1000; return; }
+        snapBegin(s);
+      }
+      snapNext = snapWork(deadline) ? performance.now() + 1000 : 0;
+    } catch (e) { snapJob = null; snapNext = performance.now() + 5000; }
+  }
+  // pieces are appearing: the capture must be current now (normally there is nothing left to do)
+  function takeSnap() {
+    snapStats.sync++;
+    if (snapJob) snapWork(null);
+    var s = snapScan();
+    if (!s) return !!snapList;
+    if (!snapPatch(s, true)) { snapBegin(s); snapWork(null); }
     return true;
   }
 
@@ -441,6 +563,7 @@
     }
     var pieces = blobs.length > 0, top = (f.scroll || 0) < .01, key = innerWidth + 'x' + innerHeight;
     if (pieces && top && (!hadPieces || key !== snapKey)) { try { if (takeSnap()) snapKey = key; } catch (e) { /* plain window behaviour */ } }
+    else if (!pieces && top && !snapIdle && performance.now() >= snapNext) snapIdle = idle(snapTick);
     hadPieces = pieces;
     snapOn = snap && snapKey ? Math.max(0, 1 - (f.scroll || 0) / .02) : 0;
     for (var q2 = blobs.length - 1; q2 >= 0; q2--) {
@@ -512,6 +635,7 @@
   window.__nmLava = { step: step, bubbles: outB, cuts: outC, cutW: outW, bites: outI, necks: outK, neckW: outKW, box: outBox, counts: outN,
     offs: outO, neckOffs: outKO, get snap() { return snap; }, get snapV() { return snapV; }, get snapOn() { return snapOn; },
     // diagnostics and tests
-    _state: function () { return { bubbles: blobs.length, cuts: cuts.length, bites: bites.length, necks: outN[3], away: Object.keys(away).length, sdf: !!sdf, frame: frame, crossings: crossings.slice() }; },
+    _state: function () { return { bubbles: blobs.length, cuts: cuts.length, bites: bites.length, necks: outN[3], away: Object.keys(away).length, sdf: !!sdf, frame: frame, crossings: crossings.slice(),
+      snap: { ready: !!snapList, pending: !!snapJob, tiles: snapList ? snapList.length : 0, full: snapStats.full, patch: snapStats.patch, slices: snapStats.slices, sync: snapStats.sync } }; },
     _toShape: toShape, _inside: inside, _slice: slice, _strike: strike, _pop: pop, _ambient: ambient };
 })();
