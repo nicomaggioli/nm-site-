@@ -11,7 +11,7 @@ test('service previews handle desktop selection, touch expansion and breakpoint 
   const items=Array.from({length:6},(_,index)=>{
     const attributes={},panelAttributes={},classes=new Set();
     const image={loading:'lazy'};
-    const panel={setAttribute:(key,value)=>panelAttributes[key]=value,querySelector:()=>image};
+    const panel={setAttribute:(key,value)=>panelAttributes[key]=value,querySelector:selector=>selector==='img'?image:null};
     const button=new EventTarget();
     button.setAttribute=(key,value)=>attributes[key]=value;
     button.focus=()=>{focused=index;button.dispatchEvent(new Event('focus'));};
@@ -51,6 +51,36 @@ test('service previews handle desktop selection, touch expansion and breakpoint 
     assert.equal(item.attributes['aria-expanded'],String(index===3));
     assert.equal(item.panelAttributes['aria-hidden'],String(index!==3));
   });
+});
+
+test('a service loop plays only while its panel is open and the section is near the screen', () => {
+  const desktop=new EventTarget();desktop.matches=true;
+  const reduce={matches:false};
+  let intersection;
+  const video={dataset:{src:'/loop.mp4',mobileSrc:'/loop-mobile.mp4'},paused:true,src:null,
+    getAttribute(name){return name==='src'?this.src:null;},addEventListener(){},
+    play(){this.paused=false;},pause(){this.paused=true;}};
+  const items=Array.from({length:3},(_,index)=>{
+    const button=new EventTarget();button.setAttribute=()=>{};
+    const panel={setAttribute:()=>{},querySelector:s=>s==='img'?{loading:'lazy'}:(s==='video[data-src]'&&index===1?video:null)};
+    return {classList:{toggle(){}},querySelector:s=>s==='button'?button:panel,button};
+  });
+  const section={dataset:{},querySelectorAll:()=>items};
+  function IntersectionObserver(callback){intersection=callback;this.observe=()=>{};this.disconnect=()=>{};}
+  const context={window:{IntersectionObserver},document:{getElementById:()=>section},
+    matchMedia:query=>/reduce/.test(query)?reduce:desktop,IntersectionObserver};
+  vm.runInNewContext(script('nm-services.js'),context);
+  let y=0;
+  const hover=index=>items[index].button.dispatchEvent(Object.assign(new Event('pointermove'),{pointerType:'mouse',clientX:1,clientY:++y}));
+  hover(1);
+  assert.equal(video.paused,true,'nothing loads before the section approaches');
+  intersection([{isIntersecting:true}]);
+  assert.equal(video.paused,false);assert.equal(video.src,'/loop.mp4');
+  hover(0);assert.equal(video.paused,true,'closing the panel pauses its loop');
+  hover(1);assert.equal(video.paused,false);
+  intersection([{isIntersecting:false}]);assert.equal(video.paused,true,'scrolling far away pauses it');
+  intersection([{isIntersecting:true}]);reduce.matches=true;hover(0);hover(1);
+  assert.equal(video.paused,true,'reduced motion keeps the poster');
 });
 
 function scheduler(hasReact) {

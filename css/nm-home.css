@@ -608,6 +608,13 @@ main > #about{ background:#0a0a0a !important;
 #nm-services .nm-svc-contain{ background:transparent; border-color:transparent; }
 #nm-services .nm-svc-art{ background:#0a0a0a; }
 #nm-services .nm-svc-art img{ object-fit:contain; }
+/* a looping video over its poster: fades in once it is actually playing */
+#nm-services .nm-svc-motion{ position:relative; }
+#nm-services .nm-svc-motion video{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  opacity:0; transition:opacity .3s ease;
+}
+#nm-services .nm-svc-motion video.is-playing{ opacity:1; }
 #nm-services .nm-svc-copy{
   display:none; grid-column:1; grid-row:calc(var(--svc-row) * 2); align-self:start;
   margin:0 0 26px; padding:0 32px 0 calc(20px + var(--svc-gap)); color:rgba(255,255,255,.66);

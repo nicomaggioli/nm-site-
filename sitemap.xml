@@ -117,7 +117,7 @@
       <image:loc>https://nicomaggioli.com/media/nm-work/Mushroom_Ceramic_Lamp.webp</image:loc>
     </image:image>
     <image:image>
-      <image:loc>https://nicomaggioli.com/media/nm-work/Puffco_Black_Glass_Vaporizer.webp</image:loc>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Pouch_Shelf.webp</image:loc>
     </image:image>
     <image:image>
       <image:loc>https://nicomaggioli.com/media/nm-work/Mirage_Cybertruck_Vehicle.webp</image:loc>
@@ -243,7 +243,7 @@
       <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Sneaker_Collection.webp</image:loc>
     </image:image>
     <image:image>
-      <image:loc>https://nicomaggioli.com/media/services/ravi-slime-sneaker.jpg</image:loc>
+      <image:loc>https://nicomaggioli.com/media/services/ravi-flying-sneaker.webp</image:loc>
     </image:image>
     <image:image>
       <image:loc>https://nicomaggioli.com/media/services/ravi-runner-tech-pack.jpg</image:loc>
@@ -627,6 +627,9 @@
       <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Slime_Step_Sneaker.webp</image:loc>
     </image:image>
     <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Flying_Sneaker.webp</image:loc>
+    </image:image>
+    <image:image>
       <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Snake_Leggings.webp</image:loc>
     </image:image>
     <image:image>
@@ -724,6 +727,24 @@
     </image:image>
     <image:image>
       <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Yellow_Card_Wallet.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Aisle.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Pouch_Shelf.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Embossed.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_On_Shelf.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Studio.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Ravioli_Card_Holder_Studio_Angle.webp</image:loc>
     </image:image>
     <image:image>
       <image:loc>https://nicomaggioli.com/media/nm-work/Ravisauce_Yellow_Figurines_Workbench.webp</image:loc>

@@ -18,6 +18,25 @@
     if (img) img.loading = 'eager';
   }
 
+  // A panel with a looping video (over its poster image) plays only while it is open and the
+  // section is near the screen; never under reduced motion. Phones get the lighter file.
+  var still = matchMedia('(prefers-reduced-motion: reduce)');
+  var inView = false;
+  function motion(panel, on) {
+    var video = panel.querySelector('video[data-src]');
+    if (!video) return;
+    if (on && near && inView && !still.matches) {
+      if (!video.getAttribute('src')) {
+        video.addEventListener('playing', function () { video.classList.add('is-playing'); });
+        video.src = (!desktop.matches && video.dataset.mobileSrc) || video.dataset.src;
+      }
+      var playing = video.play();
+      if (playing && playing.catch) playing.catch(function () { /* the poster stays */ });
+    } else if (!video.paused) {
+      video.pause();
+    }
+  }
+
   function render() {
     items.forEach(function (item, index) {
       var open = desktop.matches ? index === selected : expanded.has(index);
@@ -25,6 +44,7 @@
       buttons[index].setAttribute('aria-expanded', String(open));
       panels[index].setAttribute('aria-hidden', String(!open));
       if (open && near) load(panels[index]);
+      motion(panels[index], open);
     });
   }
 
@@ -76,6 +96,7 @@
     near = true;
     if (desktop.matches) panels.forEach(load);
     else expanded.forEach(function (index) { load(panels[index]); });
+    render();
   }
   desktop.addEventListener('change', function () {
     if (!desktop.matches) expanded = new Set([selected]);
@@ -83,13 +104,14 @@
     if (near) warm();
   });
   if ('IntersectionObserver' in window) {
+    // stays connected: it also tells a playing loop when the section has gone far off screen
     var observer = new IntersectionObserver(function (entries) {
-      if (entries.some(function (entry) { return entry.isIntersecting; })) {
-        warm();
-        observer.disconnect();
-      }
+      inView = entries.some(function (entry) { return entry.isIntersecting; });
+      if (inView && !near) warm();
+      else render();
     }, {rootMargin:'900px 0px'});
     observer.observe(section);
   }
+  if (still.addEventListener) still.addEventListener('change', render);
   render();
 });

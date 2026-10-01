@@ -11,8 +11,10 @@
    initial load. */
 (function () {
   var TH = '/media/nm-thumb/', FULL = '/media/nm-work/';
-  var lb = null, imgEl = null, messageEl = null;
+  var lb = null, imgEl = null, videoEl = null, messageEl = null;
   var tiles = [], idx = -1, lastFocus = null;
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
+  var small = window.matchMedia && matchMedia('(max-width: 700px)');
 
   function full(src) { return src.indexOf(TH) === 0 ? FULL + src.slice(TH.length) : src; }
 
@@ -32,9 +34,11 @@
       '<button class="nm-lb-close" type="button" aria-label="Close">✕</button>' +
       '<button class="nm-lb-prev"  type="button" aria-label="Previous image">←</button>' +
       '<button class="nm-lb-next"  type="button" aria-label="Next image">→</button>' +
-      '<figure><img alt=""><p class="nm-lb-message" role="status" hidden></p></figure>';
+      '<figure><img alt=""><video muted loop playsinline hidden></video>' +
+      '<p class="nm-lb-message" role="status" hidden></p></figure>';
     document.body.appendChild(lb);
     imgEl = lb.querySelector('img');
+    videoEl = lb.querySelector('video');
     messageEl = lb.querySelector('.nm-lb-message');
     return lb;
   }
@@ -53,6 +57,19 @@
     var thumbnail = t.currentSrc || source;
     if (thumbnail === new URL(original, document.baseURI).href) thumbnail = source;
     messageEl.hidden = true; messageEl.textContent = '';
+    var tile = t.closest('.tile');
+    if (tile && tile.hasAttribute('data-motion') && !(still && still.matches)) {
+      // a motion tile: the viewer plays the loop in place of the still
+      imgEl.hidden = true; imgEl.removeAttribute('src');
+      videoEl.hidden = false;
+      videoEl.setAttribute('aria-label', t.getAttribute('alt') || '');
+      videoEl.src = motionSrc(tile);
+      var playing = videoEl.play();
+      if (playing && playing.catch) playing.catch(function () { /* stays on its first frame */ });
+      preload(i - 1); preload(i + 1);
+      return;
+    }
+    videoEl.pause(); videoEl.removeAttribute('src'); videoEl.hidden = true;
     imgEl.hidden = false;
     imgEl.classList.remove('is-ready');
     imgEl.onload = function () { imgEl.classList.add('is-ready'); };
@@ -92,7 +109,11 @@
     if (window.__nmDialog) window.__nmDialog.release(lb);
     document.documentElement.classList.remove('nm-lb-open');
     /* drop the src so a 3MB image is not held in memory behind the overlay */
-    setTimeout(function () { if (!lb.classList.contains('is-open')) imgEl.removeAttribute('src'); }, 260);
+    videoEl.pause();
+    setTimeout(function () {
+      if (lb.classList.contains('is-open')) return;
+      imgEl.removeAttribute('src'); videoEl.removeAttribute('src');
+    }, 260);
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
   function step(d) {
@@ -150,7 +171,42 @@
     if (i >= 0) open(i, tile);
   });
 
-  arm();
-  document.addEventListener('DOMContentLoaded', arm);
-  window.addEventListener('load', arm);
+  /* Motion tiles (<figure class="tile" data-motion="loop.mp4">): the still stays the tile, its
+     poster and everything the archive tooling reads; a muted loop is laid over it while the tile
+     is on screen (phones get data-motion-mobile) and paused when it leaves. Never under reduced
+     motion. */
+  function motionSrc(tile) {
+    return (small && small.matches && tile.getAttribute('data-motion-mobile')) || tile.getAttribute('data-motion');
+  }
+  var watched = [];
+  function motion() {
+    if (!('IntersectionObserver' in window)) return;
+    var io = motion.io || (motion.io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var tile = e.target, v = tile.querySelector(':scope > video.tile-motion');
+        if (e.isIntersecting && !(still && still.matches)) {
+          if (!v) {
+            v = document.createElement('video');
+            v.className = 'tile-motion';
+            v.muted = true; v.loop = true; v.playsInline = true;
+            v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
+            v.addEventListener('playing', function () { v.classList.add('is-playing'); });
+            v.src = motionSrc(tile);
+            tile.appendChild(v);
+          }
+          var playing = v.play();
+          if (playing && playing.catch) playing.catch(function () { /* the still stays */ });
+        } else if (v && !v.paused) {
+          v.pause();
+        }
+      });
+    }, { rootMargin: '200px 0px' }));
+    [].forEach.call(document.querySelectorAll('.grid .tile[data-motion]'), function (t) {
+      if (watched.indexOf(t) < 0) { watched.push(t); io.observe(t); }
+    });
+  }
+
+  arm(); motion();
+  document.addEventListener('DOMContentLoaded', function () { arm(); motion(); });
+  window.addEventListener('load', function () { arm(); motion(); });
 })();

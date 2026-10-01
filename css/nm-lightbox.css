@@ -60,6 +60,23 @@
   .grid .tile:hover img{ opacity:.82; }
 }
 
+/* motion tiles: the loop lies over the still and moves with it (zoom and hover) */
+.grid .tile > video.tile-motion{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none;
+  opacity:0; transition:transform .5s cubic-bezier(.2,.7,.3,1), opacity .3s ease;
+}
+.grid .tile > video.tile-motion.is-playing{ opacity:1; }
+@media (hover:hover){
+  .grid .tile:hover > video.tile-motion{ transform:scale(1.035); }
+  .grid .tile:hover > video.tile-motion.is-playing{ opacity:.82; }
+}
+@media (prefers-reduced-motion:reduce){ .grid .tile > video.tile-motion{ display:none; } }
+.nm-lb video{
+  max-width:100%; max-height:82vh; width:auto; height:auto;
+  display:block; border-radius:18px;
+}
+.nm-lb video[hidden]{ display:none; }
+
 html.nm-lb-open, html.nm-lb-open body{ overflow:hidden !important; }
 
 @media (max-width:767.98px){
