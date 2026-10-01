@@ -14,7 +14,7 @@
     '/js/theme-stars.js': 'ccdf605c09',
     '/js/nm-starcut.js': 'a40aa413ec',
     '/js/nm-warp.js': '92346f84d1',
-    '/js/nm-space.js': '66b0f01672',
+    '/js/nm-space.js': 'd8a73b4748',
     '/js/nm-sky.js': '62593905f1'
   };
   window.__nmTheme = 'stars';

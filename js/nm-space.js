@@ -47,25 +47,33 @@
      Reduced motion: the mark is simply there, formed, with the footer.
    The pointer's wake (NMSpace.wake, shared with js/nm-sky.js so the sky moves as one thing):
      - fine pointers only ((hover: hover) and (pointer: fine), mouse or pen), off under reduced
-       motion, in hidden tabs and while Space Run is open;
+       motion, in hidden tabs and while Space Run is open; no new path behind the Index lightbox;
      - as the cursor moves, the stars near its path ease away from it and drift back once it has
        passed, like water parting behind a hand. A passive pointermove listener only records the
-       path, as short segments (each WK.SLICE ms of travel); each pushes for WK.T s with the
-       envelope u(1-u)^3 (u = age / T: out by ~0.25 s, back to rest at T), weighted by its length
-       and the pointer's speed (a slow drift barely stirs, a sweep parts the sky). Time-based,
-       so 60 and 120 Hz look the same; it settles when the pointer rests or leaves the window;
+       path, as short segments (each WK.SLICE ms of travel or WK.SEG_MAX px, whichever comes
+       first, so a fast sweep parts one lane rather than a chain of bubbles); each pushes for
+       WK.T s with the envelope u^1.5 (1-u)^4.5 (u = age / T: from rest, out by ~0.25 T, back to
+       rest at T), weighted by its length and the pointer's speed (a slow drift barely stirs, a
+       sweep parts the sky). Time-based, so 60 and 120 Hz look the same (and 60, 120 or 250 Hz
+       pointer events, within ~0.3 px); it settles when the pointer rests or leaves the window;
      - the push at a point is away from the nearest point of each segment, r (1 - r²/R²)²:
        zero on the path itself, largest ~0.43 R out, nothing beyond WK.R. The segments add, and
-       one scale per frame (from the strongest push anywhere) keeps the peak under ~WK.A css px,
-       so the field keeps its smooth shape however often the pointer crosses itself: no hole,
-       ring or edge (the local density changes by at most ~x0.65..x1.3 on the nearest particles).
-       Only positions move: no brightness or colour change;
+       one scale per frame (from the strongest push anywhere, sampled along every segment) keeps
+       the peak at about WK.A css px however fast the pointer moves or often it crosses itself
+       (measured 14.8 px on an ordinary reach, 15.1-15.3 on fast sweeps and flicks up to
+       4000 px/s, ~16.7 in a heavy scribble), so the field keeps its smooth shape: no hole, ring
+       or edge. The nearest particles move at most ~85 px/s on an ordinary reach and ~135 on a
+       flick; one pass changes their local density by about x0.7..x1.35, and where passes
+       overlap (a scribble) they bunch between them up to ~x1.8. Only positions move: no
+       brightness or colour change;
      - evaluated in screen space after projection: on the GPU (WAKE_GLSL, the particles here and
        the catalogue stars in nm-sky.js) and on the CPU (wake.at: the featured stars' hover test
        and reticle, the NM's nodes and chart lines), so what is drawn and what is hit agree.
        Depth parallax: particles at view depth <= WK.NEAR take the full push, beyond WK.FAR
        WK.K_FAR of it; the catalogue stars WK.K_SKY; the formed NM mark WK.K_MARK (legible);
-     - both layers draw at display rate while it settles, then idle again at ~30 fps.
+     - both layers draw at display rate while it settles, then idle again at ~30 fps (and the
+       home hero refreshes its copy of them every frame while it settles: wake.live()).
+       The auto quality (quality()) still counts slow frames only while the camera moves.
      Tuning: the WK constants below (live: NMSpace.set({ push: 0.5 }) scales the push, 0 = off;
      NMSpace.debug().wake shows the live segments and the peak push in px).
 
@@ -81,7 +89,8 @@
      .set(opts)     { brightness, glow, motion, density, push } live multipliers (1 = default)
      .wake          the pointer's wake: { K (the WK constants), GLSL (vec2 wake(vec2 css px)),
                       uniforms, bind(gl, uniforms, now), at(x, y, now, out) (css px of push at
-                      full strength; callers scale by their K), busy(now), reset() }
+                      full strength; callers scale by their K), busy(now), live() (busy at the
+                      frame last evaluated, without evaluating one), reset() }
      .debug()       counts, quality, camera, timings
 
    Budget: ~180k particles on desktop, ~50k on phones (fewer when frames run long), DPR <= 1.5;
@@ -128,11 +137,12 @@
 
   /* The pointer's wake (see the header). Displacements are css px. */
   var WK = {
-    SLICE: 50,      // ms of pointer travel per path segment
-    T: 1.0,         // s: how long a segment pushes (strongest ~0.25 T after the pointer passed, at rest by T)
+    SLICE: 50,      // ms of pointer travel per path segment ...
+    SEG_MAX: 60,    // ... or this many css px, whichever comes first (a fast sweep parts one lane, not a chain of bubbles)
+    T: 1.15,        // s: how long a segment pushes (strongest ~0.25 T after the pointer passed, at rest by T)
     R: 170,         // css px: the reach; nothing moves farther than this from the pointer's path
-    A: 16,          // css px: about the most the nearest particles move (the peak approaches it)
-    GAIN: 1.25,     // a fast sweep's strength: its peak is A * g / cbrt(1 + g³), g = GAIN (~0.86 A)
+    A: 16,          // css px: about the most the nearest particles move (a sweep ~0.93 A, a heavy scribble ~1.04 A)
+    GAIN: 1.25,     // a sweep's strength (with how the segments add, its peak ~0.93 A: 14.8-15.3 px)
     V0: 60,         // px/s: at and below this the pointer's speed factor is S_MIN ...
     V1: 1400,       // ... rising to 1 at this speed (a slow drift barely stirs, a sweep parts the sky)
     S_MIN: 0.4,
@@ -142,7 +152,9 @@
     K_SKY: 0.3,     // the catalogue stars and the footer's sky seats, at infinity
     K_MARK: 0.3     // the formed NM mark (its particles, nodes and chart lines): stays legible
   };
-  WK.N = Math.ceil(WK.T * 1000 / WK.SLICE) + 4;   // segments the shaders take: all that can be alive
+  // segments the shaders take (2 N + 14 vertex uniform vectors, inside WebGL's minimum of 128): all
+  // that SLICE alone leaves alive, and room for SEG_MAX's extra ones up to ~35 a second (2100 px/s)
+  WK.N = Math.max(Math.ceil(WK.T * 1000 / WK.SLICE) + 4, 40);
   var api = window.NMSpace = { canvas: null, camera: null, version: 1 };
   var opts = { brightness: 1, glow: 1, motion: 1, density: 1, push: 1 };
 
@@ -183,10 +195,16 @@
   function wakeOK() {
     return fineQ.matches && !reduceQ.matches && !document.hidden && !gameOpen() && opts.push > 0;
   }
+  // the Index lightbox covers the sky (94%): no new path behind it, and what was already moving
+  // settles on its own (no snap back as it fades in), then the layers idle at ~30 fps again
+  function lbOpen() { return root.classList.contains('nm-lb-open'); }
+  // a segment's strength at u = age / T: u^1.5 (1 - u)^4.5, 1 at its peak (u = 0.25); it starts
+  // from rest (no kick as the pointer passes) and settles smoothly back to rest at u = 1
+  function wakeEnv(u) { var v = 1 - u, v2 = v * v; return 29.1961 * u * Math.sqrt(u) * v2 * v2 * Math.sqrt(v); }
   wake.reset = function () { wake.segs.length = 0; wake.cur = null; wake.lt = -1; wake.vs = 0; WF.now = -1; WF.n = 0; WF.r[2] = WF.r[3] = 0; };
   function wakeMove(e) {
     if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-    if (!wakeOK()) { wake.lt = -1; return; }
+    if (!wakeOK() || lbOpen()) { wake.lt = -1; return; }
     var now = performance.now() / 1000, x = e.clientX, y = e.clientY, lx = wake.lx, ly = wake.ly, lt = wake.lt;
     if (!isFinite(x) || !isFinite(y)) return;
     if (lt >= 0 && x === lx && y === ly) return;
@@ -195,14 +213,19 @@
     if (lt < 0 || now - lt > 0.14) { wake.vs = 0; wake.cur = null; return; }
     var dx = x - lx, dy = y - ly, d = Math.sqrt(dx * dx + dy * dy), dt = Math.max(0.004, now - lt);
     wake.vs += (d / dt - wake.vs) * Math.min(1, dt / 0.05);   // the pointer's speed, px/s, smoothed
-    // the open segment grows until it holds SLICE ms of travel (so at most T / SLICE + 2 are alive,
-    // whatever the event rate), then the next one starts where it ends
+    // the open segment grows until it holds SLICE ms of travel or SEG_MAX px of path, then the next
+    // one starts where it ends. Long segments would push out at their rounded ends like a chain of
+    // bubbles; the length limit keeps a fast sweep one smooth lane. On time alone at most
+    // T / SLICE + 2 are alive; only a sustained frantic scribble (over ~2100 px/s for a second)
+    // makes more than N, and then the oldest goes (by then dozens overlap: no visible step)
     var S2 = wake.segs, cur = wake.cur;
-    if (cur && cur.bx === lx && cur.by === ly && (lt - cur.t) * 1000 < WK.SLICE) { cur.bx = x; cur.by = y; }
+    while (S2.length && now - S2[0].t >= WK.T) S2.shift();
+    if (cur && cur.bx === lx && cur.by === ly && (lt - cur.t) * 1000 < WK.SLICE &&
+        Math.hypot(cur.bx - cur.ax, cur.by - cur.ay) < WK.SEG_MAX) { cur.bx = x; cur.by = y; }
     else {
       cur = wake.cur = { ax: lx, ay: ly, bx: x, by: y, t: lt, w: 0 };
       S2.push(cur);
-      if (S2.length > WK.N) S2.shift();   // (never while the event clock is sane: the oldest is spent)
+      if (S2.length > WK.N) S2.shift();
     }
     var len = Math.hypot(cur.bx - cur.ax, cur.by - cur.ay);
     cur.w = WK.GAIN * Math.min(1, len / WAKE_L) * (WK.S_MIN + (1 - WK.S_MIN) * smooth(WK.V0, WK.V1, wake.vs));
@@ -230,8 +253,7 @@
     if (!wakeOK()) { wake.reset(); WF.now = t; return WF; }
     var A = WF.a, B = WF.b, n = 0, x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     for (var i = 0; i < S2.length && n < WK.N; i++) {
-      var s = S2[i], u = clamp((t - s.t) / WK.T, 0, 1), env = 9.4815 * u * (1 - u) * (1 - u) * (1 - u);
-      var w = s.w * env;
+      var s = S2[i], w = s.w * wakeEnv(clamp((t - s.t) / WK.T, 0, 1));
       if (w < 1e-4) continue;
       var ex = s.bx - s.ax, ey = s.by - s.ay, e2 = ex * ex + ey * ey, o = n * 4;
       A[o] = s.ax; A[o + 1] = s.ay; A[o + 2] = ex; A[o + 3] = ey;
@@ -242,17 +264,20 @@
     WF.n = n;
     if (!n) return WF;
     WF.box[0] = x0 - WK.R; WF.box[1] = y0 - WK.R; WF.box[2] = x1 + WK.R; WF.box[3] = y1 + WK.R;
-    // The strongest push anywhere (sampled WAKE_P either side of each segment's middle, where it
-    // peaks) sets one scale for the whole frame: M / cbrt(1 + M³) of A at the peak. One scale
-    // keeps the field's shape however many passes overlap (a cap per point would flatten the
-    // overlap into a step: a groove along the path, a hollow round a scribble).
+    // The strongest push anywhere (sampled WAKE_P either side of each segment at its ends, quarters
+    // and middle, where it peaks) sets one scale for the whole frame: M / cbrt(1 + M³) of A at the
+    // peak. One scale keeps the field's shape however many passes overlap (a cap per point would
+    // flatten the overlap into a step: a groove along the path, a hollow round a scribble).
     var M = 0;
     for (var j = 0; j < n; j++) {
-      var p = j * 4, mx = A[p] + A[p + 2] * 0.5, my = A[p + 1] + A[p + 3] * 0.5, el = Math.sqrt(A[p + 2] * A[p + 2] + A[p + 3] * A[p + 3]);
-      var nx = el > 1e-3 ? -A[p + 3] / el : 1, ny = el > 1e-3 ? A[p + 2] / el : 0;
-      for (var sd = -1; sd <= 1; sd += 2) {
-        fieldAt(WF, mx + nx * WAKE_P * sd, my + ny * WAKE_P * sd, wTmp);
-        M = Math.max(M, Math.sqrt(wTmp[0] * wTmp[0] + wTmp[1] * wTmp[1]));
+      var p = j * 4, el = Math.sqrt(A[p + 2] * A[p + 2] + A[p + 3] * A[p + 3]);
+      var nx = el > 1e-3 ? -A[p + 3] / el * WAKE_P : WAKE_P, ny = el > 1e-3 ? A[p + 2] / el * WAKE_P : 0;
+      for (var k = 0; k <= 4; k++) {
+        var mx = A[p] + A[p + 2] * k * 0.25, my = A[p + 1] + A[p + 3] * k * 0.25;
+        for (var sd = -1; sd <= 1; sd += 2) {
+          fieldAt(WF, mx + nx * sd, my + ny * sd, wTmp);
+          M = Math.max(M, Math.sqrt(wTmp[0] * wTmp[0] + wTmp[1] * wTmp[1]));
+        }
       }
     }
     WF.r[1] = WK.A * opts.push / Math.cbrt(1 + M * M * M); WF.r[2] = n; WF.r[3] = M;
@@ -260,6 +285,8 @@
   }
   // true while any of the path still pushes (the layers draw at display rate until it settles)
   wake.busy = function (now) { return frameOf(now).n > 0; };
+  // the same for the frame last evaluated, without evaluating one (the hero's backdrop reads it)
+  wake.live = function () { return WF.n > 0; };
   // the push at (x, y), css px at full strength (the caller scales it by its layer's K)
   wake.at = function (x, y, now, out) {
     var f = frameOf(now);
@@ -1047,9 +1074,11 @@
   api.step = function (now) { if (S.ready) step(now == null ? performance.now() : now); };
   function quality(now, dt) {
     // frames that run long while the camera moves lower the particle count, then the resolution
+    // (not while only the pointer's wake runs: a moving cursor also drives other work on the page,
+    // like the hero logo, and the wake's own cost is small next to a camera flight)
     if (S.still || !dt) return;
     var ms = dt * 1000;
-    if (CAM.moving || CAM.vg || wake.busy(now)) {
+    if (CAM.moving || CAM.vg) {
       if (ms > 24) S.slow++; else if (ms < 18) S.fast++;
       if (S.slow > 45) {
         S.slow = S.fast = 0;
@@ -1149,7 +1178,7 @@
       cam: { y: +CAM.y.toFixed(1), vy: +CAM.vy.toFixed(1), hp: +CAM.hp.toFixed(3), z: +CAM.z.toFixed(2), roll: +CAM.roll.toFixed(2),
         yaw: +(CAM.yaw * 57.3).toFixed(2), pitch: +(CAM.pitch * 57.3).toFixed(2), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], F: +CAM.F.toFixed(1),
         gather: +CAM.gather.toFixed(3), presence: +CAM.presence.toFixed(3), vP: +CAM.vP.toFixed(3), mark: CAM.mark && CAM.mark.map(Math.round) },
-      wake: (function (f) { return { on: wakeOK(), segs: wake.segs.length, live: f.n, speed: Math.round(wake.vs), push: opts.push,
+      wake: (function (f) { return { on: wakeOK() && !lbOpen(), segs: wake.segs.length, live: f.n, speed: Math.round(wake.vs), push: opts.push,
         peakPx: +(f.r[3] * f.r[1]).toFixed(2) }; })(frameOf(S.last || undefined)),
       stats: { frames: S.stats.frames, draws: S.stats.draws, avgMs: S.stats.frames ? +(S.stats.ms / S.stats.frames).toFixed(2) : 0,
         drawAvgMs: S.stats.draws ? +(S.stats.drawMs / S.stats.draws).toFixed(2) : 0, worstMs: +S.stats.worst.toFixed(1),
