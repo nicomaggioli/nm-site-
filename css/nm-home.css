@@ -606,8 +606,7 @@ main > #about{ background:#0a0a0a !important;
 #nm-services .nm-svc-contain img{ object-fit:contain; padding:20px; }
 /* transparent artwork (the logo grid) floats on the page: no panel fill or frame */
 #nm-services .nm-svc-contain{ background:transparent; border-color:transparent; }
-/* the sneaker render is cut out onto transparency: it floats on the page with no frame */
-#nm-services .nm-svc-art{ background:transparent; border-color:transparent; }
+#nm-services .nm-svc-art{ background:#0a0a0a; }
 #nm-services .nm-svc-art img{ object-fit:contain; }
 #nm-services .nm-svc-copy{
   display:none; grid-column:1; grid-row:calc(var(--svc-row) * 2); align-self:start;
