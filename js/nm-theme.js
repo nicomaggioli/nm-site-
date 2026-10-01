@@ -36,7 +36,8 @@
     // Ordered, non-blocking: the theme's config first, then the shared cosmos
     // layers (stars, airbrush, grain) and the footer black hole that read it.
     var mods = ['/js/theme-' + theme + '.js', '/js/nm-cosmos.js', '/js/nm-blackhole.js'];
-    if (theme === 'stars') mods.push('/js/nm-starcut.js');   // the shooting star that cuts the hero logo
+    // the shooting star that cuts the hero logo, and the black hole seen through the logo
+    if (theme === 'stars') mods.push('/js/nm-starcut.js', '/js/nm-bhportal.js');
     mods.forEach(function (src) {
       var js = document.createElement('script');
       js.src = src + bust;
