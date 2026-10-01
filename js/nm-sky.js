@@ -19,9 +19,13 @@
        painted Milky Way, its grain and the near-star volume are gone: the particle wisps are
        the glow now.
      - NMSky.fx: a fixed 2D overlay for the rare events and the hover reticle.
-     - The footer NM: the particles gather into the mark (NMSpace); this engine keeps the Cloud
-       Run door, its label, and a constellation's worth of brighter star-nodes on the mark (its
-       own small canvas in the footer, fading in as the mark forms; chart lines on hover).
+     - The footer NM: the particles gather into the mark (NMSpace, its header has the gather);
+       this engine keeps the Space Run door, its label, and a constellation's worth of brighter
+       star-nodes on the mark. With the particle space each node flies in on the same progress
+       from a real star of the view (which leaves the sky while it is gone) or, when the view
+       holds too few in open sky, a star of its own: drawFly, on the overlay. The footer canvas
+       draws the chart lines (hover), and the nodes themselves under reduced motion or without
+       the space.
    NMSky.mask: a page-length mask of every line of text, the most light the space may add
    behind it so the text keeps its WCAG AA contrast (NMSpace applies it).
    Events (subtle, in open sky, riding with the sky): a shooting star 10-20 s after
@@ -677,11 +681,16 @@
         if (Math.abs(n) > 0.3) { var c = FLASH[n > 0 ? 0 : 1], a = (Math.abs(n) - 0.3) * 0.55 * k * peakOf(1.2) * 0.5; fr += c[0] * a; fg += c[1] * a; fb += c[2] * a; }
         if (n2 > 0.55) { var c2 = FLASH[2], a2 = (n2 - 0.55) * 0.6 * k * peakOf(1.2) * 0.5; fr += c2[0] * a2; fg += c2[1] * a2; fb += c2[2] * a2; }
       }
-      var o = i * 4; d[o] = tw; d[o + 1] = fr * opts.brightness; d[o + 2] = fg * opts.brightness; d[o + 3] = fb * opts.brightness;
+      var kept = 1 - (s.take || 0);   // a star that left for the NM (drawFly draws it now)
+      var o = i * 4; d[o] = tw * kept; d[o + 1] = fr * opts.brightness * kept; d[o + 2] = fg * opts.brightness * kept; d[o + 3] = fb * opts.brightness * kept;
     }
   }
   function nmRect() {   // the constellation's box in viewport px, or far away
-    var b = S.nmBox, y = window.scrollY || 0;
+    var b = S.nmBox, y = window.scrollY || 0, sp = spaceCam(), mk = sp && sp.camera.mark;
+    if (mk && b) {   // with the particle space: where the mark forms (it waits low in the view)
+      var hw = (b[2] - b[0]) / 2, hh = (b[3] - b[1]) / 2;
+      return [mk[0] - hw, mk[1] - hh, mk[0] + hw, mk[1] + hh];
+    }
     return b && cons.visible ? [b[0], b[1] - y, b[2], b[3] - y] : [-1e5, -1e5, -1e5, -1e5];
   }
   function drawGL(time) {
@@ -689,7 +698,9 @@
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, S.W, S.H);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-    var view = [S.vw, S.vh, S.dpr, CAM.F], nm = nmRect(), nmk = cons.visible ? 1 : 0, br = opts.brightness;
+    // the stars behind the mark step back as it forms
+    var sp = spaceCam(), nmk = sp ? (sp.camera.mark ? sp.camera.gather || 0 : 0) : cons.visible ? 1 : 0;
+    var view = [S.vw, S.vh, S.dpr, CAM.F], nm = nmRect(), br = opts.brightness;
     // the stars, added as light
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
     var P = G.P.star; u = P.u;
@@ -721,6 +732,7 @@
       if (!p || p.x < -20 || p.y < -20 || p.x > S.vw + 20 || p.y > S.vh + 20) continue;
       var sp = s.sp || (s.sp = s.m < MAG_OWN ? ownSprite(s.m, s.bv) : binSprite(s.m, s.bv)), a = (s.m < MAG_OWN ? 1 : baseAlpha(s.m)) * br;
       var tw = s.m < MAG_DYN || s.f >= 0 ? twinkle(time, s.r1, s.r2, s.o1, s.o2, s.depth) : 1;
+      if (s.take) a *= 1 - s.take;
       drawOne(c, sp, s.m, Math.round(p.x * d), Math.round(p.y * d), a, tw, time, s.o3);
     }
   }
@@ -1095,8 +1107,14 @@
   var fxDirty = true;
   function fxBusy() { return EV.list.length > 0 || label.a > 0.01; }
   function drawFx() {
-    var need = fxBusy(), d = S.dpr;
+    var nodes = fly.on, need = fxBusy() || nodes, d = S.dpr;
     if (!need && !fxDirty) return;
+    if (nodes && !fxBusy() && !S.still) {   // nodes at rest only twinkle: ~30 fps is plenty
+      var sp = spaceCam(), mk = sp && sp.camera.mark, sig = mk ? [sp.camera.gather, mk[0], mk[1], mk[2], S.vw, S.vh].join('|') : '';
+      var now = performance.now();
+      if (sig === fly.sig && now - fly.drawn < 31) return;
+      fly.sig = sig; fly.drawn = now;
+    }
     fxc.setTransform(1, 0, 0, 1, 0, 0);
     fxc.globalCompositeOperation = 'source-over';
     fxc.globalAlpha = 1;
@@ -1115,6 +1133,7 @@
       }
     }
     if (EV.list.length) drawEvents(fxc);
+    if (nodes) drawFly(fxc, S.still ? 0 : S.t);
   }
 
   /* ------------------------------------------------------- NM constellation */
@@ -1239,9 +1258,10 @@
     c.clearRect(0, 0, cons.canvas.width, cons.canvas.height);
     c.globalCompositeOperation = 'lighter';
     c.imageSmoothingEnabled = false;
-    // With the particle space the mark is the gathered particles: the nodes come in with it
-    // (only the brighter ones), and the chart lines only show while the door is hovered.
-    var sp = spaceCam(), nodes = sp ? (S.still ? 1 : smooth(0.35, 0.95, sp.camera.gather || 0)) : 1;
+    // With the particle space the mark is the gathered particles: the nodes fly in with it
+    // (only the brighter ones, drawn on the overlay: drawFly; here only under reduced motion),
+    // and the chart lines only show while the door is hovered.
+    var sp = spaceCam(), nodes = sp ? (S.still ? 1 : smooth(0.6, 1, sp.camera.gather || 0)) : 1;
     var hov = cons.hover, st = cons.stars, la = sp ? 0.34 * hov * nodes : (0.3 + 0.2 * hov) * cons.linesIn;
     if (sp && nodes < 0.004) return;
     if (la > 0.004) {
@@ -1259,12 +1279,179 @@
       c.stroke();
     }
     var lift = (1.5 + 0.2 * hov) * opts.brightness * nodes;
+    if (sp && !S.still && sp.GATHER) return;
     for (var i = 0; i < st.length; i++) {
       var s = st[i], tw = twinkle(t, s.r1, s.r2, s.o1, s.o2, s.depth);
       if (sp && s.m > 3.4) continue;
       drawOne(c, s.sp, s.m, Math.round(s.x * d), Math.round(s.y * d), s.a * lift, tw, t, s.o3);
     }
   }
+  /* ------------------------------------------- the nodes fly in (the NM gather) */
+  // With the particle space, the constellation's star-nodes come from the sky. When the
+  // footer's stars settle in (NMSpace.camera.presence), each node takes a real catalogue star
+  // in open sky around the mark (or, when the view holds too few, a star of its own set in
+  // open sky); on the gather's progress it lifts off from there, the catalogue star leaving the
+  // sky with it, flies the particles' curving path to its place in the mark (NMSpace.GATHER),
+  // turning into the node as it goes, a little brighter and with a short soft trail while it
+  // moves, and lands with a tiny twinkle. Scrolling back up flies it home and the star is back
+  // in the sky. Drawn on the fixed overlay (fx), in step with the particles; the footer canvas
+  // keeps the chart lines (hover).
+  var fly = { on: false, set: false, nodes: null, pos: { x: 0, y: 0 }, lag: { x: 0, y: 0 }, src: { x: 0, y: 0 } };
+  function flyCam() {
+    var sp = spaceCam();
+    if (!sp || S.still || !sp.GATHER || !cons.stars || !atlas || !S.dyn) return null;
+    var c = sp.camera;
+    return c.mark && c.presence > 0 ? sp : null;
+  }
+  function flyNodes() {   // the nodes the particle mark shows (the brighter ones), and their timing
+    if (fly.nodes) return fly.nodes;
+    var R = rng(77);
+    fly.nodes = [];
+    cons.stars.forEach(function (s, i) {
+      if (s.m > 3.4) return;
+      // the bulbs first (the uprights' ends), then the uprights' middles, then the diagonals,
+      // each group sweeping left to right like the particles
+      var grp = i < 8 ? 0 : i < 12 ? 1 : 2;
+      fly.nodes.push({ s: s, i: i, start: Math.min(0.58, 0.1 + 0.13 * grp + 0.16 * s.u + 0.05 * R()), sw: 0.55 + 0.9 * R(),
+        rgb: starRgb(s.bv, s.m), src: null, g: 0, take: 0 });
+    });
+    return fly.nodes;
+  }
+  function flyRelease() {
+    if (fly.nodes) fly.nodes.forEach(function (n) { if (n.src && n.src.star) n.src.star.take = 0; n.src = null; n.take = 0; });
+    fly.set = false; fly.on = false;
+    S.force = true;
+  }
+  function nodeAng(n, w, h) { return Math.atan2((n.s.v - 0.5) * h, (n.s.u - 0.5) * w); }
+  function angGap(a, b) { var x = Math.abs(a - b) % (2 * Math.PI); return x > Math.PI ? 2 * Math.PI - x : x; }
+  function flyAssign(c) {
+    var nodes = flyNodes(), mk = c.mark, w = mk[2], h = w / ASPECT, cx = mk[0], cy = mk[1], list = [];
+    var near = function (x, y) { return Math.abs(x - cx) < w * 0.75 && Math.abs(y - cy) < h * 0.95; };
+    for (var i = 0; i < S.dyn.length; i++) {
+      var s = S.dyn[i];
+      if (s.f >= 0 || s.m < 1.2) continue;   // the featured stars and the very brightest stay put
+      var p = project(s.u);
+      if (!p || p.x < 24 || p.y < 24 || p.x > S.vw - 24 || p.y > S.vh - 24 || near(p.x, p.y)) continue;
+      list.push({ s: s, a: Math.atan2(p.y - cy, p.x - cx), x: p.x, y: p.y });
+    }
+    list.sort(function (a, b) { return a.s.m - b.s.m; });
+    var open = [];   // (openSky reads the page: stop once there are enough)
+    for (var c2 = 0; c2 < list.length && c2 < nodes.length * 3 && open.length < nodes.length * 2; c2++) if (openSky(list[c2].x, list[c2].y, false)) open.push(list[c2]);
+    list = open;
+    // as many as there are nodes, spread all around the mark
+    list.sort(function (a, b) { return a.a - b.a; });
+    var pick = [], n = Math.min(nodes.length, list.length);
+    for (var k = 0; k < n; k++) pick.push(list[Math.floor(k * list.length / n)]);
+    var R = rng(4242), own = [];   // (picked again: the stars of its own stay where they are)
+    nodes.forEach(function (nd) { if (nd.src && !nd.src.star) own.push({ x: nd.src.fx * S.vw, y: nd.src.fy * S.vh }); });
+    while (pick.length < nodes.length) {
+      var q = own.shift() || openPoint(40, 10, function (x, y) { return !near(x, y) && openSky(x, y, false); }) || { x: 40 + R() * (S.vw - 80), y: 40 + R() * S.vh * 0.4 };
+      pick.push({ s: null, a: Math.atan2(q.y - cy, q.x - cx), x: q.x, y: q.y });
+    }
+    // pair them with the nodes in the same order around the centre (the best turn of the ring),
+    // so the flights converge without crossing
+    pick.sort(function (a, b) { return a.a - b.a; });
+    var ord = nodes.slice().sort(function (a, b) { return nodeAng(a, w, h) - nodeAng(b, w, h); }), N = ord.length, best = 0, bestCost = 1e9;
+    for (var r = 0; r < N; r++) {
+      var cost = 0;
+      for (var j = 0; j < N; j++) cost += angGap(ord[j] ? nodeAng(ord[j], w, h) : 0, pick[(j + r) % N].a);
+      if (cost < bestCost) { bestCost = cost; best = r; }
+    }
+    ord.forEach(function (nd, j) {
+      var q = pick[(j + best) % N], src;
+      if (q.s) src = { star: q.s, m: q.s.m, bv: q.s.bv, sp: q.s.m < MAG_OWN ? ownSprite(q.s.m, q.s.bv) : binSprite(q.s.m, q.s.bv), a0: q.s.m < MAG_OWN ? 1 : baseAlpha(q.s.m) };
+      else { var m = nd.s.m + 1.6; src = { star: null, fx: q.x / S.vw, fy: q.y / S.vh, m: m, bv: nd.s.bv, sp: binSprite(m, nd.s.bv), a0: baseAlpha(m) }; }
+      nd.src = src; nd.lx = null; nd.ly = null;
+    });
+    fly.set = true; fly.at = S.now || 0;
+  }
+  // where a node's source is now (a catalogue star turns with the sky; behind the view, its last
+  // known place), or null
+  function srcPos(n, out) {
+    var src = n.src;
+    if (!src.star) { out.x = src.fx * S.vw; out.y = src.fy * S.vh; return out; }
+    var p = project(src.star.u);
+    if (p) { n.lx = p.x; n.ly = p.y; }
+    else if (n.lx == null) return null;
+    out.x = n.lx; out.y = n.ly; return out;
+  }
+  // A fling glides the sky on for seconds after the footer arrives, so the stars picked as the
+  // footer came in can be far out of view by the time the nodes lift off: until one has, a
+  // source that has left the view is picked again (its star is still in the sky: nothing shows).
+  function flyStale() {
+    for (var i = 0; i < fly.nodes.length; i++) {
+      var n = fly.nodes[i];
+      if (n.g > 0) return false;
+    }
+    for (var j = 0; j < fly.nodes.length; j++) {
+      var s = fly.nodes[j].src.star, p = s ? project(s.u) : null;
+      if (s && (!p || p.x < 0 || p.y < 0 || p.x > S.vw || p.y > S.vh)) return true;
+    }
+    return false;
+  }
+  // every frame, before the sky draws: each node's progress, and the stars that left the sky
+  function flyStep() {
+    var sp = flyCam();
+    if (!sp) { if (fly.set) flyRelease(); return; }
+    var c = sp.camera, G = sp.GATHER;
+    if (!fly.set && c.presence > 0.5) flyAssign(c);
+    if (!fly.set) return;
+    if ((S.now || 0) - fly.at > 450 && flyStale()) flyAssign(c);
+    fly.on = true;
+    fly.nodes.forEach(function (n) {
+      n.g = G.g(c.gather, n.start);
+      var tk = n.src.star ? smooth(0, 0.04, n.g) : 0;
+      if (tk !== n.take) { n.take = tk; n.src.star.take = tk; S.force = true; }
+    });
+  }
+  function drawFly(c, t) {
+    var sp = spaceCam();
+    if (!sp || !fly.set) return;
+    var cam = sp.camera, G = sp.GATHER, mk = cam.mark, d = S.dpr, br = opts.brightness;
+    if (!mk) return;
+    var w = mk[2], h = w / ASPECT, foot = 1 + 0.22 * S.foot, lagP = clamp((cam.vP || 0) * G.TRAIL_T * 0.65, -0.06, 0.06);
+    var lift = (1.5 + 0.2 * cons.hover) * br, seatIn = smooth(0.5, 1, cam.presence);
+    c.globalCompositeOperation = 'lighter';
+    fly.nodes.forEach(function (n) {
+      var s = n.s, src = n.src, g = n.g;
+      var tw = twinkle(t, s.r1, s.r2, s.o1, s.o2, s.depth);
+      var tx = mk[0] + (s.u - 0.5) * w, ty = mk[1] + (s.v - 0.5) * h;
+      if (g >= 1) {   // home: the node as the footer canvas drew it (wherever its star came from)
+        c.imageSmoothingEnabled = false;
+        drawOne(c, s.sp, s.m, Math.round(tx * d), Math.round(ty * d), s.a * lift, tw, t, s.o3);
+        return;
+      }
+      var sxy = srcPos(n, fly.src);
+      if (!sxy) return;
+      var stw = src.star ? twinkle(t, src.star.r1, src.star.r2, src.star.o1, src.star.o2, src.star.depth) : twinkle(t, s.r2, s.r1, s.o2, s.o1, s.depth);
+      if (g <= 0) {   // still in the sky (a catalogue star is drawn by the sky itself)
+        if (!src.star) { c.imageSmoothingEnabled = false; drawOne(c, src.sp, src.m, Math.round(sxy.x * d), Math.round(sxy.y * d), src.a0 * br * foot * seatIn, stw, t, s.o3); }
+        return;
+      }
+      var sw = G.SWIRL * n.sw, p = G.path(G.ease(g), sxy.x, sxy.y, tx, ty, mk[0], mk[1], sw, fly.pos);
+      var k = smooth(0.12, 0.88, g), land = smooth(0.78, 0.93, g) * (1 - smooth(0.93, 1, g));
+      var boost = 1 + 0.55 * Math.sin(Math.PI * g) + 0.9 * land * (0.65 + 0.35 * Math.sin(t * 13 + n.i * 1.7));
+      // the trail: where it was a moment ago, back along its path
+      var gl = G.g(cam.gather - lagP, n.start);
+      if (Math.abs(gl - g) > 0.002) {
+        var q = G.path(G.ease(gl), sxy.x, sxy.y, tx, ty, mk[0], mk[1], sw, fly.lag), rgb = n.rgb;
+        var ta = clamp(0.45 * (1 - k) * src.a0 + 0.45 * k * s.a, 0.08, 0.5) * br * boost;
+        var col = Math.round(255 * rgb[0]) + ',' + Math.round(255 * rgb[1]) + ',' + Math.round(255 * rgb[2]);
+        var gr = c.createLinearGradient(q.x * d, q.y * d, p.x * d, p.y * d);
+        gr.addColorStop(0, 'rgba(' + col + ',0)');
+        gr.addColorStop(1, 'rgba(' + col + ',' + Math.min(0.75, ta).toFixed(3) + ')');
+        c.globalAlpha = 1;
+        c.strokeStyle = gr; c.lineWidth = 1.15 * d; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(q.x * d, q.y * d); c.lineTo(p.x * d, p.y * d); c.stroke();
+      }
+      c.imageSmoothingEnabled = true;
+      var fade = src.star ? n.take : 1;
+      if (k < 1) drawOne(c, src.sp, src.m, p.x * d, p.y * d, src.a0 * br * foot * (1 - k) * fade * boost, stw, t, s.o3);
+      if (k > 0) drawOne(c, s.sp, s.m, p.x * d, p.y * d, s.a * lift * k * fade * boost, tw, t, s.o3);
+    });
+    c.imageSmoothingEnabled = false;
+  }
+
   // the mark's box in viewport px (for the particle gather), or null
   api.nmRect = function () {
     if (!cons.canvas || !cons.rect || !cons.canvas.isConnected) return null;
@@ -1305,6 +1492,7 @@
     // the footer, its constellation and the sky's footer lift
     var fl = footerLevel();
     S.foot = fl;
+    flyStep();
     var glide = camGlides();
     if (S.still || glide || fastEvent() || now - S.lastDraw > 31 || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;

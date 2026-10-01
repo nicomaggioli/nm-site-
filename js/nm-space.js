@@ -29,13 +29,30 @@
      - idle: a weightless drift (sway, a little roll) and the field breathing;
      - homepage hero (window.__nmHeroProgress 0 -> 1): an extra dive, aimed at the centre of
        the NM logo (the vanishing point sits there while the hero is on screen).
-   Footer finale: as the footer arrives, a few thousand particles leave the space and gather
-   into Nico's NM mark (sampled from textures/nm-mark-sdf.png, green channel) exactly over the
-   Cloud Run door (NMSky.nmRect()); the space behind it quiets; scrolling up dissolves it.
+   Footer finale, the NM gather (one scroll-driven progress on a spring, so it is reversible
+   and a fling plays out as a glide; every position is a function of that progress):
+     - as the footer comes into view the sky gets heavier: a light field of extra stars
+       (1800 phone / 3800 desktop, the 'mark' layer) settles in across the whole view, star-like
+       points of varied brightness that turn with the camera like the rest of the far sky;
+     - then they lift off and fly to their places in Nico's NM mark (sampled from
+       textures/nm-mark-sdf.png, green channel) over the Space Run door (NMSky.nmRect()),
+       staggered so the contour builds first, sweeping left to right, then the inside fills;
+       each curves in on a gentle swirl about the mark's centre, brightens a little and draws a
+       short soft trail while it moves (extra draws of the layer a moment back along its path,
+       only while the progress is moving), and lands with a tiny twinkle;
+     - while it forms, the mark waits low in the view for the footer to bring the door up to
+       it, then rides with the footer; the space behind it quiets;
+     - scrolling back up sends every star back out along its path to its place in the sky.
+     NMSky's constellation star-nodes fly in on the same progress (camera.gather/.presence/.mark).
+     Reduced motion: the mark is simply there, formed, with the footer.
 
    window.NMSpace
      .canvas        the fixed canvas (opaque WebGL; paints the ground too)
-     .camera        { y, vy, hp, roll (deg), yaw, pitch (rad), F, cx, cy, pos, moving, gather }
+     .camera        { y, vy, hp, roll (deg), yaw, pitch (rad), F, cx, cy, pos, moving,
+                      gather (0..1 the NM's progress), presence (0..1 its stars in the sky), vP
+                      (gather per second), mark ([x, y, width, footer y]: where it forms, css px),
+                      seat ([cos, sin, dx, dy]: how its sky seats turn with the camera) }
+     .GATHER        { W, start(i), path(...) } the shared timing and flight path (NMSky's nodes)
      .step(now)     advance the camera to this frame (idempotent; js/nm-sky.js calls it)
      .at(y)         the settled camera (no drift) at scroll y: { roll, yaw, pitch, z }
      .set(opts)     { brightness, glow, motion, density } live multipliers (1 = default)
@@ -67,6 +84,13 @@
   var CAP_V = 46;          // units/s: the most it travels
   var CREEP = 0.16;        // units/s forward while idle
   var MARK_Z = 11;         // depth at which the NM forms
+  /* The NM gather, in viewport heights of the mark's travel up the view: its stars settle into
+     the sky over G_PRE, fly over G_RUN, and the mark is whole G_END before the page ends. */
+  var G_PRE = 0.55, G_RUN = 0.75, G_END = 0.04;
+  var GW = 0.42;           // each star's share of the gather progress: its flight
+  var SWIRL = 0.5;         // radians: how far the flights bow around the mark's centre
+  var TRAIL_T = 0.11;      // seconds of flight the trail shows
+  var TRAIL_N = 9;         // samples along it
 
   /* Nico's palette, linear light (cream, warm white, ice, peach, coral, violet) */
   function lin(h) {
@@ -127,7 +151,7 @@
     y: 0, vy: 0, hp: 0, vhp: 0, init: false, t: 0, z: 0, creep: 0,
     pos: [0, 0, 0], r: [1, 0, 0], u: [0, 1, 0], f: [0, 0, 1],
     roll: 0, yaw: 0, pitch: PITCH * Math.PI / 180, pitch0: PITCH * Math.PI / 180, F: 1, cx: 0, cy: 0, moving: false,
-    gather: 0, vg: 0, mark: null
+    gather: 0, vg: 0, graw: 0, presence: 0, vP: 0, mark: null, seat: [1, 0, 0, 0]
   };
   function rollAt(y) {   // degrees, a Catmull-Rom curve through the page's keys in scroll fraction
     var K = S.cfg.roll, s = clamp(y / Math.max(1, S.maxY), 0, 1), i = 0, n = K.length;
@@ -209,37 +233,77 @@
   }
 
   /* ------------------------------------------------------------ the NM gather */
-  // How far the mark has formed: from where the footer's NM box sits relative to where it
-  // will sit at the bottom of the page (it is fully formed a little before the end).
+  // One progress, linear in scroll from where the footer's NM box sits relative to where it
+  // will sit at the bottom of the page, followed by a critically damped spring (graw). Its
+  // first part brings the stars into the sky (presence), the rest is the flight (gather).
+  var G_A = G_PRE / (G_PRE + G_RUN - G_END);
   function gatherStep(dt) {
-    var sky = window.NMSky, rect = sky && sky.nmRect ? sky.nmRect() : null, gT = 0;
+    var sky = window.NMSky, rect = sky && sky.nmRect ? sky.nmRect() : null, rT = 0, live = false;
     CAM.mark = null;
     if (rect && rect[2] > rect[0]) {
-      var my = (rect[1] + rect[3]) / 2, sy = window.scrollY || 0, myEnd = my + sy - S.maxY;
-      gT = smooth(myEnd + S.vh * 0.62, myEnd + S.vh * 0.05, my);
-      if (my < -S.vh || my > S.vh * 2.2) gT = 0;
-      CAM.mark = [(rect[0] + rect[2]) / 2, my, rect[2] - rect[0]];
+      var my = (rect[1] + rect[3]) / 2, mh = rect[3] - rect[1], sy = window.scrollY || 0, myEnd = my + sy - S.maxY;
+      var fin = myEnd + S.vh * G_END, pre = myEnd + S.vh * (G_RUN + G_PRE);
+      rT = clamp((pre - my) / Math.max(1, pre - fin), 0, 1);
+      live = my > -S.vh && my < S.vh * 2.8;
+      if (!live) rT = 0;
+      // while it forms, the mark waits low in the view until the footer brings the door up to it
+      var hold = S.still ? my : Math.max(myEnd, S.vh - mh * 0.5 - S.vh * 0.06);
+      CAM.mark = [(rect[0] + rect[2]) / 2, Math.min(my, hold), rect[2] - rect[0], my];
     }
-    if (!S.marks) gT = 0;
-    if (S.still || !CAM.init || dt <= 0) { CAM.gather = gT; CAM.vg = 0; return; }
-    var W2 = 3.2, n = Math.max(1, Math.ceil(dt / 0.012)), h = dt / n;
-    for (var i = 0; i < n; i++) { CAM.vg += (W2 * W2 * (gT - CAM.gather) - 2 * W2 * CAM.vg) * h; CAM.gather += CAM.vg * h; }
-    CAM.gather = clamp(CAM.gather, 0, 1);
-    if (Math.abs(gT - CAM.gather) < 1e-4 && Math.abs(CAM.vg) < 1e-3) { CAM.gather = gT; CAM.vg = 0; }
+    if (!S.marks) { rT = 0; live = false; }
+    var P0 = CAM.gather;
+    if (S.still) {   // reduced motion: no flight, the mark is simply there with the footer
+      CAM.graw = rT; CAM.vg = 0; CAM.gather = live ? 1 : 0; CAM.presence = live ? 1 : 0; CAM.vP = 0;
+    } else {
+      if (!CAM.init || dt <= 0) { CAM.graw = rT; CAM.vg = 0; }
+      else {
+        var W2 = 3.2, n = Math.max(1, Math.ceil(dt / 0.012)), h = dt / n;
+        for (var i = 0; i < n; i++) { CAM.vg += (W2 * W2 * (rT - CAM.graw) - 2 * W2 * CAM.vg) * h; CAM.graw += CAM.vg * h; }
+        CAM.graw = clamp(CAM.graw, 0, 1);
+        if (Math.abs(rT - CAM.graw) < 1e-4 && Math.abs(CAM.vg) < 1e-3) { CAM.graw = rT; CAM.vg = 0; }
+      }
+      CAM.presence = smooth(0, G_A, CAM.graw);
+      CAM.gather = clamp((CAM.graw - G_A) / (1 - G_A), 0, 1);
+      var vP = dt > 0 ? (CAM.gather - P0) / dt : 0;
+      CAM.vP += (vP - CAM.vP) * (dt > 0 ? Math.min(1, dt * 18) : 1);
+      if (Math.abs(CAM.vP) < 1e-3 && CAM.vg === 0) CAM.vP = 0;
+    }
+    // the sky seats turn with the camera (like stars at infinity) from its pose at the page's end
+    var end = poseAt(S.maxY, CAM.hp), dr = (CAM.roll - end.roll) * Math.PI / 180;
+    CAM.seat = [Math.cos(dr), Math.sin(dr), -(CAM.yaw - end.yaw) * CAM.F, (CAM.pitch - end.pitch) * CAM.F];
   }
+  // The shared timing and path (the GLSL copy is in PART_VS): a star's progress through its
+  // own flight, and where it is along a flight from seat (sx, sy) to place (tx, ty) about the
+  // mark's centre (cx, cy). swirl: SWIRL scaled per star.
+  function flightPos(e, sx, sy, tx, ty, cx, cy, swirl, out) {
+    var dx = sx + (tx - sx) * e - cx, dy = sy + (ty - sy) * e - cy;
+    var th = swirl * 4 * e * (1 - e), c = Math.cos(th), s = Math.sin(th);
+    out.x = cx + dx * c - dy * s; out.y = cy + dx * s + dy * c;
+    return out;
+  }
+  api.GATHER = {
+    W: GW, SWIRL: SWIRL, TRAIL_T: TRAIL_T,
+    g: function (P, start) { return clamp((P - start) / GW, 0, 1); },
+    ease: function (g) { return g * g * (3 - 2 * g); },
+    path: flightPos
+  };
 
   /* --------------------------------------------------------------- particles */
-  // Per particle (11 floats): u, w, phase, layer | r1, r2, energy, gather stagger (-1 never) |
+  // Per particle (11 floats): u, w, phase, layer | r1, r2, energy, gather start (-1 never) |
   // NM target x, y (0..1 in the mark's box), edge (1 on the contour and the thin diagonals).
-  // Laid out by layer (coherent branches on the GPU), gather particles first in each layer
-  // so drawing a prefix of a layer (lower quality) keeps them.
+  // Laid out by layer (coherent branches on the GPU). The last layer is the NM's own stars:
+  // u, w is its seat in the sky (0..1 across the view and a little beyond), drawn whole at any
+  // quality and only near the footer.
+  // (rng: how many of a layer once drew one more random number; kept so the space is unchanged)
   var LAYERS = [
-    { name: 'floor', share: 0.45, gather: 0 },
-    { name: 'aurora', share: 0.13, gather: 0 },
-    { name: 'wisp', share: 0.14, gather: 0.22 },
-    { name: 'dust', share: 0.22, gather: 0.56 },
-    { name: 'speck', share: 0.06, gather: 0.22 }
+    { name: 'floor', share: 0.45, rng: 0 },
+    { name: 'aurora', share: 0.13, rng: 0 },
+    { name: 'wisp', share: 0.14, rng: 0.22 },
+    { name: 'dust', share: 0.22, rng: 0.56 },
+    { name: 'speck', share: 0.06, rng: 0.22 },
+    { name: 'mark', share: 0, rng: 0, mark: true }
   ];
+  var MARK_L = LAYERS.length - 1;
   var STRIDE = 11;
   function budget() {
     var phone = S.vw < 768 || (coarseQ.matches && S.vw < 1100);
@@ -250,22 +314,25 @@
     return { n: Math.round(n * opts.density), g: g, phone: phone };
   }
   function makeParticles(b) {
-    var R = rng(0x5eed ^ (S.cfg.seed * 7 + 13)), data = new Float32Array(b.n * STRIDE), k = 0, layers = [];
+    var total = LAYERS.reduce(function (s, L) { return s + (L.mark ? b.g : Math.round(b.n * L.share)); }, 0);
+    var R = rng(0x5eed ^ (S.cfg.seed * 7 + 13)), data = new Float32Array(total * STRIDE), k = 0, layers = [];
     LAYERS.forEach(function (L, li) {
-      var n = Math.round(b.n * L.share), ng = Math.round(b.g * L.gather), start = k;
+      var n = L.mark ? b.g : Math.round(b.n * L.share), ng = L.mark ? n : 0, nr = Math.round(b.g * L.rng), start = k;
       for (var i = 0; i < n; i++, k++) {
         var o = k * STRIDE;
-        data[o] = R() * 2 - 1; data[o + 1] = R(); data[o + 2] = R(); data[o + 3] = li;
-        data[o + 4] = R(); data[o + 5] = R(); data[o + 6] = 0.55 + 0.9 * R(); data[o + 7] = i < ng ? R() : -1;
+        data[o] = L.mark ? R() : R() * 2 - 1; data[o + 1] = R(); data[o + 2] = R(); data[o + 3] = li;
+        data[o + 4] = R(); data[o + 5] = R(); data[o + 6] = 0.55 + 0.9 * R(); data[o + 7] = L.mark ? 0 : -1;
+        if (i < nr) R();
         data[o + 8] = -1; data[o + 9] = -1; data[o + 10] = 0;
       }
-      layers.push({ start: start, n: n, ng: ng });
+      layers.push({ start: start, n: n, ng: ng, mark: !!L.mark });
     });
     S.N = k;
     return { data: data, layers: layers };
   }
   // NM targets: points inside the mark (green > 0.22), the contour and the thin diagonals
-  // (green below 0.42) twice as dense so they read.
+  // (green below 0.42) denser so they read (only 30% of the inside is kept: a light dusting).
+  // Each star's start in the gather: the contour first, sweeping left to right, then the inside.
   function loadMark(done) {
     var img = new Image();
     img.onload = function () {
@@ -296,6 +363,7 @@
           break;
         }
         d[o + 8] = tx / CROP.w; d[o + 9] = ty / CROP.h; d[o + 10] = edge;
+        d[o + 7] = clamp((edge ? 0 : 0.36) + 0.3 * tx / CROP.w + 0.34 * R(), 0, 1) * (1 - GW);
         filled++;
       }
     });
@@ -342,6 +410,8 @@
     'uniform vec2 uPP;   // principal point (css px)',
     'uniform vec4 uP;    // time, depth D, fog, seed',
     'uniform vec4 uNM;   // mark centre x, y (css px), mark width (css px), gather',
+    'uniform vec4 uG;    // presence, trail lag (gather units), trail weight, swirl (rad)',
+    'uniform vec4 uSeat; // the sky seats\' turn: cos, sin, shift x, y (css px)',
     'uniform vec4 uL;    // energy gain, max point size (device px), focus depth, blur',
     'uniform vec4 uPal;  // warm lean, 0, 0, 0',
     'varying vec4 vC; varying float vD;',
@@ -363,6 +433,36 @@
     '}',
     'void main() {',
     '  float t = uP.x, D = uP.y;',
+    '  if (aA.w > ' + (MARK_L - 0.5).toFixed(1) + ') {',
+    // the NM's stars: a seat in the sky, a curving flight, a place in the mark
+    '    float P = uNM.w, A = uG.x, r1 = aB.x, r2 = aB.y;',
+    '    if (aT.x < 0.0 || A < 0.0005) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vC = vec4(0.0); vD = 0.0; return; }',
+    '    float gn = clamp((P - aB.w) / ' + GW.toFixed(3) + ', 0.0, 1.0);',            // its progress now
+    '    float g = clamp((P - uG.y - aB.w) / ' + GW.toFixed(3) + ', 0.0, 1.0);',       // this sample's (a trail looks back)
+    '    float e = g * g * (3.0 - 2.0 * g);',
+    '    vec2 st = (aA.xy * 1.24 - 0.12) * uV.xy - uPP;',
+    '    st = uPP + vec2(st.x * uSeat.x - st.y * uSeat.y, st.x * uSeat.y + st.y * uSeat.x) + uSeat.zw;',
+    '    vec2 tg = uNM.xy + (aT.xy - 0.5) * vec2(uNM.z, uNM.z / ' + MARK_AR.toFixed(5) + ');',
+    '    tg += vec2(sin(t * 0.63 + r1 * 61.0), cos(t * 0.57 + r2 * 53.0)) * (0.45 + 0.5 * (1.0 - aT.z));',
+    '    vec2 dd = mix(st, tg, e) - uNM.xy;',
+    '    float th = uG.w * (0.55 + 0.9 * r1) * 4.0 * e * (1.0 - e), cs = cos(th), sn = sin(th);',
+    '    vec2 sc = uNM.xy + vec2(dd.x * cs - dd.y * sn, dd.x * sn + dd.y * cs);',
+    // in the sky: a star among stars (a few bright, most faint); in flight: a little brighter;
+    // landing: a tiny twinkle; in the mark: as it always was
+    '    float seatI = 0.14 * (0.35 + 1.65 * pow(r2, 3.0) + 1.5 * smoothstep(0.93, 1.0, r2)) * A * (0.82 + 0.18 * sin(t * (0.9 + 1.4 * r1) + r2 * 60.0));',
+    '    float me = (aT.z > 0.5 ? 0.2 : 0.13) * (0.75 + 0.5 * r2) * (0.85 + 0.15 * sin(t * (1.1 + r1) + r2 * 40.0));',
+    '    float fly = sin(3.14159 * g);',
+    '    float land = smoothstep(0.78, 0.93, g) * (1.0 - smoothstep(0.93, 1.0, g));',
+    '    float I = mix(seatI, me, smoothstep(0.25, 0.95, g)) * (1.0 + 1.6 * fly + 0.8 * land * (0.65 + 0.35 * sin(t * 13.0 + r1 * 70.0)));',
+    '    if (uG.z > 0.0) I *= uG.z * clamp(abs(gn - g) * 30.0, 0.0, 1.0);',
+    '    vec3 col = mix(mix(mix(WHITE, ICE, 0.55 * r1), CREAM, 0.6 * r2), mix(mix(CREAM, WHITE, r2), ICE, 0.35 * aT.z), e);',
+    '    float sd = clamp(0.012 * uV.w / (' + MARK_Z.toFixed(1) + ' + (r1 - 0.5) * 1.6) * (1.0 + 0.3 * fly) * uV.z, 1.0, uL.y);',
+    '    vC = vec4(col * I * uL.x * uV.z * uV.z / max(1.0, 0.3 * sd * sd), 0.0); vD = 0.0;',
+    '    bool on = I > 0.00005 && sc.x > -4.0 && sc.y > -4.0 && sc.x < uV.x + 4.0 && sc.y < uV.y + 4.0;',
+    '    gl_Position = on ? vec4(sc.x / uV.x * 2.0 - 1.0, 1.0 - sc.y / uV.y * 2.0, 0.0, 1.0) : vec4(2.0, 2.0, 2.0, 1.0);',
+    '    gl_PointSize = on ? sd : 0.0;',
+    '    return;',
+    '  }',
     '  float zl = mod(aA.z * D - uC.z, D);',
     '  float zw = uC.z + zl - 3.0;',
     '  float L = aA.w, r1 = aB.x, r2 = aB.y;',
@@ -429,37 +529,19 @@
     '  vec3 v = vec3(dot(d, uR), dot(d, uU), dot(d, uF));',
     '  float fog = exp(-max(v.z - 6.0, 0.0) / uP.z) * smoothstep(D - 3.0, D * 0.68, zl) * smoothstep(0.35, 1.8, v.z);',
     '  float I = E * fog;',
-    // the gather: from wherever it floats, into the NM over the footer's door
-    '  float g = 0.0;',
-    '  if (aB.w >= 0.0 && aT.x >= 0.0 && uNM.w > 0.0005) {',
-    '    g = smoothstep(aB.w * 0.42, aB.w * 0.42 + 0.58, uNM.w);',
-    '    float dz = ' + MARK_Z.toFixed(1) + ' + (r1 - 0.5) * 1.6;',
-    '    vec2 s = vec2(uNM.x + (aT.x - 0.5) * uNM.z, uNM.y + (aT.y - 0.5) * uNM.z / ' + MARK_AR.toFixed(5) + ');',
-    '    s += vec2(sin(t * 0.63 + r1 * 61.0), cos(t * 0.57 + r2 * 53.0)) * (0.45 + 0.5 * (1.0 - aT.z));',
-    '    vec3 tv = vec3((s.x - uPP.x) / uV.w * dz, -(s.y - uPP.y) / uV.w * dz, dz);',
-    '    vec3 sv = vec3(v.xy, max(v.z, 3.0));',
-    '    float ge = g * g * (3.0 - 2.0 * g);',
-    '    v = mix(sv, tv, ge);',
-    '    v.xy += (vec2(r2, r1) - 0.5) * 10.0 * ge * (1.0 - ge);',
-    '    vec3 mc = mix(mix(CREAM, WHITE, r2), ICE, 0.35 * aT.z);',
-    '    float me = (aT.z > 0.5 ? 0.2 : 0.13) * (0.75 + 0.5 * r2) * (0.85 + 0.15 * sin(t * (1.1 + r1) + r2 * 40.0));',
-    '    I = mix(I, me, ge);',
-    '    col = mix(col, mc, ge);',
-    '    wsz = mix(wsz, 0.012, ge);',
-    '  }',
     '  float z = max(v.z, 0.05);',
     '  vec2 sc = uPP + vec2(v.x, -v.y) / z * uV.w;',
     // the space behind the forming mark quiets so the mark reads first
-    '  if (g == 0.0 && uNM.w > 0.0005) {',
+    '  if (uNM.w > 0.0005) {',
     '    vec2 dm = abs(sc - uNM.xy) / vec2(uNM.z * 0.62, uNM.z * 0.36);',
     '    I *= 1.0 - 0.7 * uNM.w * smoothstep(1.3, 0.75, max(dm.x, dm.y));',
     '  }',
     '  float sz = wsz * uV.w / z;',
-    '  float coc = uL.w * max(0.0, uL.z / z - 1.0) * (1.0 - g);',
+    '  float coc = uL.w * max(0.0, uL.z / z - 1.0);',
     '  float sd = clamp(sqrt(sz * sz + coc * coc) * uV.z, 1.0, uL.y);',
     '  float nrm = max(1.0, 0.3 * sd * sd);',
     '  vC = vec4(col * I * uL.x * uV.z * uV.z / nrm, 0.0);',
-    '  vD = smoothstep(3.0, 7.0, sd) * (1.0 - g);',
+    '  vD = smoothstep(3.0, 7.0, sd);',
     '  float mg = sd * 0.5 / uV.z + 2.0;',
     '  bool vis = v.z > 0.3 && I > 0.00005 && sc.x > -mg && sc.y > -mg && sc.x < uV.x + mg && sc.y < uV.y + mg;',
     '  gl_Position = vis ? vec4(sc.x / uV.x * 2.0 - 1.0, 1.0 - sc.y / uV.y * 2.0, 0.0, 1.0) : vec4(2.0, 2.0, 2.0, 1.0);',
@@ -564,7 +646,7 @@
       return { p: p, u: u };
     };
     G.P = {
-      part: prog(PART_VS, PART_FS, ['aA', 'aB', 'aT'], ['uC', 'uR', 'uU', 'uF', 'uV', 'uPP', 'uP', 'uNM', 'uL', 'uPal']),
+      part: prog(PART_VS, PART_FS, ['aA', 'aB', 'aT'], ['uC', 'uR', 'uU', 'uF', 'uV', 'uPP', 'uP', 'uNM', 'uG', 'uSeat', 'uL', 'uPal']),
       down: prog(TRI_VS, DOWN_FS, ['p'], ['uS', 'uTx']),
       blur: prog(TRI_VS, BLUR_FS, ['p'], ['uS', 'uDir']),
       comp: prog(TRI_VS, COMP_FS, ['p'], ['uA', 'uB', 'uM', 'uMI', 'uCo', 'uRes', 'uGround'])
@@ -683,17 +765,31 @@
     gl.uniform4f(u.uV, S.vw, S.vh, S.dpr, c.F);
     gl.uniform2f(u.uPP, c.cx, c.cy);
     gl.uniform4f(u.uP, t, D, FOG, S.cfg.seed * 0.01);
-    var mk = c.mark, gth = mk && S.marks ? c.gather : 0;
+    var mk = c.mark, on = !!(mk && S.marks), gth = on ? c.gather : 0, pres = on ? c.presence : 0, st = c.seat;
     gl.uniform4f(u.uNM, mk ? mk[0] : -1e4, mk ? mk[1] : -1e4, mk ? mk[2] : 1, gth);
+    gl.uniform4f(u.uG, pres, 0, 0, SWIRL);
+    gl.uniform4f(u.uSeat, st[0], st[1], st[2], st[3]);
     gl.uniform4f(u.uPal, S.cfg.warm, 0, 0, 0);
     attribsPart();
-    var q = S.q, gain = opts.brightness / G.fmt.scale * (S.budget.phone ? 1.35 : 1);
+    var q = S.q, gain = opts.brightness / G.fmt.scale * (S.budget.phone ? 1.35 : 1), ML = null;
     S.layers.forEach(function (L) {
-      // a lower quality draws a prefix of each layer (gather particles first), a little brighter
+      if (L.mark) { ML = L; if (pres < 0.0005) return; }
+      // a lower quality draws a prefix of each layer, a little brighter (the NM's stars: all)
       var n = Math.max(L.ng, Math.round(L.n * q));
       gl.uniform4f(u.uL, gain * L.n / Math.max(1, n), G.maxPt, 9.0, 2.4);
       gl.drawArrays(gl.POINTS, L.start, n);
     });
+    // the trails of the NM's stars in flight: the layer again, each pass a moment further back
+    // along the flight and fainter (only while the progress moves, so a held pose leaves none)
+    var lag = clamp(c.vP * TRAIL_T, -0.08, 0.08);
+    if (ML && pres >= 0.0005 && gth > 0 && Math.abs(lag) > 0.0015 && !S.still) {
+      gl.uniform4f(u.uL, gain, G.maxPt, 9.0, 2.4);
+      for (var k = 1; k <= TRAIL_N; k++) {
+        gl.uniform4f(u.uG, pres, lag * k / TRAIL_N, 0.9 * (1 - k / (TRAIL_N + 1)), SWIRL);
+        gl.drawArrays(gl.POINTS, ML.start, ML.n);
+      }
+      gl.uniform4f(u.uG, pres, 0, 0, SWIRL);
+    }
     gl.disable(gl.BLEND);
     // 2. the glow: a quarter-res, blurred copy
     var glow = 0.55 * opts.glow;
@@ -865,7 +961,7 @@
       size: [S.vw, S.vh], dpr: +S.dpr.toFixed(2), particles: S.N, quality: S.q, marks: S.marks || 0, maxY: S.maxY, zpx: +S.zpx.toFixed(4),
       cam: { y: +CAM.y.toFixed(1), vy: +CAM.vy.toFixed(1), hp: +CAM.hp.toFixed(3), z: +CAM.z.toFixed(2), roll: +CAM.roll.toFixed(2),
         yaw: +(CAM.yaw * 57.3).toFixed(2), pitch: +(CAM.pitch * 57.3).toFixed(2), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], F: +CAM.F.toFixed(1),
-        gather: +CAM.gather.toFixed(3), mark: CAM.mark && CAM.mark.map(Math.round) },
+        gather: +CAM.gather.toFixed(3), presence: +CAM.presence.toFixed(3), vP: +CAM.vP.toFixed(3), mark: CAM.mark && CAM.mark.map(Math.round) },
       stats: { frames: S.stats.frames, draws: S.stats.draws, avgMs: S.stats.frames ? +(S.stats.ms / S.stats.frames).toFixed(2) : 0,
         drawAvgMs: S.stats.draws ? +(S.stats.drawMs / S.stats.draws).toFixed(2) : 0, worstMs: +S.stats.worst.toFixed(1),
         gap: { p50: pct(0.5), p95: pct(0.95), p99: pct(0.99) } }
