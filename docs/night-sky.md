@@ -28,12 +28,8 @@ original site plus a believable sky. Realism and restraint are the whole brief.
   so the homepage hero paints the sky outside the NM mark (the hero samples that canvas each
   frame; a 2D canvas works as is, a WebGL canvas needs `preserveDrawingBuffer: true`).
   Loads `js/nm-sky.js`.
-- `js/nm-aurora.js` → `window.NMAurora`: Nico asked for "boreal kind of lights in the background, but super
-  subtle, like some magentas and greens and cyans". Faint aurora curtains (green lower edges, cyan,
-  magenta tops, drifting rays) and a few faint magenta/cyan glows, on one third-resolution WebGL canvas
-  screen-blended over the space; it turns with the shared camera, drifts with scroll, runs at 20fps, pauses
-  when hidden or in Space Run, and is one still frame under reduced motion. `?aurora=2` previews it twice
-  as bright (`?aurora=0` turns it off).
+- A faint aurora layer (green, cyan, magenta) was tried on 2026-10-01 and removed the same day at
+  Nico's request; keep the sky's colour in the stars themselves.
 - `js/nm-sky.js` → `window.NMSky` (the engine; owns all star rendering, events, featured-star
   labels and the footer NM constellation; exposes `NMSky.canvas`).
 - `media/sky/{home,about,index}.json`: real sky data per page (format below).

@@ -13,7 +13,7 @@ test('Night Sky scripts load at their current content versions, in order', () =>
   const loader = read('js/nm-theme.js').toString();
   const entries = [...loader.matchAll(/'(\/js\/[\w.-]+\.js)': '([0-9a-f]{10})'/g)].map(m => [m[1], m[2]]);
   assert.deepEqual(entries.map(e => e[0]),
-    ['/js/theme-stars.js', '/js/nm-starcut.js', '/js/nm-warp.js', '/js/nm-space.js', '/js/nm-sky.js', '/js/nm-aurora.js'],
+    ['/js/theme-stars.js', '/js/nm-starcut.js', '/js/nm-warp.js', '/js/nm-space.js', '/js/nm-sky.js'],
     'the theme config first, the space before the sky that reads its camera');
   for (const [file, v] of entries) assert.equal(v, version(file), `${file} is stale in js/nm-theme.js; ${FIX}`);
 });

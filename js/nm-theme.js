@@ -11,18 +11,17 @@
 (function () {
   'use strict';
   var VERSIONS = {
-    '/js/theme-stars.js': '4198477107',
+    '/js/theme-stars.js': 'ccdf605c09',
     '/js/nm-starcut.js': 'a40aa413ec',
     '/js/nm-warp.js': '98a51e5cd9',
     '/js/nm-space.js': 'ee59cb759c',
-    '/js/nm-sky.js': '6d13d90b36',
-    '/js/nm-aurora.js': '4b912593aa'
+    '/js/nm-sky.js': '6d13d90b36'
   };
   window.__nmTheme = 'stars';
   document.documentElement.setAttribute('data-nm-theme', 'stars');
   window.NMThemeConfig = window.NMThemeConfig || {};
   // theme config first; the shooting star that cuts the hero logo, the fast-scroll warp; then the
-  // particle space (it owns the camera the sky reads), the real sky, and the aurora between them
+  // particle space (it owns the camera the sky reads) and the real sky
   Object.keys(VERSIONS).forEach(function (src) {
     var js = document.createElement('script');
     js.src = src + '?v=' + VERSIONS[src];
