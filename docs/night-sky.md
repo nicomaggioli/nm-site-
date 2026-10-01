@@ -107,3 +107,31 @@ original site plus a believable sky. Realism and restraint are the whole brief.
   a single still frame (no events) under prefers-reduced-motion, no measurable scroll jank.
   The homepage already runs the WebGL hero and videos.
 - With no theme (`?theme=current`) nothing changes.
+
+## The pointer's wake (2026-10-01)
+
+Nico: "when your mouse moves around ... it interacts with the stars subtly? The stars push
+away." As a fine pointer moves (mouse or pen; `(hover: hover) and (pointer: fine)`), the stars
+near its path ease away from it and drift back once it has passed: a gentle wake, not a hole.
+Both layers move as one sky: the particle space (`js/nm-space.js`, displaced in the vertex
+shader in screen space after projection) and the catalogue stars (`js/nm-sky.js`, the star
+shader). Only positions move: no brightness, colour, ring or outline.
+
+- Model (`NMSpace.wake`, header of `js/nm-space.js`): a passive `pointermove` listener records
+  the path as short segments; each pushes for `T` seconds (out by ~0.25 T, back to rest at T),
+  weighted by its length and the pointer's speed, so a slow drift barely stirs and a sweep
+  parts the sky. The push is away from the path, zero on it, largest ~70 px out, nothing past
+  `R`. One scale per frame keeps the peak under ~`A` however often the pointer crosses itself,
+  so the field keeps its smooth shape. Time-based: 60 and 120 Hz look the same.
+- Depth: the nearest particles take the full push, far ones `K_FAR`, the catalogue stars
+  `K_SKY` (at infinity, only slightly), the formed footer NM (particles, nodes, chart lines)
+  `K_MARK`, so it stays legible. Featured stars move with the sky; their hover test and reticle
+  use the displaced position, so the labels still open where the star is drawn.
+- Off for touch and coarse pointers, under reduced motion, in hidden tabs and while Space Run is
+  open. While it settles both layers draw at display rate, then fall back to ~30 fps.
+- Tuning (`WK` in `js/nm-space.js`): `A` 16 css px (the most the nearest particles move; a fast
+  sweep peaks ~14), `R` 170 css px (reach), `T` 1.0 s (how long a pass pushes), `GAIN` 1.25,
+  speed factor `S_MIN` 0.4 at `V0` 60 px/s rising to 1 at `V1` 1400 px/s, depth `NEAR` 3 /
+  `FAR` 26 / `K_FAR` 0.5, `K_SKY` 0.3, `K_MARK` 0.3, `SLICE` 50 ms per segment. Live:
+  `NMSpace.set({ push: 0.5 })` halves it (0 turns it off); `NMSpace.debug().wake` shows the
+  live segments and the peak push in px.
