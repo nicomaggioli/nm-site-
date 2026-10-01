@@ -39,6 +39,15 @@ html.nm-run-open,html.nm-run-open body{overflow:hidden!important}
 @media(max-width:600px){.nm-run-milestone{top:58px;font-size:7px}}
 @media(max-height:520px) and (orientation:landscape){.nm-run-milestone{top:42px;font-size:6px;padding:3px 6px}}
 
+/* Space Run (Night Sky preview): the same stage, framed for deep space. */
+.nm-run[data-world="space"] .nm-run-stage{border-color:#d3cdec;background:#0b0a1d}
+.nm-run[data-world="space"] .nm-run-scoreboard{text-shadow:calc(2 * var(--nm-unit,1px)) calc(2 * var(--nm-unit,1px)) 0 #2a2452}
+.nm-run[data-world="space"] .nm-run-milestone{background:#16133acc;border-color:#cfc8f2}
+.nm-run[data-world="space"] .nm-run-panel{background:#05051240}
+.nm-run[data-world="space"] .nm-run-panel h3{text-shadow:calc(3 * var(--nm-unit,1px)) calc(3 * var(--nm-unit,1px)) 0 #3d3278}
+.nm-run[data-world="space"] .nm-run-panel p{text-shadow:calc(1 * var(--nm-unit,1px)) calc(2 * var(--nm-unit,1px)) 0 #2a2452}
+.nm-run[data-world="space"] .nm-run-btn.pri{box-shadow:calc(4 * var(--nm-unit,1px)) calc(4 * var(--nm-unit,1px)) 0 #3d3278}
+
 .nm-run-key{display:none}
 .nm-run-control-label{pointer-events:none}
 .nm-run-touch.is-held{filter:brightness(1.18)}

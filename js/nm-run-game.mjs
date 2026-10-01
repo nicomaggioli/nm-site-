@@ -2,6 +2,10 @@ import {Runner,GROUND,VIEW_HEIGHT,PLAYER_X,DUCK_HEIGHT} from './nm-run-engine.mj
 
 import {RUN_FRAME_COUNT,runFrame,drawStar,drawShootingStar,drawBirdSignal} from './nm-run-motion.mjs?v=6495b779e2';
 
+const CLOUD_COPY={name:'Cloud Run',eyebrow:'You found it.',ready:'Sky’s the limit.',tagline:'Jump low. Duck high. Catch stars.',paused:'Catch your breath up here.',busier:'The sky gets busier as you go.'};
+// The door passes Space Run's module (nm-run-space.mjs) in the Night Sky preview; the theme is fixed per page.
+let space=null,COPY=CLOUD_COPY;
+
 const RUN_SHEET='/media/runner/runner-ravi-stills.png?v=e41c2a3ee3';
 const CHARACTER='/media/runner/runner-ravi-actions.png?v=3d2ee0f116';
 const SKY='/media/runner/sky-atlas.png?v=ea731a709a';
@@ -25,6 +29,16 @@ function button(text,cls,handler){const b=node('button','nm-run-btn '+(cls||''),
 function decodeImage(src){
   return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Could not load sprite artwork'));image.src=src;});
 }
+// Space Run only: the key leaves a one-to-two pixel anti-aliased rim with a magenta cast, which reads as
+// purple specks on black space. Near the cut-out, remove the cast so the rim takes the outline's colour.
+function despill(p,w,h){
+  const clear=(i,j)=>i>=0&&j>=0&&i<w&&j<h&&p[(j*w+i)*4+3]<=30;
+  for(let j=0;j<h;j++)for(let i=0;i<w;i++){
+    const k=(j*w+i)*4,cast=Math.min(p[k],p[k+2])-p[k+1];
+    if(p[k+3]<=30||cast<=24)continue;
+    if(clear(i-1,j)||clear(i+1,j)||clear(i,j-1)||clear(i,j+1)||clear(i-1,j-1)||clear(i+1,j-1)||clear(i-1,j+1)||clear(i+1,j+1)||clear(i-2,j)||clear(i+2,j)||clear(i,j-2)||clear(i,j+2)){p[k]-=cast;p[k+2]-=cast;}
+  }
+}
 function extract(image,rect){
   const [x,y,w,h]=rect,c=document.createElement('canvas');c.width=w;c.height=h;
   const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(image,x,y,w,h,0,0,w,h);
@@ -35,6 +49,7 @@ function extract(image,rect){
     if(r>155&&b>140&&g<125&&Math.min(r,b)-g>65)p[k+3]=0;
     if(p[k+3]>30){left=Math.min(left,i);right=Math.max(right,i);top=Math.min(top,j);bottom=Math.max(bottom,j);}
   }
+  if(space)despill(p,w,h);
   cx.putImageData(data,0,0);if(right<left)throw new Error('Empty sprite');
   const trimmed=document.createElement('canvas');trimmed.width=right-left+1;trimmed.height=bottom-top+1;
   trimmed.getContext('2d').drawImage(c,left,top,trimmed.width,trimmed.height,0,0,trimmed.width,trimmed.height);
@@ -43,28 +58,57 @@ function extract(image,rect){
   for(let j=top;j<top+trimmed.height*.28;j++)for(let i=left;i<=right;i++)if(p[(j*w+i)*4+3]>30){headLeft=Math.min(headLeft,i);headRight=Math.max(headRight,i);}
   return {image:trimmed,left,top,width:trimmed.width,height:trimmed.height,headX:(headLeft+headRight)/2};
 }
+// own: a replacement sheet in the same layout, registered by its head and feet instead of tuned pivots.
+function actionPoses(character,own){
+  const result={};
+  Object.entries(POSES).forEach(([name,i])=>{
+    const x=Math.floor(i%4*character.width/4),y=Math.floor(Math.floor(i/4)*character.height/4);
+    const right=Math.floor((i%4+1)*character.width/4),bottom=Math.floor((Math.floor(i/4)+1)*character.height/4);
+    const pose=extract(character,[x,y,right-x,bottom-y]);
+    result[name]={...pose,pivot:own?pose.headX:PIVOTS[name],baseline:own?pose.top+pose.height:282};
+  });
+  return result;
+}
+function runPoses(running){
+  const result={},frames=[];
+  for(let i=0;i<RUN_FRAME_COUNT;i++){
+    const col=i%4,row=Math.floor(i/4),x=Math.floor(col*running.width/4),y=Math.floor(row*running.height/3);
+    const right=Math.floor((col+1)*running.width/4),bottom=Math.floor((row+1)*running.height/3);
+    frames.push(extract(running,[x,y,right-x,bottom-y]));
+  }
+  // All poses retain one scale. Registration moves the whole still only.
+  const scale=60/Math.max(...frames.map(frame=>frame.height));
+  const lift=[0,0,1,2,0,0,0,0,0,1,2,0];
+  frames.forEach((frame,i)=>{result['run'+(i+1)]={...frame,pivot:frame.headX,baseline:frame.top+frame.height,scale,lift:lift[i]};});
+  return result;
+}
+// Atlas cells scale with the sheet, so a replacement atlas may use another resolution.
+function atlasCell(image,name){const k=image.width/1254;return extract(image,SKY_CELLS[name].map(v=>Math.floor(v*k)));}
+// Use optional art when it loads and slices cleanly; otherwise the default sheet, per file.
+async function sheet(src,fallback,build){
+  const image=await decodeImage(src).catch(()=>null);
+  if(image)try{return build(image,true);}catch(error){console.warn(`${src} could not be used; keeping the default art.`,error);}
+  return build(await decodeImage(fallback),false);
+}
+async function spaceArt(){
+  const art=space.SPACE_ART,[actions,running,atlas]=await Promise.all([sheet(art.actions,CHARACTER,actionPoses),sheet(art.run,RUN_SHEET,runPoses),decodeImage(art.atlas).catch(()=>null)]);
+  const result={...actions,...running};
+  if(atlas)for(const name of Object.keys(SKY_CELLS))try{result[name]=atlasCell(atlas,name);}catch{}
+  // Saucer frames come as a pair, so a half-finished atlas never mixes styles mid-flight.
+  if(!result.bird1||!result.bird2)[result.bird1,result.bird2]=space.ufoFrames();
+  if(!result.star)result.star=extract(await decodeImage(SKY),SKY_CELLS.star);
+  if(!result.platform)result.platform=space.rockTile();
+  result.ufoScale=space.ufoScale(result.bird1,result.bird2);
+  return result;
+}
 function loadArt(){
   if(artPromise)return artPromise;
-  artPromise=Promise.all([decodeImage(CHARACTER),decodeImage(SKY),decodeImage(RUN_SHEET)]).then(([character,sky,running])=>{
-    const result={};
-    Object.entries(POSES).forEach(([name,i])=>{
-      const x=Math.floor(i%4*character.width/4),y=Math.floor(Math.floor(i/4)*character.height/4);
-      const right=Math.floor((i%4+1)*character.width/4),bottom=Math.floor((Math.floor(i/4)+1)*character.height/4);
-      result[name]={...extract(character,[x,y,right-x,bottom-y]),pivot:PIVOTS[name],baseline:282};
-    });
+  const art=space?spaceArt():Promise.all([decodeImage(CHARACTER),decodeImage(SKY),decodeImage(RUN_SHEET)]).then(([character,sky,running])=>{
+    const result={...actionPoses(character,false),...runPoses(running)};
     for(const [name,rect] of Object.entries(SKY_CELLS))result[name]=extract(sky,rect);
-    const frames=[];
-    for(let i=0;i<RUN_FRAME_COUNT;i++){
-      const col=i%4,row=Math.floor(i/4),x=Math.floor(col*running.width/4),y=Math.floor(row*running.height/3);
-      const right=Math.floor((col+1)*running.width/4),bottom=Math.floor((row+1)*running.height/3);
-      frames.push(extract(running,[x,y,right-x,bottom-y]));
-    }
-    // All poses retain one scale. Registration moves the whole still only.
-    const scale=60/Math.max(...frames.map(frame=>frame.height));
-    const lift=[0,0,1,2,0,0,0,0,0,1,2,0];
-    frames.forEach((frame,i)=>{result['run'+(i+1)]={...frame,pivot:frame.headX,baseline:frame.top+frame.height,scale,lift:lift[i]};});
-    sprites=result;
-  }).catch(error=>{artPromise=null;throw error;});return artPromise;
+    return result;
+  });
+  artPromise=art.then(result=>{sprites=result;}).catch(error=>{artPromise=null;throw error;});return artPromise;
 }
 function say(text){if(text!==announced){status.textContent=text;announced=text;}}
 function saveBest(){if(saved)return;saved=true;if(game.score>best){best=game.score;try{localStorage.setItem('nm-cloud-run-best',String(best));}catch{}}}
@@ -75,7 +119,8 @@ function sync(){
   put(levelLabel,game.level);root.dataset.level=game.level;
   if(game.state==='running'&&game.level!==shownLevel){
     shownLevel=game.level;bannerUntil=game.time+2.5;
-    put(milestone,game.difficulty.notice);say(`Level ${game.level}. ${game.difficulty.notice}`);
+    const notice=COPY.notices?.[game.difficulty.stage]??game.difficulty.notice;
+    put(milestone,notice);say(`Level ${game.level}. ${notice}`);
   }
   if(game.state==='running'&&game.bonusTime>shownBonus){
     shownBonus=game.bonusTime;bannerUntil=game.time+1.6;
@@ -83,11 +128,11 @@ function sync(){
   }
   milestone.hidden=game.state!=='running'||game.time>=bannerUntil;
   const state=game.state;panel.hidden=state==='running'||state==='hit';
-  if(state==='ready'){heading.textContent='Sky’s the limit.';description.textContent='Jump low. Duck high. Catch stars.';action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
-  if(state==='paused'){heading.textContent='Paused.';description.textContent='Catch your breath up here.';action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
+  if(state==='ready'){heading.textContent=COPY.ready;description.textContent=COPY.tagline;action.textContent=sprites?'Start run':'Loading...';action.disabled=!sprites;}
+  if(state==='paused'){heading.textContent='Paused.';description.textContent=COPY.paused;action.textContent='Resume';action.disabled=false;say('Game paused. Choose Resume to continue.');}
   if(state==='over'){saveBest();heading.textContent='One more run?';description.textContent=`${game.score} points · ${game.stars} stars · level ${game.level}`;action.textContent='Run again';action.disabled=false;say(`Run over. ${game.score} points. ${game.stars} stars. Level ${game.level}. Best ${best}.`);}
 }
-function start(){if(!sprites)return;if(game.state==='paused')game.resume();else{clearControls();game.reset();game.start();saved=false;shownLevel=1;shownBonus=-1;bannerUntil=0;}panel.hidden=true;canvas.focus({preventScroll:true});say('Running. Space or tap to jump. Down or Duck to crouch. The sky gets busier as you go.');sync();wake();}
+function start(){if(!sprites)return;if(game.state==='paused')game.resume();else{clearControls();game.reset();game.start();saved=false;shownLevel=1;shownBonus=-1;bannerUntil=0;}panel.hidden=true;canvas.focus({preventScroll:true});say(`Running. Space or tap to jump. Down or Duck to crouch. ${COPY.busier}`);sync();wake();}
 function pause(){if(!game||game.state!=='running')return;game.pause();clearControls();cancelAnimationFrame(raf);raf=0;acc=0;sync();draw();}
 function togglePause(){if(game.state==='paused')start();else pause();}
 function jump(){if(!sprites)return;if(game.state==='ready'||game.state==='over'||game.state==='paused')start();game.jump();wake();}
@@ -96,6 +141,7 @@ function layout(){if(!root)return;const width=canvas.parentElement.clientWidth;c
 function sprite(name,x,y,w,h){const s=sprites&&sprites[name];if(!s)return;ctx.drawImage(s.image,Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 function landscape(){
   const w=canvas.width,offset=reduce.matches?0:game.distance;
+  if(space){space.drawSpace(ctx,{w,offset,time:reduce.matches?0:game.time,level:game.level,platform:sprites?.platform});return;}
   const colors=game.level>=5?['#6873be','#d5e2fa']:['#639ede','#c5eafa'];
   const sky=ctx.createLinearGradient(0,0,0,VIEW_HEIGHT);sky.addColorStop(0,colors[0]);sky.addColorStop(1,colors[1]);ctx.fillStyle=sky;ctx.fillRect(0,0,w,VIEW_HEIGHT);
   if(!sprites)return;
@@ -113,6 +159,12 @@ function draw(){
   for(const o of game.obstacles){
     const clearance=game.birdClearance(o);
     drawBirdSignal(ctx,o,game.laser(o),clearance);
+    if(space){
+      // Saucer lights alternate slowly, and hold still under reduced motion.
+      const s=sprites&&sprites['bird'+(reduce.matches?1:1+Math.floor(game.time*2.5)%2)];
+      if(s)space.drawUfo(ctx,s,sprites.ufoScale,o.x,clearance);
+      continue;
+    }
     const frame=1+Math.floor(game.time*7)%2,s=sprites&&sprites['bird'+frame];
     if(s){const anchor=frame===1?[45,178]:[43,149],scale=.18;
       // Anchor the beak/body rather than the changing wing silhouette.
@@ -167,11 +219,12 @@ function padButton(key,label,cls){
   const symbol=node('span','nm-run-key',key);symbol.setAttribute('aria-hidden','true');
   b.append(symbol,node('span','nm-run-control-label',label));return b;
 }
-export function openGame(){
-  if(root)return;controlResets=[];jumpSources.clear();duckSources.clear();game=new Runner();saved=false;announced='';shownLevel=1;shownBonus=-1;bannerUntil=0;abort=new AbortController();const signal=abort.signal;
+export function openGame(skin=null){
+  if(root)return;space=skin;COPY=skin?skin.SPACE_COPY:CLOUD_COPY;controlResets=[];jumpSources.clear();duckSources.clear();game=new Runner();saved=false;announced='';shownLevel=1;shownBonus=-1;bannerUntil=0;abort=new AbortController();const signal=abort.signal;
   root=node('div','nm-run');root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','nm-run-title');root.tabIndex=-1;
-  const top=node('div','nm-run-top'),brand=node('div');brand.append(node('p','nm-run-eyebrow','You found it.'));const title=node('h2','','Cloud Run');title.id='nm-run-title';brand.append(title);top.append(brand,button('Exit','',closeGame));root.append(top);
-  const stage=node('div','nm-run-stage');canvas=node('canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','Cloud Run playing field. Space or tap to jump; Down or Duck to crouch; P to pause; Escape to leave.');stage.append(canvas);ctx=canvas.getContext('2d');
+  if(space)root.dataset.world='space';
+  const top=node('div','nm-run-top'),brand=node('div');brand.append(node('p','nm-run-eyebrow',COPY.eyebrow));const title=node('h2','',COPY.name);title.id='nm-run-title';brand.append(title);top.append(brand,button('Exit','',closeGame));root.append(top);
+  const stage=node('div','nm-run-stage');canvas=node('canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label',`${COPY.name} playing field. Space or tap to jump; Down or Duck to crouch; P to pause; Escape to leave.`);stage.append(canvas);ctx=canvas.getContext('2d');
   const scores=node('div','nm-run-scoreboard');
   for(const label of ['Score','Stars','Level','Best']){const item=node('span','nm-run-score',label),value=node('b','','00000');item.append(value);scores.append(item);if(label==='Score')scoreLabel=value;else if(label==='Best')bestLabel=value;else if(label==='Level')levelLabel=value;else starLabel=value;}stage.append(scores);
   milestone=node('div','nm-run-milestone');milestone.hidden=true;stage.append(milestone);
@@ -188,7 +241,7 @@ export function openGame(){
   window.addEventListener('blur',()=>{pause();clearControls();},{signal});
   window.addEventListener('resize',layout,{signal});resizeObserver=new ResizeObserver(layout);resizeObserver.observe(stage);
   layout();sync();
-  loadArt().then(()=>{if(root){draw();sync();action.focus({preventScroll:true});}}).catch(error=>{if(root){heading.textContent='Still loading.';description.textContent='Check your connection, then try again.';action.textContent='Try again';action.disabled=false;action.onclick=()=>{closeGame();openGame();};say('Artwork could not load. Try again or return to the site.');}console.error('Cloud Run artwork:',error);});
+  loadArt().then(()=>{if(root){draw();sync();action.focus({preventScroll:true});}}).catch(error=>{if(root){heading.textContent='Still loading.';description.textContent='Check your connection, then try again.';action.textContent='Try again';action.disabled=false;action.onclick=()=>{const skin=space;closeGame();openGame(skin);};say('Artwork could not load. Try again or return to the site.');}console.error(`${COPY.name} artwork:`,error);});
 }
 export function closeGame(){
   if(!root)return;cancelAnimationFrame(raf);raf=0;abort.abort();resizeObserver?.disconnect();clearControls();controlResets=[];

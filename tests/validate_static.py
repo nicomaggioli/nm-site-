@@ -25,9 +25,12 @@ for name in ('nm-home-content.js','nm-brands.js'):
     source=(ROOT/'js'/name).read_text()
     content=json.loads(re.search(r'var HTML = (".*?");',source)[1])
     parser=Assets();parser.feed(content);paths+=parser.paths
-for name in ('nm-run.js','nm-run-game.mjs','nm-run-motion.mjs'):
+for name in ('nm-run.js','nm-run-game.mjs','nm-run-motion.mjs','nm-run-space.mjs'):
     paths+=re.findall(r'''[\"'](/(?:media|js|css)/[^\"']+)[\"']''',(ROOT/'js'/name).read_text())
     paths+=['/js/'+path[2:] for path in re.findall(r'''from\s+[\"'](\./[^\"']+)[\"']''',(ROOT/'js'/name).read_text())]
+# Space Run's replacement artwork is optional: the game falls back per file until it exists.
+OPTIONAL={'/media/runner/astronaut-run.png','/media/runner/astronaut-actions.png','/media/runner/space-atlas.png'}
+paths=[p for p in paths if urlsplit(p).path not in OPTIONAL]
 for css in (ROOT/'css').glob('*.css'):
     paths+=re.findall(r'url\([\'\"]?(/[^)\'\"]+)',css.read_text())
 # Every archive thumbnail must have its full-size lightbox counterpart.

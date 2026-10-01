@@ -1132,7 +1132,7 @@
     var door = document.createElement('button');
     door.type = 'button';
     door.className = 'nm-run-door nm-sky-door';
-    door.setAttribute('aria-label', 'Play Cloud Run');
+    door.setAttribute('aria-label', 'Play Space Run');
     door.setAttribute('aria-haspopup', 'dialog');
     door.addEventListener('click', function () { openRun(door); });
     host.removeAttribute('aria-hidden');
@@ -1162,6 +1162,7 @@
     else { host = document.querySelector('footer .foot-mark'); foot = host && host.closest('footer'); }
     if (!host) return;
     door = page === 'index' ? host.querySelector('.nm-sky-door') || makeDoor(host) : host.querySelector('.nm-run-door');
+    if (door) door.setAttribute('aria-label', 'Play Space Run');   // the Night Sky's game (js/nm-run-space.mjs)
     if (cons.canvas && cons.canvas.parentNode) cons.canvas.remove();
     cons.host = host; cons.door = door; cons.foot = foot;
     var c = cons.canvas = document.createElement('canvas');

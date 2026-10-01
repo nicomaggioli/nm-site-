@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Runner,PLAYER_X,GROUND,difficultyAt,KINDS,LASER_CHARGE} from '../js/nm-run-engine.mjs';
+import {SPACE_COPY} from '../js/nm-run-space.mjs';
 const advance=(g,seconds)=>{for(let n=0;n<seconds*120;n++)g.update(1/120);};
 const fresh=()=>{const g=new Runner({random:()=>.5});g.start();g.next=100;return g;};
 test('a low bird ends a run and freezes the score',()=>{const g=fresh();g.spawn('bird_low').x=PLAYER_X+4;g.update(1/120);assert.equal(g.state,'hit');const score=g.score;advance(g,2);assert.equal(g.state,'over');assert.equal(g.score,score);});
@@ -102,6 +103,11 @@ test('pausing freezes the difficulty clock, bird motion, laser charging and shoo
   g.pause();const snapshot=JSON.stringify([g.time,g.level,g.speed,g.obstacles,g.tokens]);advance(g,30);
   assert.equal(JSON.stringify([g.time,g.level,g.speed,g.obstacles,g.tokens]),snapshot);
   g.reset();assert.equal(g.level,1);assert.equal(g.time,0);assert.equal(g.introduced,-1);assert.equal(g.bonusTime,-1);
+});
+
+test('Space Run announces every difficulty stage in its own words',()=>{
+  for(const t of [0,12,25,45,70,105,3600])assert.ok(SPACE_COPY.notices[difficultyAt(t).stage]?.length>0,`stage at ${t}s`);
+  assert.equal(SPACE_COPY.notices.length,difficultyAt(3600).stage+1);
 });
 
 function seeded(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
