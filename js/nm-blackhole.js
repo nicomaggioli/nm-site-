@@ -298,7 +298,6 @@
       door.className = 'nm-run-door nm-bh-door';
       door.setAttribute('aria-label', 'Play Cloud Run');
       door.setAttribute('aria-haspopup', 'dialog');
-      door.title = 'Feeling lucky?';
       door.addEventListener('click', function () { openRun(door); });
       host.appendChild(door);
     }
