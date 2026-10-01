@@ -68,7 +68,7 @@ test('a service loop plays only while its panel is open and the section is near 
   const section={dataset:{},querySelectorAll:()=>items};
   function IntersectionObserver(callback){intersection=callback;this.observe=()=>{};this.disconnect=()=>{};}
   const context={window:{IntersectionObserver},document:{getElementById:()=>section},
-    matchMedia:query=>/reduce/.test(query)?reduce:desktop,IntersectionObserver};
+    matchMedia:query=>/reduce/.test(query)?reduce:/max-width/.test(query)?{matches:false}:desktop,IntersectionObserver};
   vm.runInNewContext(script('nm-services.js'),context);
   let y=0;
   const hover=index=>items[index].button.dispatchEvent(Object.assign(new Event('pointermove'),{pointerType:'mouse',clientX:1,clientY:++y}));

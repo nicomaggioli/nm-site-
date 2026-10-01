@@ -118,15 +118,24 @@
     apply(warp);
     raf = requestAnimationFrame(frame);
   }
-  function kick() {
+  // Velocity needs the position before this scroll moved. Native scrolling (touch, and every page
+  // without Lenis) has already moved when its event fires, so a gesture starts from the previous
+  // scroll event's position; a lone jump (End, a link) has no recent event and starts flat.
+  var evY = window.scrollY, evT = -1e9;
+  function onScroll() {
+    var now = performance.now(), y = window.scrollY;
+    kick(now - evT < 120 ? evY : y);
+    evY = y; evT = now;
+  }
+  function kick(fromY) {
     if (reduce && reduce.matches) return;
     if (!items.length) collect();
-    if (!moving) { moving = true; lastY = window.scrollY; last = 0; }
+    if (!moving) { moving = true; lastY = fromY; last = 0; }
     if (!raf) raf = requestAnimationFrame(frame);
   }
   function start() {
     collect();
-    addEventListener('scroll', kick, { passive: true });
+    addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', function () { apply(0); warp = 0; collect(); }, { passive: true });
   }
   if (window.__nmReady) window.__nmReady(start);

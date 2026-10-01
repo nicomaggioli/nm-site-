@@ -19,8 +19,10 @@
   }
 
   // A panel with a looping video (over its poster image) plays only while it is open and the
-  // section is near the screen; never under reduced motion. Phones get the lighter file.
+  // section is near the screen; never under reduced motion. Phones (not tablets) get the lighter
+  // file, so a tablet shares the hero's cached desktop file.
   var still = matchMedia('(prefers-reduced-motion: reduce)');
+  var phone = matchMedia('(max-width: 767px)');   // the same split as the hero loops (nm-video.js)
   var inView = false;
   function motion(panel, on) {
     var video = panel.querySelector('video[data-src]');
@@ -28,7 +30,7 @@
     if (on && near && inView && !still.matches) {
       if (!video.getAttribute('src')) {
         video.addEventListener('playing', function () { video.classList.add('is-playing'); });
-        video.src = (!desktop.matches && video.dataset.mobileSrc) || video.dataset.src;
+        video.src = (phone.matches && video.dataset.mobileSrc) || video.dataset.src;
       }
       var playing = video.play();
       if (playing && playing.catch) playing.catch(function () { /* the poster stays */ });

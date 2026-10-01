@@ -66,6 +66,8 @@
   opacity:0; transition:transform .5s cubic-bezier(.2,.7,.3,1), opacity .3s ease;
 }
 .grid .tile > video.tile-motion.is-playing{ opacity:1; }
+/* the loop covers the tile, so it carries the tile's focus ring */
+.grid .tile:focus-visible > video.tile-motion{ outline:2px solid #fff; outline-offset:-4px; }
 @media (hover:hover){
   .grid .tile:hover > video.tile-motion{ transform:scale(1.035); }
   .grid .tile:hover > video.tile-motion.is-playing{ opacity:.82; }
