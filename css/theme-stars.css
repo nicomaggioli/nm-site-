@@ -1,6 +1,6 @@
 /* Night Sky: the live design, unchanged, with a real night sky behind it (js/nm-sky.js).
    Removed on request: the hero captions, the header coordinates/location pill, and the
-   footer headline. Everything else keeps its live styling. */
+   footer headline. Everything else keeps its live styling. Brief: docs/night-sky.md. */
 html[data-nm-theme="stars"] #nm-coord,
 html[data-nm-theme="stars"] #nm-location-panel { display: none !important; }
 
@@ -11,3 +11,117 @@ html[data-nm-theme="stars"] main > section.fixed.inset-0.z-10 { visibility: hidd
 html[data-nm-theme="stars"] #contact .grid-layout > .absolute.left-1\/2,
 html[data-nm-theme="stars"] .nm-footer-cta,
 html[data-nm-theme="stars"] footer > .foot-cta { display: none !important; }
+
+/* ── the sky shows through ────────────────────────────────────────────────
+   The page ground stays the html background (#0a0a0a); the sky canvas paints just
+   above it, so every section that painted the same flat #0a0a0a over it goes
+   transparent. Image tiles, service visuals, menus and dialogs keep their fills. */
+html[data-nm-theme="stars"] #nm-made,
+html[data-nm-theme="stars"] main > #about,
+html[data-nm-theme="stars"] #nm-brands,
+html[data-nm-theme="stars"] #nm-services,
+html[data-nm-theme="stars"] #nm-sites,
+html[data-nm-theme="stars"] main > section.h-lvh,
+html[data-nm-theme="stars"] body.nm-about-page,
+html[data-nm-theme="stars"] .nm-footer,
+html[data-nm-theme="stars"] body:not(.nm-about-page) { background: transparent !important; }
+
+html[data-nm-theme="stars"] #nm-sky {
+  position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
+  z-index: -20; pointer-events: none; display: block;
+}
+
+/* ── header scrim ──────────────────────────────────────────────────────────
+   The same gradient, moved to a layer js/nm-sky.js can lift (html.nm-sky-clear)
+   while only sky passes under the header, and that returns as soon as content
+   does. Without the engine it simply stays on, as it is live. */
+html[data-nm-theme="stars"] header[data-nm-header],
+html[data-nm-theme="stars"] .nm-hdr { background: transparent !important; }
+html[data-nm-theme="stars"] header[data-nm-header]::before,
+html[data-nm-theme="stars"] .nm-hdr::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(10,10,10,.92), rgba(10,10,10,.66) 58%, rgba(10,10,10,0));
+  transition: opacity .5s ease;
+}
+html[data-nm-theme="stars"] .nm-about-page .nm-hdr::before { background: linear-gradient(#0a0a0a 82%, #0a0a0a00); }
+html[data-nm-theme="stars"].nm-sky-clear header[data-nm-header]::before,
+html[data-nm-theme="stars"].nm-sky-clear .nm-hdr::before,
+html[data-nm-theme="stars"].nm-menu-open header[data-nm-header]::before,
+html[data-nm-theme="stars"].nm-menu-open .nm-hdr::before { opacity: 0; }
+
+/* ── featured-star label ───────────────────────────────────────────────────
+   The coordinates panel's language at a whisper: a small dark card with a hairline
+   edge, the name in Geist, the catalogue lines in the mono label style. */
+html[data-nm-theme="stars"] .nm-sky-label {
+  position: fixed; left: 0; top: 0; z-index: 48; pointer-events: none;
+  width: max-content; max-width: min(268px, calc(100vw - 24px));
+  padding: 11px 14px 12px; border-radius: 14px;
+  background: rgba(10,10,10,.84); border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
+  font-family: 'Geist', system-ui, sans-serif; color: #fff; text-align: left;
+  text-transform: none; letter-spacing: normal;
+  opacity: 0; visibility: hidden;
+  transition: opacity .28s ease, visibility 0s linear .28s;
+}
+html[data-nm-theme="stars"] .nm-sky-label.is-on {
+  opacity: 1; visibility: visible; transition: opacity .28s ease, visibility 0s linear 0s;
+}
+html[data-nm-theme="stars"] .nm-sky-label p { margin: 0; }
+html[data-nm-theme="stars"] .nm-sky-l-name {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px;
+  margin: 0 0 6px !important; line-height: 1.2;
+}
+html[data-nm-theme="stars"] .nm-sky-l-name b { font-size: 14px; font-weight: 600; letter-spacing: -.01em; color: #fff; }
+html[data-nm-theme="stars"] .nm-sky-l-name span,
+html[data-nm-theme="stars"] .nm-sky-l-co {
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+  line-height: 1.6; color: rgba(255,255,255,.46); font-variant-numeric: tabular-nums;
+}
+html[data-nm-theme="stars"] .nm-sky-l-name span { letter-spacing: .06em; text-transform: none; }
+html[data-nm-theme="stars"] .nm-sky-l-fact {
+  margin-top: 7px !important; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.74);
+  max-width: 236px; text-wrap: pretty;
+}
+
+/* ── the NM constellation and its door ─────────────────────────────────────
+   The constellation is a small canvas in the footer (it scrolls with it); the Cloud
+   Run door is sized to cover it. Home and About reuse their door; Index gets one. */
+html[data-nm-theme="stars"] .nm-sky-cons {
+  position: absolute; z-index: 0; pointer-events: none; display: block; max-width: none;
+  opacity: 1 !important; transition: none !important;   /* Index styles .foot-mark canvas for its cloud */
+}
+html[data-nm-theme="stars"] main > section.h-lvh .nm-sky-cons { z-index: 1; }
+html[data-nm-theme="stars"] .nm-run-door img { visibility: hidden !important; }
+html[data-nm-theme="stars"][data-nm-sky] main > section.h-lvh .nm-run-door,
+html[data-nm-theme="stars"][data-nm-sky] .nm-footer .nm-run-door,
+html[data-nm-theme="stars"] .nm-sky-door {
+  width: var(--nm-sky-door-w, 32%) !important; height: var(--nm-sky-door-h, 32%) !important;
+  border-radius: 28px;
+}
+html[data-nm-theme="stars"] .nm-sky-door {
+  position: absolute; z-index: 2; left: 50%; top: var(--nm-sky-door-y, 50%); transform: translate(-50%, -50%);
+  border: 0; padding: 0; background: none; cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+html[data-nm-theme="stars"] .nm-sky-door:focus-visible { outline: 2px dashed #ff7820; outline-offset: 8px; }
+html[data-nm-theme="stars"] .nm-sky-door[aria-busy="true"] { cursor: progress; }
+/* Index: the mark's box is kept on phones too (it is the door), with room above it
+   for the sky (the Big Dipper sits there on a phone) */
+html[data-nm-theme="stars"] footer .foot-mark {
+  display: block; position: relative; min-height: 0;
+  height: calc(max(min(426px, 62vw), 22.1875vw) / 2.01 + clamp(56px, 7vw, 120px) + clamp(40px, 5vw, 88px));
+}
+@media (max-width: 767px) {
+  html[data-nm-theme="stars"] footer .foot-mark { padding: 190px 0 40px; height: calc(62vw / 2.01 + 230px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-nm-theme="stars"] .nm-sky-label,
+  html[data-nm-theme="stars"] .nm-sky-label.is-on,
+  html[data-nm-theme="stars"] header[data-nm-header]::before,
+  html[data-nm-theme="stars"] .nm-hdr::before { transition: none; }
+}
+@media print {
+  html[data-nm-theme="stars"] :is(#nm-sky, .nm-sky-label, .nm-sky-cons) { display: none !important; }
+}
