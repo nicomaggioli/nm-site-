@@ -1,4 +1,5 @@
-/* Night Sky: the live design, unchanged, with a real night sky behind it (js/nm-sky.js).
+/* Night Sky: the live design, unchanged, inside a particle space (js/nm-space.js) with the
+   real night sky beyond it (js/nm-sky.js).
    Removed on request: the hero captions, the header coordinates/location pill, and the
    footer headline. Everything else keeps its live styling. Brief: docs/night-sky.md. */
 html[data-nm-theme="stars"] #nm-coord,
@@ -26,12 +27,15 @@ html[data-nm-theme="stars"] body.nm-about-page,
 html[data-nm-theme="stars"] .nm-footer,
 html[data-nm-theme="stars"] body:not(.nm-about-page) { background: transparent !important; }
 
-/* the sky (WebGL, opaque: it paints the ground too) and its overlay (events, reticle) */
+/* the particle space (WebGL, opaque: it paints the ground too), the real sky over it
+   (transparent) and their overlay (events, reticle) */
+html[data-nm-theme="stars"] #nm-space,
 html[data-nm-theme="stars"] #nm-sky,
 html[data-nm-theme="stars"] .nm-sky-fx {
   position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
   z-index: -21; pointer-events: none; display: block;
 }
+html[data-nm-theme="stars"] #nm-space { z-index: -22; }
 html[data-nm-theme="stars"] .nm-sky-fx { z-index: -20; }
 
 /* ── header scrim ──────────────────────────────────────────────────────────
@@ -128,5 +132,5 @@ html[data-nm-theme="stars"] footer .foot-mark {
   html[data-nm-theme="stars"] .nm-hdr::before { transition: none; }
 }
 @media print {
-  html[data-nm-theme="stars"] :is(#nm-sky, .nm-sky-fx, .nm-sky-label, .nm-sky-cons) { display: none !important; }
+  html[data-nm-theme="stars"] :is(#nm-space, #nm-sky, .nm-sky-fx, .nm-sky-label, .nm-sky-cons) { display: none !important; }
 }

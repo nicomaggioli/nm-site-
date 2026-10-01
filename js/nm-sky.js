@@ -1,54 +1,48 @@
-/* Night sky engine v3 for the ?theme=stars preview. Brief: docs/night-sky.md.
+/* Night sky engine v4 for the ?theme=stars preview. Brief: docs/night-sky.md.
 
-   The live site, unchanged, over a sky you float in. The sky is no longer glued to the
-   page: a camera drifts in space behind the content, and scrolling flies it.
+   The live site, unchanged, inside a particle space you dive through (js/nm-space.js,
+   window.NMSpace: the sheets, wisps, dust and specks, the footer NM gather). This engine is
+   the real sky beyond it: the far layer, at infinity, turning with the same camera.
 
-   The camera.
-     - Float: with no input it drifts very slowly (a bounded sway in heading and pitch, a
-       slow roll) while it glides through the nearby stars, as if weightless.
-     - Spin: the scroll position is the camera's target along a path through the real sky
-       (VIEWS: keyframes of view centre and roll, about half a turn of roll over a page).
-       The camera follows that target with critically damped inertia and a cap on its
-       angular speed, so it glides, settles when scrolling stops, and never whips.
-     - Depth: the real catalogue sky (and the Milky Way) is the far layer, at infinity;
-       nearer stars live in a wrapped volume around the camera at every depth, so when the
-       camera moves they parallax against the far sky (and the camera orbits a point ahead
-       of it when it turns, so turning shows depth too).
-     - Into the logo (homepage): through the hero zoom (window.__nmHeroProgress 0 -> 1) the
-       camera dollies toward the centre of the NM mark: the near stars stream outward and
-       swell, the far sky widens a little. Scrolling back reverses it.
-   Layers, all on one fixed WebGL canvas (NMSky.canvas, sampled by the homepage hero
-   outside the NM mark):
-     - The Milky Way: a faint veil, baked once into a cube map (the band, star clouds, the
-       Great Rift and other dust lanes, a few small nebulae) and sampled through the camera
-       each frame at a quarter of its old strength, nearly colourless with a hint of amber
-       toward the core; never above the AA contrast limit behind any text (a page-length
-       mask of every line of text).
-     - Its grain: tens of thousands of unresolved faint stars, placed by the band's density.
-     - The stars: every catalogue star with V <= 6 (media/sky/stars.json, BSC5) as point
-       sprites with a pixel-integrated core (crisp and steady while moving at any DPR),
-       colour from B-V, and scintillation for the brighter ones.
-     - The near volume: faint procedural stars at finite depth.
-   NMSky.fx: a fixed 2D overlay for the rare events and the hover reticle.
-   The footer NM constellation (the Cloud Run door) stays on its own canvas in the footer
-   and scrolls with it; the sky behind it is quieted so the mark reads first.
+   The camera is NMSpace.camera (one camera for both). Scrolling dives it forward with a slow
+   roll that comes and goes and gentle turns; it glides with inertia and floats when idle. The
+   real sky takes its roll, heading and pitch (so the stars spin and turn exactly with the
+   particles) and, on top of that, pans slowly along a path through the real sky as you scroll
+   (VIEWS: keyframes of view centre), so each page passes its four featured stars. Through the
+   homepage hero (window.__nmHeroProgress 0 -> 1) the sky widens a little while the space dives
+   toward the centre of the NM logo. Without NMSpace (no WebGL there) the sky keeps its own
+   camera (VIEWS roll, float, glide), as v3 did.
+   Layers:
+     - NMSky.canvas: every catalogue star with V <= 6 (media/sky/stars.json, BSC5) as point
+       sprites with a pixel-integrated core (crisp and steady while moving at any DPR), colour
+       from B-V, scintillation for the brighter ones; transparent, above the space canvas. The
+       painted Milky Way, its grain and the near-star volume are gone: the particle wisps are
+       the glow now.
+     - NMSky.fx: a fixed 2D overlay for the rare events and the hover reticle.
+     - The footer NM: the particles gather into the mark (NMSpace); this engine keeps the Cloud
+       Run door, its label, and a constellation's worth of brighter star-nodes on the mark (its
+       own small canvas in the footer, fading in as the mark forms; chart lines on hover).
+   NMSky.mask: a page-length mask of every line of text, the most light the space may add
+   behind it so the text keeps its WCAG AA contrast (NMSpace applies it).
    Events (subtle, in open sky, riding with the sky): a shooting star 10-20 s after
    arriving, then every 40-80 s; a satellite every 1.5-3 min; the UFO first after 1-2 min,
    then every 5-8 min. Add ?sky=show to see each within the first few seconds.
 
    window.NMSky
-     .canvas        the fixed sky canvas (WebGL; 2D without it)
+     .canvas        the fixed sky canvas (WebGL, transparent; 2D without it)
      .fx            the fixed overlay (events, reticle)
      .page          'home' | 'about' | 'index'
+     .mask          { canvas, scale, w, h, ver } the text contrast mask
+     .nmRect()      the footer NM mark's box in viewport px [x0, y0, x1, y1], or null
      .trigger(kind) 'meteor' | 'satellite' | 'ufo': start one now
-     .set(opts)     { brightness, twinkle, veil, motion } live multipliers (1 = default)
+     .set(opts)     { brightness, twinkle, motion } live multipliers (1 = default)
      .debug()       camera, featured-star positions and open-sky tests, events, timings
      .at(y)         where the featured stars sit with the camera settled at scroll y
      .openSky(x,y)  true when nothing but sky is painted at that viewport point
 
-   Budget: one fullscreen pass and a few thousand points per frame; display rate while the
-   camera glides, ~30 fps while it only floats; stops in hidden tabs and while Cloud Run
-   is open; one still frame (no float, spin, dolly or events) under prefers-reduced-motion. */
+   Budget: a few thousand points per frame; display rate while the camera glides, ~30 fps
+   while it only floats; stops in hidden tabs and while Cloud Run is open; one still frame
+   (no float, spin, dolly or events) under prefers-reduced-motion. */
 (function () {
   'use strict';
   if (window.NMSky) return;
@@ -86,19 +80,6 @@
     }
   };
   var CAP = 34;            // deg/s: the most the camera turns (roll plus pan) while gliding
-  var DOLLY = 0.3;         // near-volume units travelled through the hero zoom
-  var FWD = 0.000028;      // near-volume units per px of scroll (a slow approach)
-  var LEVER = 0.14;        // the camera orbits a point this far ahead when it turns
-  var DRIFT = 0.0032;      // near-volume units per second while floating
-
-  /* Small nebulae on the way, galactic [l, b, radius deg, strength]: soft and nearly grey. */
-  var NEBULAE = [
-    [209.0, -19.4, 0.45, 1.2],   // Orion Nebula: a small knot in the sword
-    [287.6, -0.6, 1.0, 1.0],     // Carina Nebula
-    [6.0, -1.2, 0.7, 0.8],       // Lagoon
-    [15.1, -0.7, 0.4, 0.45],     // Omega
-    [85.6, -0.7, 1.3, 0.35]      // North America
-  ];
 
   /* The NM constellation, in texture pixels of nm-mark-sdf.png: [x, y, V, B-V]. */
   var NM_STARS = [
@@ -115,8 +96,8 @@
     [4, 10], [10, 5], [6, 14], [14, 11], [11, 7], [14, 5]];
   var NM_LABEL = { name: 'NM', designation: 'Nico Maggioli', coords: '42.3601° N · 71.0589° W', distance: 'Boston, MA', fact: '' };
 
-  var api = window.NMSky = { canvas: null, fx: null, page: null, version: 3 };
-  var opts = { brightness: 1, twinkle: 1, veil: 1, motion: 1 };
+  var api = window.NMSky = { canvas: null, fx: null, page: null, version: 4 };
+  var opts = { brightness: 1, twinkle: 1, motion: 1 };
 
   /* ------------------------------------------------------------------ helpers */
   function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
@@ -130,15 +111,6 @@
   function noise(x) {   // smooth 1D value noise in -1..1
     var i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f), a = hash(i | 0), b = hash((i + 1) | 0);
     return (a + (b - a) * u) * 2 - 1;
-  }
-  function vnoise3(x, y, z) {   // smooth 3D value noise in -1..1
-    var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = x - xi, yf = y - yi, zf = z - zi;
-    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
-    var h = function (a, b, c) { return hash(Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)); };
-    var l = function (a, b, t) { return a + (b - a) * t; };
-    var r = l(l(l(h(xi, yi, zi), h(xi + 1, yi, zi), u), l(h(xi, yi + 1, zi), h(xi + 1, yi + 1, zi), u), v),
-      l(l(h(xi, yi, zi + 1), h(xi + 1, yi, zi + 1), u), l(h(xi, yi + 1, zi + 1), h(xi + 1, yi + 1, zi + 1), u), v), w);
-    return r * 2 - 1;
   }
   function rng(seed) {
     var a = seed >>> 0;
@@ -167,8 +139,6 @@
   function lin(v) { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
   function lum(r, g, b) { return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); }
   var GROUND = 10, L_GROUND = lum(GROUND, GROUND, GROUND);
-  function bumpJ(x, c, w) { var d = (x - c) / w; return Math.exp(-d * d); }
-  function sech2J(x) { var e = Math.exp(-2 * Math.abs(x)); return 4 * e / ((1 + e) * (1 + e)); }
 
   /* ------------------------------------------------------------- star colour */
   // B-V -> effective temperature (Ballesteros 2012) -> sRGB (Helland's blackbody fit)
@@ -212,16 +182,6 @@
     var a = raH * 15 * DEG, d = decD * DEG, cd = Math.cos(d);
     return [cd * Math.cos(a), cd * Math.sin(a), Math.sin(d)];
   }
-  // J2000 equatorial -> galactic (rows); its transpose takes galactic back
-  var GAL = [[-0.0548755604, -0.8734370902, -0.4838350155], [0.4941094279, -0.4448296300, 0.7469822445], [-0.8676661490, -0.1980763734, 0.4559837762]];
-  function galUnit(l, b) {
-    var cb = Math.cos(b * DEG);
-    return [cb * Math.cos(l * DEG), cb * Math.sin(l * DEG), Math.sin(b * DEG)];
-  }
-  function gal2eq(l, b) {
-    var g = galUnit(l, b);
-    return [GAL[0][0] * g[0] + GAL[1][0] * g[1] + GAL[2][0] * g[2], GAL[0][1] * g[0] + GAL[1][1] * g[1] + GAL[2][1] * g[2], GAL[0][2] * g[0] + GAL[1][2] * g[1] + GAL[2][2] * g[2]];
-  }
   function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
   function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
   function norm(a) { var n = Math.sqrt(dot(a, a)) || 1; return [a[0] / n, a[1] / n, a[2] / n]; }
@@ -240,11 +200,12 @@
   /* ------------------------------------------------------------------- camera */
   var PATH = { keys: null, fov: 72, float: 1, max: 1 };
   var CAM = {
-    y: 0, vy: 0, yPrev: null, hp: 0, vhp: 0, init: false, t: 0,
-    P: [0.371, 0.613, 0.187], Pe: [0, 0, 0],
+    y: 0, vy: 0, hp: 0, vhp: 0, init: false, t: 0, shared: false,
     f: [1, 0, 0], r: [0, -1, 0], u: [0, 0, 1], M: new Float32Array(9),
     cx: 0, cy: 0, F: 1, zoom: 1, roll: 0
   };
+  // the particle space's camera, when it runs (js/nm-space.js)
+  function spaceCam() { var s = window.NMSpace; return s && s.canvas && s.camera && s.camera.F > 1 ? s : null; }
   function viewCfg() {
     var c = VIEWS[S.page] || VIEWS.home;
     return S.vw < 600 && c.phone ? c.phone : c.desk;
@@ -300,6 +261,9 @@
     };
   }
   function camStep(dt) {
+    var sp = spaceCam();
+    if (sp) { sharedStep(sp); return; }
+    CAM.shared = false;
     var target = S.still ? 0 : clamp(window.scrollY || 0, 0, S.maxY);
     if (!CAM.init || S.still) { CAM.y = target; CAM.vy = 0; }
     else if (dt > 0) {
@@ -313,17 +277,14 @@
       }
       if (Math.abs(target - CAM.y) < 0.05 && Math.abs(CAM.vy) < 0.5) { CAM.y = target; CAM.vy = 0; }
     }
-    var dy = CAM.yPrev == null ? 0 : CAM.y - CAM.yPrev;
-    CAM.yPrev = CAM.y;
-    // the hero dolly follows the logo zoom closely
-    var hpT = S.page === 'home' && !S.still ? clamp(+window.__nmHeroProgress || 0, 0, 1) : 0, hp0 = CAM.hp;
+    // the sky widens a little through the hero zoom
+    var hpT = S.page === 'home' && !S.still ? clamp(+window.__nmHeroProgress || 0, 0, 1) : 0;
     if (!CAM.init || S.still) { CAM.hp = hpT; CAM.vhp = 0; }
     else if (dt > 0) {
       var W1 = 7, m = Math.max(1, Math.ceil(dt / 0.012)), k = dt / m;
       for (var j = 0; j < m; j++) { CAM.vhp += (W1 * W1 * (hpT - CAM.hp) - 2 * W1 * CAM.vhp) * k; CAM.hp += CAM.vhp * k; }
       if (Math.abs(hpT - CAM.hp) < 1e-4 && Math.abs(CAM.vhp) < 1e-3) { CAM.hp = hpT; CAM.vhp = 0; }
     }
-    var dh = CAM.hp - hp0;
     CAM.init = true;
     if (!S.still) CAM.t += dt;
     var fk = S.still ? 0 : PATH.float * opts.motion, fl = floatAt(CAM.t, fk);
@@ -335,18 +296,32 @@
     CAM.F = Math.max(S.vw, S.vh) / 2 / Math.tan(PATH.fov * DEG / 2) * CAM.zoom;
     var heroW = S.page === 'home' && S.R > 0 ? 1 - smooth(S.R, S.R + S.vh * 0.4, CAM.y) : 0;
     CAM.cx = S.vw / 2; CAM.cy = S.vh / 2 + (heroY() - S.vh / 2) * heroW;
-    // the near volume: the dolly, a slow approach as you scroll, and the drift
-    var f = CAM.f, adv = dh * DOLLY + dy * FWD, P = CAM.P, t = CAM.t;
-    var dd = norm([Math.sin(t * 0.023 + 1) + 1.1 * f[0], Math.sin(t * 0.031 + 2.3) + 1.1 * f[1], Math.sin(t * 0.019 + 4.1) + 1.1 * f[2]]);
-    var dr = S.still ? 0 : DRIFT * fk * dt;
-    for (var q = 0; q < 3; q++) {
-      P[q] += f[q] * adv + dd[q] * dr;
-      P[q] -= Math.floor(P[q]);
-      var pe = P[q] - f[q] * LEVER;
-      CAM.Pe[q] = pe - Math.floor(pe);
-    }
-    var M = CAM.M, r = CAM.r, u = CAM.u;
+    camMatrix();
+  }
+  function camMatrix() {
+    var M = CAM.M, r = CAM.r, u = CAM.u, f = CAM.f;
     M[0] = r[0]; M[1] = r[1]; M[2] = r[2]; M[3] = u[0]; M[4] = u[1]; M[5] = u[2]; M[6] = f[0]; M[7] = f[1]; M[8] = f[2];
+  }
+  // The shared camera: the space's smoothed scroll, roll, heading and pitch (relative to its
+  // resting tilt) turn the real sky; the view centre still pans along VIEWS as you scroll.
+  function rollBase() { return PATH.keys && PATH.keys.length ? PATH.keys[0].roll : 0; }
+  function sharedPose(c, y, roll, yaw, pitch, o) {
+    pathAt(y, tmpA);
+    orient(tmpA.v, (rollBase() + roll) * DEG, Math.tan(yaw), Math.tan(pitch - (c.pitch0 || 0)), o);
+    o.roll = rollBase() + roll;
+    return o;
+  }
+  function sharedStep(sp) {
+    sp.step(S.now);
+    var c = sp.camera;
+    CAM.shared = true; CAM.init = true;
+    CAM.y = clamp(c.y, 0, S.maxY); CAM.vy = c.vy; CAM.hp = c.hp; CAM.vhp = c.vhp; CAM.t = c.t;
+    sharedPose(c, CAM.y, c.roll, c.yaw, c.pitch, CAM);
+    var hp = clamp(CAM.hp, 0, 1);
+    CAM.zoom = 1 + 0.12 * hp * hp * (3 - 2 * hp);
+    CAM.F = c.F * CAM.zoom;
+    CAM.cx = c.cx; CAM.cy = c.cy;
+    camMatrix();
   }
   function project(d, c) {
     c = c || CAM;
@@ -473,52 +448,6 @@
     S.dyn = list.filter(function (s) { return s.m < MAG_DYN || s.f >= 0; });
     S.stat = list.filter(function (s) { return !(s.m < MAG_DYN || s.f >= 0); });
   }
-  /* The Milky Way's density of unresolved stars (galactic l in -180..180, b): the band,
-     its clouds, the bulge, the dust lanes that hide it. Places the grain. */
-  function mwDensity(l, b, g) {
-    var al = Math.abs(l);
-    var A = 0.17 + 0.16 * bumpJ(al, 180, 35) + 0.12 * bumpJ(l, 138, 26) + 0.14 * bumpJ(l, 108, 14) + 0.55 * bumpJ(l, 76, 14) +
-      0.36 * bumpJ(l, 50, 13) + 0.6 * bumpJ(l, 27, 8) + 0.45 * bumpJ(l, 12, 6) + 0.95 * bumpJ(l, 3, 12) + 0.5 * bumpJ(l, -22, 16) + 0.35 * bumpJ(l, -70, 25);
-    var wd = 2.4 + 3.4 * bumpJ(l, 0, 32) + 1.4 * bumpJ(l, 72, 22) + 0.7 * bumpJ(al, 180, 40);
-    var n = 0.65 * vnoise3(g[0] * 7 + 3, g[1] * 7 - 1, g[2] * 12 + 5) + 0.35 * vnoise3(g[0] * 19, g[1] * 19 + 7, g[2] * 30 - 2);
-    var clouds = smooth(-0.5, 0.6, n);
-    var disk = A * sech2J(b / wd) * (0.35 + 0.95 * clouds);
-    var bulge = 0.6 * Math.exp(-(l * l + (b + 3.2) * (b + 3.2) * 1.45) / (2 * 9.5 * 9.5)) * (0.6 + 0.6 * clouds);
-    var wing = (0.16 * A + 0.24 * bumpJ(l, 0, 38)) * Math.exp(-b * b / (2 * 225));
-    var rc = 1.5 + 2.8 * smooth(85, 0, l), rw = 1.3 + 3.3 * smooth(80, 0, l);
-    var eRift = 0.95 * smooth(98, 83, l) * smooth(-14, -2, l) * Math.exp(-Math.pow((b - rc) / rw, 2));
-    var eLane = 0.6 * Math.exp(-Math.pow(b / 1.3, 2)) * (0.35 + 0.65 * bumpJ(l, 10, 95));
-    var T = 1 - 0.85 * Math.min(1, eRift + eLane * 0.8);
-    return (disk + bulge) * T + wing * 0.45 + 0.03;
-  }
-  // [x, y, z, V, r, g, b] per point
-  function makeGrain(n) {
-    var R = rng(4242), out = new Float32Array(n * 7), k = 0, tries = 0;
-    while (k < n && tries < n * 80) {
-      tries++;
-      var near = R() < 0.75, sb = near ? (R() * 2 - 1) * 0.5 : R() * 2 - 1;
-      var q = Math.abs(sb) < 0.5 ? 0.875 : 0.125;
-      var l = R() * 360 - 180, b = Math.asin(sb) / DEG, g = galUnit(l, b);
-      if (R() * 2.6 > mwDensity(l, b, g) * 0.875 / q) continue;
-      var u = gal2eq(l, b), m = 6.3 + 2.3 * Math.pow(R(), 0.6);
-      var bv = 0.3 + R() * 0.8 + 0.35 * bumpJ(l, 0, 45) * R();
-      var c = starRgb(bv, m + 1);
-      out.set([u[0], u[1], u[2], m, c[0], c[1], c[2]], k * 7);
-      k++;
-    }
-    return out.subarray(0, k * 7);
-  }
-  // [x, y, z (0..1 in the wrapped volume), V at the reference depth, r, g, b, rate, phase]
-  function makeNear(n) {
-    var R = rng(777), out = new Float32Array(n * 9);
-    for (var i = 0; i < n; i++) {
-      var x = R(), M = R() < 0.03 ? 3.6 + R() * 1.2 : 4.9 + 2.4 * Math.pow(R(), 0.7);
-      var p = R(), bv = p < 0.18 ? R() * 0.4 : p < 0.82 ? 0.45 + R() * 0.75 : 1.2 + R() * 0.4;
-      var c = starRgb(bv, M);
-      out.set([x, R(), R(), M, c[0], c[1], c[2], 0.6 + R() * 1.6, R() * 6.283], i * 9);
-    }
-    return out;
-  }
 
   /* ------------------------------------------------------------------- layout */
   function heroGeometry() {
@@ -559,7 +488,7 @@
     return clamp((max - L_GROUND) * 0.8, 0, 0.2);
   }
   function buildMask() {
-    var maxTex = G.maxTex || 4096, L = S.docH;
+    var maxTex = 4096, L = S.docH;
     var sc = Math.max(4, Math.ceil(L / 4000), Math.ceil(L / maxTex)), w = Math.max(1, Math.ceil(S.vw / sc)), h = Math.max(1, Math.ceil(L / sc));
     var FEATHER = 30;   // CSS px of soft falloff around each line of text
     var c = MASK.canvas || (MASK.canvas = document.createElement('canvas'));
@@ -617,147 +546,9 @@
   }
 
   /* --------------------------------------------------------------- the GPU sky */
-  var G = { ok: false, gl: null, lost: false, failed: false, maxTex: 4096, maxPt: 64, P: {}, B: {}, cube: null, N: 0, fbo: null, mask: null, maskVer: -1, bake: null, veilOn: 0 };
-  var NOISE_GLSL = [
-    // Simplex noise 3D: Ian McEwan, Ashima Arts / Stefan Gustavson (MIT licence)
-    'vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }',
-    'vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }',
-    'vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }',
-    'vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }',
-    'float snoise(vec3 v) {',
-    '  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);',
-    '  vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);',
-    '  vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g; vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);',
-    '  vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;',
-    '  i = mod289(i);',
-    '  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));',
-    '  float n_ = 0.142857142857; vec3 ns = n_ * D.wyz - D.xzx;',
-    '  vec4 j = p - 49.0 * floor(p * ns.z * ns.z); vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);',
-    '  vec4 x = x_ * ns.x + ns.yyyy; vec4 y = y_ * ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);',
-    '  vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);',
-    '  vec4 s0 = floor(b0) * 2.0 + 1.0; vec4 s1 = floor(b1) * 2.0 + 1.0; vec4 sh = -step(h, vec4(0.0));',
-    '  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;',
-    '  vec3 p0 = vec3(a0.xy, h.x); vec3 p1 = vec3(a0.zw, h.y); vec3 p2 = vec3(a1.xy, h.z); vec3 p3 = vec3(a1.zw, h.w);',
-    '  vec4 nr = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));',
-    '  p0 *= nr.x; p1 *= nr.y; p2 *= nr.z; p3 *= nr.w;',
-    '  vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0); m = m * m;',
-    '  return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));',
-    '}',
-    'float fbm(vec3 p) { return 0.5 * snoise(p) + 0.25 * snoise(p * 2.03 + 17.1) + 0.125 * snoise(p * 4.11 - 9.7); }',
-    'float fbm4(vec3 p) { return 0.5 * snoise(p) + 0.27 * snoise(p * 2.07 + 1.7) + 0.15 * snoise(p * 4.31 - 2.3) + 0.08 * snoise(p * 8.73 + 5.1); }',
-    'float bump(float x, float c, float w) { float d = (x - c) / w; return exp(-d * d); }',
-    'float sq(float x) { return x * x; }',
-    'float sech2(float x) { float e = exp(-2.0 * abs(x)); return 4.0 * e / ((1.0 + e) * (1.0 + e)); }'
-  ].join('\n');
-  function nebulaGLSL() {
-    return NEBULAE.map(function (n) {
-      var g = galUnit(n[0], n[1]), v = 'vec3(' + g.map(function (x) { return x.toFixed(6); }).join(',') + ')';
-      return '  { float d = length(g - ' + v + ') * 57.29578 / ' + n[2].toFixed(3) + '; neb += ' + n[3].toFixed(3) + ' * exp(-0.5 * d * d) * (0.65 + 0.55 * nM); }';
-    }).join('\n');
-  }
-  /* The bake: for each texel of each cube face, the Milky Way in that direction, stored as
-     r = sqrt(light / 0.6), g = warmth (the core, and where dust thins the light), b = sqrt(nebula / 0.3). */
-  var BAKE_FS = [
-    'precision highp float;',
-    'uniform float uFace; uniform float uN; uniform mat3 uGal;',
-    NOISE_GLSL,
-    'void main() {',
-    '  vec2 st = gl_FragCoord.xy / uN * 2.0 - 1.0; float sc = st.x, tc = st.y; vec3 dv;',
-    '  if (uFace < 0.5) dv = vec3(1.0, -tc, -sc); else if (uFace < 1.5) dv = vec3(-1.0, -tc, sc);',
-    '  else if (uFace < 2.5) dv = vec3(sc, 1.0, tc); else if (uFace < 3.5) dv = vec3(sc, -1.0, -tc);',
-    '  else if (uFace < 4.5) dv = vec3(sc, -tc, 1.0); else dv = vec3(-sc, -tc, -1.0);',
-    '  vec3 g = uGal * normalize(dv);',
-    '  float b = degrees(asin(clamp(g.z, -1.0, 1.0)));',
-    '  float l = degrees(atan(g.y, g.x));',
-    '  float al = abs(l);',
-    // structure lives on the sphere and is drawn out along the plane, as the clouds and lanes are
-    '  vec3 ga = vec3(g.xy, g.z * 1.7);',
-    '  vec3 warp = vec3(snoise(ga * 3.0 + 3.1), snoise(ga * 3.0 - 5.7), snoise(ga * 3.0 + 9.2));',
-    '  float nC = fbm4(ga * 6.5 + warp * 0.7);',
-    '  float nM = fbm(ga * 21.0 + warp * 0.8 - 4.3);',
-    '  float nF = 0.5 * snoise(ga * 48.0 + warp) + 0.5 * snoise(ga * 97.0 - warp * 1.3);',
-    '  vec3 gd = ga * 13.0 + warp * 1.1 + 2.0;',
-    '  float dn = 0.5 * snoise(gd) + 0.26 * snoise(gd * 2.13 + 1.7) + 0.14 * snoise(gd * 4.41 - 2.3) + 0.08 * snoise(gd * 9.1 + 5.1) + 0.05 * snoise(gd * 18.7 - 7.7);',
-    // the band: brightness along l, its width, the star clouds (kept low: no blooms), the bulge
-    '  float A = 0.17 + 0.16 * bump(al, 180.0, 35.0) + 0.12 * bump(l, 138.0, 26.0) + 0.14 * bump(l, 108.0, 14.0)',
-    '    + 0.5 * bump(l, 76.0, 14.0) + 0.32 * bump(l, 50.0, 13.0) + 0.45 * bump(l, 27.0, 8.0) + 0.35 * bump(l, 12.0, 6.0)',
-    '    + 0.7 * bump(l, 3.0, 12.0) + 0.5 * bump(l, -22.0, 16.0) + 0.4 * bump(l, -70.0, 25.0);',
-    '  float wd = 2.4 + 3.4 * bump(l, 0.0, 32.0) + 1.4 * bump(l, 72.0, 22.0) + 0.7 * bump(al, 180.0, 40.0);',
-    '  float clouds = smoothstep(-0.55, 0.6, nC);',
-    '  float disk = A * sech2((b + 0.7 * nM) / wd) * (0.45 + 0.85 * clouds) * (0.9 + 0.2 * nM) * (0.86 + 0.28 * nF);',
-    '  float sc2 = 0.55 * exp(-(sq(l - 1.5) + sq(b + 4.6) * 1.3) / (2.0 * 3.4 * 3.4))',
-    '    + 0.35 * exp(-(sq(l - 12.0) * 0.6 + sq(b + 0.8)) / (2.0 * 1.3 * 1.3))',
-    '    + 0.4 * exp(-(sq(l - 27.5) * 0.7 + sq(b + 2.4)) / (2.0 * 2.4 * 2.4))',
-    '    + 0.3 * exp(-(sq(l - 75.0) * 0.35 + sq(b - 0.8)) / (2.0 * 3.2 * 3.2));',
-    '  sc2 *= 0.65 + 0.55 * clouds;',
-    '  float bulge = 0.55 * exp(-(l * l + sq(b + 3.2) * 1.45) / (2.0 * 9.5 * 9.5)) * (0.6 + 0.6 * clouds);',
-    '  float I = disk + bulge + sc2;',
-    '  float wing = (0.16 * A + 0.2 * bump(l, 0.0, 38.0)) * exp(-b * b / (2.0 * 15.0 * 15.0));',
-    // dust: an envelope for each lane, one fractal texture the envelopes eat the light with
-    '  float rc = 1.5 + 2.8 * smoothstep(85.0, 0.0, l), rw = 1.3 + 3.3 * smoothstep(80.0, 0.0, l);',
-    '  float eRift = 0.95 * smoothstep(98.0, 83.0, l) * smoothstep(-14.0, -2.0, l) * exp(-sq((b - rc) / rw));',
-    '  float eLane = 0.6 * exp(-sq(b / 1.3)) * (0.35 + 0.65 * bump(l, 10.0, 95.0));',
-    '  float eOph = (0.62 + 0.3 * nC) * exp(-(sq(l - 1.0) / (2.0 * 7.0 * 7.0) + sq(b - 6.0) / (2.0 * 4.4 * 4.4))) + 0.7 * exp(-(sq(l + 6.0) + sq(b - 16.5)) / (2.0 * 2.8 * 2.8))',
-    '    + 0.45 * exp(-(sq(b - 5.0 - 0.35 * (l + 3.0)) / (2.0 * 1.6 * 1.6))) * smoothstep(-13.0, -7.0, l) * smoothstep(4.0, -1.0, l);',
-    '  float eTau = 0.55 * bump(l, 170.0, 9.0) * bump(b, -15.0, 6.0) + 0.3 * bump(l, 160.0, 7.0) * bump(b, -18.0, 5.0);',
-    '  float eCoal = 0.8 * exp(-(sq(l + 59.0) + sq(b + 0.9)) / (2.0 * 2.6 * 2.6));',
-    '  float eCir = 0.35 * exp(-b * b / (2.0 * 12.0 * 12.0)) * smoothstep(0.15, 0.6, nC * 0.5 + 0.5 * fbm(ga * 5.0 + 7.7));',
-    '  float eD = eRift + eLane + eOph + eTau + eCoal + eCir;',
-    '  float dn2 = fbm(ga * 9.0 - warp * 0.8 + 11.0);',
-    '  float D1 = 0.84 * smoothstep(-0.05, 0.5, dn + eD - 0.62);',
-    '  float D2 = 0.5 * smoothstep(-0.35, 0.35, dn2 + 0.85 * eD - 0.38);',
-    '  float Dst = 1.0 - (1.0 - D1) * (1.0 - D2);',
-    '  float T = 1.0 - Dst;',
-    '  float warm = bump(l, 2.0, 55.0);',
-    '  float edge = clamp(Dst * (1.0 - Dst) * 4.0, 0.0, 1.0);',
-    '  float neb = 0.0;',
-    '__NEBULAE__',
-    '  float Ib = (I * T) * 0.15 + wing * 0.06 * (1.0 - 0.6 * Dst);',
-    '  float Nb = neb * (1.0 - 0.7 * Dst) * 0.1;',
-    '  gl_FragColor = vec4(sqrt(clamp(Ib / 0.6, 0.0, 1.0)), clamp(warm + 0.3 * edge * warm, 0.0, 1.0), sqrt(clamp(Nb / 0.3, 0.0, 1.0)), 1.0);',
-    '}'
-  ].join('\n');
-  var TRI_VS = 'attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }';
-  /* The veil: the baked Milky Way through the camera, quiet and nearly colourless; dimmed
-     behind the NM constellation; held under each line of text's AA limit. */
-  var VEIL_FS = [
-    'precision highp float;',
-    'uniform mat3 uRot; uniform vec4 uView; uniform vec2 uPP; uniform vec2 uRes;',
-    'uniform samplerCube uSky; uniform float uOn; uniform vec4 uTone; uniform vec3 uWarmC;',
-    'uniform sampler2D uMask; uniform vec4 uMaskInfo; uniform float uScroll; uniform vec4 uNM; uniform float uNMk;',
-    'float hash13(vec3 p3) { p3 = fract(p3 * 0.1031); p3 += dot(p3, p3.zyx + 31.32); return fract((p3.x + p3.y) * p3.z); }',
-    'vec3 toLin(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }',
-    'float lumOf(vec3 c) { return dot(toLin(c), vec3(0.2126, 0.7152, 0.0722)); }',
-    'void main() {',
-    '  vec3 G0 = vec3(0.0392157);',
-    '  vec2 css = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uView.z;',
-    '  vec3 add = vec3(0.0);',
-    '  if (uOn > 0.001) {',
-    '    vec3 d = uRot * vec3((css.x - uPP.x) / uView.w, (uPP.y - css.y) / uView.w, 1.0);',
-    '    vec4 tx = textureCube(uSky, d);',
-    '    float I = tx.r * tx.r * 0.6, nb = tx.b * tx.b * 0.3;',
-    '    vec3 col = mix(vec3(0.86, 0.9, 1.0), uWarmC, tx.g * uTone.y);',
-    '    add = I * uTone.x * col + nb * uTone.z * vec3(0.92, 0.7, 0.72);',
-    '    vec2 a = smoothstep(uNM.xy - 30.0, uNM.xy + 14.0, css) * smoothstep(uNM.zw + 30.0, uNM.zw - 14.0, css);',
-    '    add *= 1.0 - 0.45 * uNMk * a.x * a.y;',
-    '    add = uTone.w * (vec3(1.0) - exp(-add / uTone.w)) * uOn;',
-    '    if (uMaskInfo.w > 0.5) {',
-    '      float mv = texture2D(uMask, vec2(css.x / uMaskInfo.x / uMaskInfo.y, (css.y + uScroll) / uMaskInfo.x / uMaskInfo.z)).r;',
-    '      float cap = 0.2 * mv * mv;',
-    '      if (cap < 0.199) {',
-    '        float lim = cap + 0.0030353;',
-    '        if (lumOf(G0 + add) > lim) {',
-    '          float lo = 0.0, hi = 1.0;',
-    '          for (int k = 0; k < 6; k++) { float md = 0.5 * (lo + hi); if (lumOf(G0 + add * md) > lim) hi = md; else lo = md; }',
-    '          add *= lo;',
-    '        }',
-    '      }',
-    '    }',
-    '  }',
-    // dither below one 8-bit step, so the faintest gradients never band
-    '  gl_FragColor = vec4(G0 + add + (hash13(vec3(gl_FragCoord.xy, 7.0)) - 0.5) / 255.0, 1.0);',
-    '}'
-  ].join('\n');
+  // A transparent layer above the particle space: the stars are added as light (each
+  // fragment's alpha is its brightest channel, so over the page it composites like a screen).
+  var G = { ok: false, gl: null, lost: false, failed: false, maxPt: 64, P: {}, B: {} };
   /* Stars as point sprites. The profile is the CPU one (profile(), peakOf()); the core is
      integrated over each device pixel, so a star moving by a fraction of a pixel keeps its
      brightness (no crawling shimmer), and the brightest saturate and read larger. */
@@ -794,30 +585,6 @@
     '  gl_PointSize = vis ? vB.z : 0.0;',
     '}'
   ].join('\n');
-  var NEAR_VS = [
-    'attribute vec3 aPos; attribute float aMag; attribute vec3 aCol; attribute vec2 aPh;',
-    'uniform mat3 uRot; uniform vec4 uView; uniform vec2 uPP; uniform vec4 uK; uniform vec4 uNM; uniform float uNMk; uniform vec3 uCamP; uniform float uT;',
-    'varying vec3 vCol; varying vec4 vA; varying vec4 vB; varying vec4 vC;',
-    PSF_GLSL,
-    'void main() {',
-    '  vec3 p = fract(aPos - uCamP + 0.5) - 0.5;',
-    '  float dist = length(p);',
-    '  vec3 v = p * uRot;',
-    '  float z = max(v.z, 1e-4);',
-    '  vec2 s = uPP + vec2(v.x, -v.y) / z * uView.w;',
-    '  float fade = smoothstep(0.5, 0.33, dist) * smoothstep(0.012, 0.05, dist);',
-    '  float m = max(2.8, aMag + 1.0857 * log(dist / 0.25));',
-    '  float swell = 1.0 + 0.7 * smoothstep(0.13, 0.03, dist);',
-    '  psf(m, swell, uView.z, uK.z, vA, vB);',
-    '  vA.x /= swell * swell;',
-    '  float g = uK.x * fade * mix(1.0, 0.4, uNMk * inNM(s, uNM));',
-    '  vCol = aCol * g;',
-    '  vC = vec4(1.0 + 0.08 * sin(uT * aPh.x + aPh.y), 0.0, 0.0, 0.0);',
-    '  bool vis = v.z > 0.004 && fade > 0.002 && s.x > -60.0 && s.y > -60.0 && s.x < uView.x + 60.0 && s.y < uView.y + 60.0;',
-    '  gl_Position = vis ? vec4(s.x / uView.x * 2.0 - 1.0, 1.0 - s.y / uView.y * 2.0, 0.0, 1.0) : vec4(2.0, 2.0, 2.0, 1.0);',
-    '  gl_PointSize = vis ? vB.z : 0.0;',
-    '}'
-  ].join('\n');
   var STAR_FS = [
     'precision highp float;',
     'varying vec3 vCol; varying vec4 vA; varying vec4 vB; varying vec4 vC;',
@@ -833,14 +600,15 @@
     '  float v = (core + wing + halo) * win;',
     '  float tw = vC.x;',
     '  float o = vB.w > 0.5 ? min(1.0, v) * min(tw, 1.0) + max(tw - 1.0, 0.0) * 1.6 * min(1.0, (wing + halo * 1.6) * win) : min(1.0, v * tw);',
-    '  gl_FragColor = vec4(vCol * o + vC.yzw * min(1.0, (core + wing) * win), 1.0);',
+    '  vec3 c = vCol * o + vC.yzw * min(1.0, (core + wing) * win);',
+    '  gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)));',
     '}'
   ].join('\n');
 
   function glInit() {
     if (G.gl || G.failed) return G.ok;
     try {
-      var gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
+      var gl = canvas.getContext('webgl', { alpha: true, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
         preserveDrawingBuffer: S.page === 'home', powerPreference: 'default' });
       if (!gl) throw new Error('no webgl');
       G.gl = gl;
@@ -870,16 +638,10 @@
       unis.forEach(function (n) { u[n] = gl.getUniformLocation(p, n); });
       return { p: p, u: u, n: attrs.length };
     };
-    G.maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096;
     var pr = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
     G.maxPt = pr && pr[1] ? pr[1] : 64;
-    var common = ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk'];
-    G.P.bake = prog(TRI_VS, BAKE_FS.replace('__NEBULAE__', nebulaGLSL()), ['p'], ['uFace', 'uN', 'uGal']);
-    G.P.veil = prog(TRI_VS, VEIL_FS, ['p'], ['uRot', 'uView', 'uPP', 'uRes', 'uSky', 'uOn', 'uTone', 'uWarmC', 'uMask', 'uMaskInfo', 'uScroll', 'uNM', 'uNMk']);
-    G.P.star = prog(STAR_VS, STAR_FS, ['aDir', 'aMag', 'aCol', 'aTw'], common);
-    G.P.near = prog(NEAR_VS, STAR_FS, ['aPos', 'aMag', 'aCol', 'aPh'], common.concat(['uCamP', 'uT']));
+    G.P.star = prog(STAR_VS, STAR_FS, ['aDir', 'aMag', 'aCol', 'aTw'], ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk']);
     var buf = function (data, usage) { var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, usage || gl.STATIC_DRAW); return b; };
-    G.B.tri = buf(new Float32Array([-1, -1, 3, -1, -1, 3]));
     // the catalogue: faint (static) and scintillating (with a per-frame twinkle buffer)
     var pack = function (list) {
       var a = new Float32Array(list.length * 7);
@@ -890,30 +652,6 @@
     G.B.dyn = buf(pack(S.dyn)); G.B.dynN = S.dyn.length;
     G.twData = new Float32Array(S.dyn.length * 4);
     G.B.tw = buf(G.twData, gl.DYNAMIC_DRAW);
-    var phone = S.vw < 600, grain = makeGrain(phone ? 15000 : 26000), near = makeNear(phone ? 4200 : 7000);
-    G.B.grain = buf(grain); G.B.grainN = grain.length / 7;
-    G.B.near = buf(near); G.B.nearN = near.length / 9;
-    // the Milky Way cube, baked a face per frame
-    var N = Math.min(phone ? 512 : 1024, gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE) || 512);
-    G.N = N;
-    G.cube = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, G.cube);
-    for (var f = 0; f < 6; f++) gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, gl.RGBA, N, N, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    G.fbo = gl.createFramebuffer();
-    G.bake = { face: 0, strip: 0, strips: phone ? 2 : 4, done: false, ms: 0, at: 0 };
-    G.veilOn = 0;
-    G.mask = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, G.mask);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    G.maskVer = -1;
     gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
     G.ok = true;
   }
@@ -924,25 +662,6 @@
       if (a[1]) { gl.bindBuffer(gl.ARRAY_BUFFER, a[1]); gl.enableVertexAttribArray(a[0]); gl.vertexAttribPointer(a[0], a[2], gl.FLOAT, false, a[3] * 4, a[4] * 4); }
       else gl.vertexAttrib4f(a[0], a[2], a[3], a[4], a[5]);
     });
-  }
-  function bakeStep() {
-    var gl = G.gl, B = G.bake, P = G.P.bake, N = G.N, t0 = performance.now();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, G.fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + B.face, G.cube, 0);
-    var h = Math.ceil(N / B.strips), y0 = B.strip * h;
-    gl.viewport(0, 0, N, N);
-    gl.enable(gl.SCISSOR_TEST); gl.scissor(0, y0, N, Math.min(h, N - y0));
-    gl.disable(gl.BLEND);
-    gl.useProgram(P.p);
-    gl.uniform1f(P.u.uFace, B.face); gl.uniform1f(P.u.uN, N);
-    gl.uniformMatrix3fv(P.u.uGal, false, [GAL[0][0], GAL[1][0], GAL[2][0], GAL[0][1], GAL[1][1], GAL[2][1], GAL[0][2], GAL[1][2], GAL[2][2]]);
-    attribs([[0, G.B.tri, 2, 2, 0]]);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    gl.disable(gl.SCISSOR_TEST);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    if (++B.strip >= B.strips) { B.strip = 0; B.face++; }
-    if (B.face >= 6) { B.done = true; B.at = S.t; }
-    B.ms += performance.now() - t0;
   }
   // per-frame scintillation (and the pointer's lift, and the colour flashes of the brightest)
   function updateTwinkle(time) {
@@ -966,60 +685,25 @@
     return b && cons.visible ? [b[0], b[1] - y, b[2], b[3] - y] : [-1e5, -1e5, -1e5, -1e5];
   }
   function drawGL(time) {
-    var gl = G.gl, u, sy = window.scrollY || 0, t0 = performance.now();
-    if (G.maskVer !== MASK.ver && MASK.canvas) {
-      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, G.mask);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, MASK.canvas);
-      G.maskVer = MASK.ver;
-    }
+    var gl = G.gl, u, t0 = performance.now();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, S.W, S.H);
-    var view = [S.vw, S.vh, S.dpr, CAM.F], nm = nmRect(), nmk = cons.visible ? 1 : 0;
-    // the veil (opaque: the ground and the Milky Way)
-    if (G.bake.done) G.veilOn = S.still ? 1 : Math.min(1, G.veilOn + 0.022);
-    var P = G.P.veil; u = P.u;
-    gl.disable(gl.BLEND);
-    gl.useProgram(P.p);
-    gl.uniformMatrix3fv(u.uRot, false, CAM.M);
-    gl.uniform4fv(u.uView, view); gl.uniform2f(u.uPP, CAM.cx, CAM.cy); gl.uniform2f(u.uRes, S.W, S.H);
-    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_CUBE_MAP, G.cube); gl.uniform1i(u.uSky, 0);
-    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, G.mask); gl.uniform1i(u.uMask, 1);
-    var veil = G.veilOn * opts.veil * opts.brightness;
-    gl.uniform1f(u.uOn, G.bake.done ? veil : 0);
-    // gain, warmth, nebulae, the soft ceiling (a gentle glow at most)
-    gl.uniform4f(u.uTone, 0.3 * (1 + 0.3 * S.foot), 0.42, 0.22, 0.055);
-    gl.uniform3f(u.uWarmC, 1.0, 0.86, 0.68);
-    gl.uniform4f(u.uMaskInfo, MASK.scale, MASK.w, MASK.h, MASK.canvas ? 1 : 0);
-    gl.uniform1f(u.uScroll, sy);
-    gl.uniform4fv(u.uNM, nm); gl.uniform1f(u.uNMk, nmk);
-    attribs([[0, G.B.tri, 2, 2, 0]]);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    var view = [S.vw, S.vh, S.dpr, CAM.F], nm = nmRect(), nmk = cons.visible ? 1 : 0, br = opts.brightness;
     // the stars, added as light
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-    var br = opts.brightness, setCommon = function (u2, k) {
-      gl.uniformMatrix3fv(u2.uRot, false, CAM.M);
-      gl.uniform4fv(u2.uView, view); gl.uniform2f(u2.uPP, CAM.cx, CAM.cy);
-      gl.uniform4f(u2.uK, k, S.foot, G.maxPt, 0);
-      gl.uniform4fv(u2.uNM, nm); gl.uniform1f(u2.uNMk, nmk);
-    };
-    P = G.P.star; u = P.u;
+    var P = G.P.star; u = P.u;
     gl.useProgram(P.p);
-    setCommon(u, br * 0.85 * (0.35 + 0.65 * G.veilOn));
-    attribs([[0, G.B.grain, 3, 7, 0], [1, G.B.grain, 1, 7, 3], [2, G.B.grain, 3, 7, 4], [3, null, 1, 0, 0, 0]]);
-    gl.drawArrays(gl.POINTS, 0, G.B.grainN);
+    gl.uniformMatrix3fv(u.uRot, false, CAM.M);
+    gl.uniform4fv(u.uView, view); gl.uniform2f(u.uPP, CAM.cx, CAM.cy);
     gl.uniform4f(u.uK, br, S.foot, G.maxPt, 0);
+    gl.uniform4fv(u.uNM, nm); gl.uniform1f(u.uNMk, nmk);
     attribs([[0, G.B.stat, 3, 7, 0], [1, G.B.stat, 1, 7, 3], [2, G.B.stat, 3, 7, 4], [3, null, 1, 0, 0, 0]]);
     gl.drawArrays(gl.POINTS, 0, G.B.statN);
     updateTwinkle(time);
     gl.bindBuffer(gl.ARRAY_BUFFER, G.B.tw); gl.bufferSubData(gl.ARRAY_BUFFER, 0, G.twData);
     attribs([[0, G.B.dyn, 3, 7, 0], [1, G.B.dyn, 1, 7, 3], [2, G.B.dyn, 3, 7, 4], [3, G.B.tw, 4, 4, 0]]);
     gl.drawArrays(gl.POINTS, 0, G.B.dynN);
-    P = G.P.near; u = P.u;
-    gl.useProgram(P.p);
-    setCommon(u, br);
-    gl.uniform3fv(u.uCamP, CAM.Pe); gl.uniform1f(u.uT, time);
-    attribs([[0, G.B.near, 3, 9, 0], [1, G.B.near, 1, 9, 3], [2, G.B.near, 3, 9, 4], [3, G.B.near, 2, 9, 7]]);
-    gl.drawArrays(gl.POINTS, 0, G.B.nearN);
     S.stats.drawMs += performance.now() - t0;
   }
   // without WebGL: the brighter catalogue stars on a 2D canvas, through the same camera
@@ -1027,7 +711,7 @@
     var c = S.c2d, d = S.dpr;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
-    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, S.W, S.H);
+    c.clearRect(0, 0, S.W, S.H);
     c.globalCompositeOperation = 'lighter';
     var list = S.cat, br = opts.brightness;
     for (var i = 0; i < list.length; i++) {
@@ -1041,10 +725,8 @@
     }
   }
   function drawSky(time) {
-    if (G.ok && !G.lost) {
-      if (G.bake && !G.bake.done) bakeStep();
-      drawGL(time);
-    } else if (S.c2d) draw2D(time);
+    if (G.ok && !G.lost) drawGL(time);
+    else if (S.c2d) draw2D(time);
     S.stats.draws++;
     if (!S.shown) {
       S.shown = true;
@@ -1058,7 +740,7 @@
   var INTERACTIVE = 'a,button,input,select,textarea,label,summary,[role="button"]';
   var textRange = document.createRange();
   var heroCanvas = null, headerEl = null, labelEl = null;
-  function own(el) { return el === canvas || el === fx || el === labelEl || el === cons.canvas; }
+  function own(el) { return el === canvas || el === fx || el === labelEl || el === cons.canvas || (!!window.NMSpace && el === NMSpace.canvas); }
   function inHeader(el) { return headerEl && (el === headerEl || headerEl.contains(el)); }
   function textAt(el, x, y) {
     for (var n = el.firstChild; n; n = n.nextSibling) {
@@ -1556,7 +1238,11 @@
     c.clearRect(0, 0, cons.canvas.width, cons.canvas.height);
     c.globalCompositeOperation = 'lighter';
     c.imageSmoothingEnabled = false;
-    var hov = cons.hover, st = cons.stars, la = (0.3 + 0.2 * hov) * cons.linesIn;
+    // With the particle space the mark is the gathered particles: the nodes come in with it
+    // (only the brighter ones), and the chart lines only show while the door is hovered.
+    var sp = spaceCam(), nodes = sp ? (S.still ? 1 : smooth(0.35, 0.95, sp.camera.gather || 0)) : 1;
+    var hov = cons.hover, st = cons.stars, la = sp ? 0.34 * hov * nodes : (0.3 + 0.2 * hov) * cons.linesIn;
+    if (sp && nodes < 0.004) return;
     if (la > 0.004) {
       c.strokeStyle = 'rgba(206,218,242,' + la.toFixed(3) + ')';
       c.lineWidth = Math.max(1, Math.round(0.7 * d));
@@ -1571,12 +1257,22 @@
       });
       c.stroke();
     }
-    var lift = (1.5 + 0.2 * hov) * opts.brightness;
+    var lift = (1.5 + 0.2 * hov) * opts.brightness * nodes;
     for (var i = 0; i < st.length; i++) {
       var s = st[i], tw = twinkle(t, s.r1, s.r2, s.o1, s.o2, s.depth);
+      if (sp && s.m > 3.4) continue;
       drawOne(c, s.sp, s.m, Math.round(s.x * d), Math.round(s.y * d), s.a * lift, tw, t, s.o3);
     }
   }
+  // the mark's box in viewport px (for the particle gather), or null
+  api.nmRect = function () {
+    if (!cons.canvas || !cons.rect || !cons.canvas.isConnected) return null;
+    var r = cons.canvas.getBoundingClientRect();
+    if (!r.width) return null;
+    var x0 = r.left + (cons.CW - cons.w) / 2, y0 = r.top + (cons.CH - cons.h) / 2;
+    return [x0, y0, x0 + cons.w, y0 + cons.h];
+  };
+  api.mask = MASK;
   function footerLevel() {
     var f = cons.foot;
     if (!f || !f.isConnected) return 0;
@@ -1601,7 +1297,7 @@
   function frame(now) {
     var t0 = performance.now();
     var dt = S.last ? Math.min(0.1, (now - S.last) / 1000) : 0;
-    S.last = now;
+    S.last = now; S.now = now;
     if (!S.still) S.t += dt;
     var t = S.still ? 0 : S.t;
     camStep(dt);
@@ -1609,7 +1305,7 @@
     var fl = footerLevel();
     S.foot = fl;
     var glide = camGlides();
-    if (S.still || glide || fastEvent() || now - S.lastDraw > 31 || !S.lastDraw || (G.bake && !G.bake.done) || S.force) {
+    if (S.still || glide || fastEvent() || now - S.lastDraw > 31 || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
       drawSky(t);
     }
@@ -1619,7 +1315,7 @@
     drawFx();
     cons.hover += (cons.hoverTo - cons.hover) * (S.still ? 1 : Math.min(1, dt * 6));
     cons.linesIn = S.still ? 1 : smooth(0.4, 0.9, fl);
-    if (cons.visible && cons.ctx && (S.still || now - cons.lastT > 31 || Math.abs(cons.hover - cons.hoverTo) > 0.01)) { cons.lastT = now; drawCons(t); }
+    if (cons.visible && cons.ctx && (S.still || S.force || now - cons.lastT > 31 || Math.abs(cons.hover - cons.hoverTo) > 0.01)) { cons.lastT = now; drawCons(t); }
     hoverTick();
     var y = window.scrollY || 0;
     if (Math.abs(y - veil.y) > 0.5) { veil.y = y; veilSoon(); }
@@ -1758,18 +1454,25 @@
   /* ------------------------------------------------------------------- API */
   api.set = function (o) {
     if (!o) return;
-    ['brightness', 'twinkle', 'veil', 'motion'].forEach(function (k) { if (o[k] != null) opts[k] = Math.max(0, +o[k] || 0); });
+    ['brightness', 'twinkle', 'motion'].forEach(function (k) { if (o[k] != null) opts[k] = Math.max(0, +o[k] || 0); });
     kick();
   };
   function radec(v) { return [+((Math.atan2(v[1], v[0]) / DEG / 15 + 24) % 24).toFixed(3), +(Math.asin(clamp(v[2], -1, 1)) / DEG).toFixed(2)]; }
   // the settled camera (no float) at scroll y
   function camAt(y) {
-    var o = pathAt(clamp(y, 0, S.maxY), { v: null, roll: 0 }), c = orient(o.v, o.roll * DEG, 0, 0, {});
-    var heroW = S.page === 'home' && S.R > 0 ? 1 - smooth(S.R, S.R + S.vh * 0.4, y) : 0;
-    var hp = S.page === 'home' && S.R > 0 ? clamp(y / S.R, 0, 1) : 0, zoom = 1 + 0.16 * hp * hp * (3 - 2 * hp);
+    var sp = spaceCam(), yy = clamp(y, 0, S.maxY), heroW = S.page === 'home' && S.R > 0 ? 1 - smooth(S.R, S.R + S.vh * 0.4, yy) : 0;
+    var hp = S.page === 'home' && S.R > 0 ? clamp(yy / S.R, 0, 1) : 0, c;
+    if (sp && sp.at) {
+      var a = sp.at(yy);
+      c = sharedPose(sp.camera, yy, a.roll, a.yaw, a.pitch, {});
+      c.F = sp.camera.F * (1 + 0.12 * hp * hp * (3 - 2 * hp));
+    } else {
+      var o = pathAt(yy, { v: null, roll: 0 });
+      c = orient(o.v, o.roll * DEG, 0, 0, {});
+      c.roll = o.roll;
+      c.F = Math.max(S.vw, S.vh) / 2 / Math.tan(PATH.fov * DEG / 2) * (1 + 0.16 * hp * hp * (3 - 2 * hp));
+    }
     c.cx = S.vw / 2; c.cy = S.vh / 2 + (heroY() - S.vh / 2) * heroW;
-    c.F = Math.max(S.vw, S.vh) / 2 / Math.tan(PATH.fov * DEG / 2) * zoom;
-    c.roll = o.roll;
     return c;
   }
   api.at = function (y) {
@@ -1783,9 +1486,8 @@
     return {
       page: S.page, ready: S.ready, running: S.running, still: S.still, dpr: S.dpr, size: [S.vw, S.vh], gl: G.ok, maxY: S.maxY, R: S.R,
       cam: { y: +CAM.y.toFixed(1), vy: +CAM.vy.toFixed(1), target: Math.round(window.scrollY || 0), hp: +CAM.hp.toFixed(3), roll: +CAM.roll.toFixed(2),
-        centre: radec(CAM.f), zoom: +CAM.zoom.toFixed(3), F: +CAM.F.toFixed(1), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], P: CAM.Pe.map(function (v) { return +v.toFixed(4); }), t: +CAM.t.toFixed(2) },
-      bake: G.bake && { done: G.bake.done, ms: +G.bake.ms.toFixed(1), N: G.N, veil: +G.veilOn.toFixed(2) },
-      counts: G.ok ? { faint: G.B.statN, bright: G.B.dynN, grain: G.B.grainN, near: G.B.nearN } : null,
+        centre: radec(CAM.f), zoom: +CAM.zoom.toFixed(3), F: +CAM.F.toFixed(1), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], t: +CAM.t.toFixed(2), shared: CAM.shared },
+      counts: G.ok ? { faint: G.B.statN, bright: G.B.dynN } : null,
       mask: { lines: MASK.lines, scale: MASK.scale, h: MASK.h },
       featured: S.featured.map(function (f, k) {
         var p = starScreen(k);
