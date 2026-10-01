@@ -135,9 +135,12 @@ html[data-nm-theme="stars"] footer .foot-mark {
   html[data-nm-theme="stars"] :is(#nm-space, #nm-sky, .nm-sky-fx, .nm-sky-label, .nm-sky-cons) { display: none !important; }
 }
 
-/* Nav bar: the NICO MAGGIOLI wordmark dead centre, the four links spread across the whole bar,
-   two on each side (Work, Index | name | About, Contact). Same type as the live site. Phones keep
-   their menu button. The Work link is added by theme-stars.js. */
+/* Nav bar: the NICO MAGGIOLI wordmark dead centre, two links on each side (Work, Index | name |
+   About, Contact), every gap the same: link to link and link to name. The row is a centred flex
+   line with a name-sized spacer in the middle; theme-stars.js measures the words and sets the
+   gap, the name width, and a skew pad that keeps the spacer under the name although the right
+   pair is wider than the left. The defaults below match those numbers at the shipped fonts.
+   Same type as the live site. Phones keep their menu button. */
 @media (min-width: 768px) {
   html[data-nm-theme="stars"] header[data-nm-header],
   html[data-nm-theme="stars"] .nm-hdr { justify-content: flex-start; }
@@ -152,12 +155,18 @@ html[data-nm-theme="stars"] footer .foot-mark {
   }
   html[data-nm-theme="stars"] header[data-nm-header] > nav > ul,
   html[data-nm-theme="stars"] .nm-hdr .nm-nav {
-    display: grid; grid-template-columns: 1fr 1fr minmax(260px, auto) 1fr 1fr; align-items: center;
-    width: 100%; gap: 0; margin: 0; padding: 0;
+    display: flex; justify-content: center; align-items: center;
+    width: 100%; margin: 0;
+    gap: var(--nm-nav-gap, calc(25% - 112px));
+    padding: 0 max(0px, calc(-1 * var(--nm-nav-skew, 28px))) 0 max(0px, var(--nm-nav-skew, 28px));
     position: static; left: auto; right: auto; top: auto; transform: none;   /* the live design floats this list to the centre */
   }
-  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/#work"]) { grid-column: 1; justify-self: start; }
-  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/index/"]) { grid-column: 2; justify-self: center; }
-  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/about/"]) { grid-column: 4; justify-self: center; }
-  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:last-child { grid-column: 5; justify-self: end; }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul)::after {
+    content: ""; order: 3; flex: none; width: var(--nm-nav-name, 227px); height: 1px;   /* the name sits over this */
+  }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li { flex: none; }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/#work"]) { order: 1; }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/index/"]) { order: 2; }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/about/"]) { order: 4; }
+  html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:last-child { order: 5; }
 }

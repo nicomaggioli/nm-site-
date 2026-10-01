@@ -17,7 +17,13 @@
   var bust = '?v=dev' + Date.now().toString(36);
   // the space first: it owns the camera the sky reads
   ['/js/nm-space.js', '/js/nm-sky.js'].forEach(function (src) {
-    // Nav bar: a Work link, so the centred wordmark has two links on each side.
+    var s = document.createElement('script');
+    s.src = src + bust;
+    s.async = false;
+    document.head.appendChild(s);
+  });
+
+  // Nav bar: a Work link, so the centred wordmark has two links on each side.
   function addWork() {
     var ul = document.querySelector('header[data-nm-header] > nav > ul, .nm-hdr .nm-nav');
     if (!ul || ul.querySelector('a[href="/#work"]')) return;
@@ -37,12 +43,43 @@
       else target.scrollIntoView({ behavior: 'smooth' });
     });
   }
-  if (window.__nmReady) window.__nmReady(addWork);
-  else document.addEventListener('DOMContentLoaded', addWork);
 
-  var s = document.createElement('script');
-    s.src = src + bust;
-    s.async = false;
-    document.head.appendChild(s);
-  });
+  // Nav bar spacing: the name stays dead centre and the four links sit at one equal spacing
+  // (Work · Index · NAME · About · Contact). The spacing is the widest that still fits the wider
+  // side inside the header padding; theme-stars.css lays the row out from these numbers and has
+  // a close default for the first paint.
+  function spaceNav() {
+    var h = document.querySelector('header[data-nm-header], header.nm-hdr');
+    var wm = h && h.querySelector(':scope > a[href="/"]');
+    var ul = h && h.querySelector(':scope > nav > ul');
+    if (!wm || !ul) return;
+    var st = ul.style;
+    if (!matchMedia('(min-width: 768px)').matches) { st.removeProperty('--nm-nav-gap'); st.removeProperty('--nm-nav-skew'); st.removeProperty('--nm-nav-name'); return; }
+    // the visible links in display order: the first two sit left of the name, the rest right
+    var lis = [].filter.call(ul.children, function (li) { return li.offsetWidth > 0; })
+      .sort(function (a, b) { return (+getComputedStyle(a).order || 0) - (+getComputedStyle(b).order || 0); });
+    var left = 0, right = 0;
+    lis.forEach(function (li, i) { var x = li.getBoundingClientRect().width; if (i < 2) left += x; else right += x; });
+    var name = wm.getBoundingClientRect().width;
+    var gap = Math.max(16, (ul.clientWidth / 2 - name / 2 - Math.max(left, right)) / 2);
+    st.setProperty('--nm-nav-gap', gap.toFixed(2) + 'px');
+    st.setProperty('--nm-nav-skew', (right - left).toFixed(2) + 'px');   // + pads the left, - the right
+    st.setProperty('--nm-nav-name', name.toFixed(2) + 'px');
+  }
+
+  function navReady() {
+    addWork();
+    spaceNav();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(spaceNav);
+    addEventListener('resize', spaceNav, { passive: true });
+    // the homepage header is React's: re-run if it re-renders the list
+    var h = document.querySelector('header[data-nm-header]');
+    var queued = 0;
+    if (h && window.MutationObserver) new MutationObserver(function () {
+      if (!queued) queued = requestAnimationFrame(function () { queued = 0; addWork(); spaceNav(); });
+    }).observe(h, { childList: true, subtree: true });
+  }
+  if (window.__nmReady) window.__nmReady(navReady);
+  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', navReady);
+  else navReady();
 })();
