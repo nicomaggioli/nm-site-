@@ -201,3 +201,26 @@ this version is ornament at every scale, drawn with the rigour of real tile and 
 - Screenshots: `node $RIG/shots.mjs --url "http://localhost:8820/?theme=NAME" --out DIR --prefix home --at 0,0.2,0.4,0.6,0.8,1 [--mobile] --port P`
 - Probe/eval: `node $RIG/probe.mjs --url URL --eval "expr" --port P` (prints the value and page errors)
 - `$RIG` = the scratchpad rig directory given in your task. Use a unique CDP port range.
+
+## Built foundation: what theme authors need (read the file headers for full option lists)
+
+- `js/nm-blackhole.js`: auto-mounts in every footer when a theme is active; configure with
+  `NMThemeConfig.blackHole = { palette, scale, tilt, roll, spin, intensity, offsetY, background,
+  annotate, stars, grain, violet, arrive, fps, quality }` (or `false`). `annotate: true` draws the
+  diagram labels (made for Atlas). It is the Cloud Run door on all three pages.
+- `js/nm-cosmos.js`: `NMThemeConfig.airbrush` / `.stars` / `.grain` (object, array or true) are
+  auto-mounted on `__nmReady`; `NMThemeConfig.onCosmos(NMCosmos, handles)` runs after. Options:
+  see the header (`mode: 'bands'|'nebula'`, `darken` 0 day → 1 night, `progress(pageFraction)`
+  hook, `visible: [a,b,c,d]` fades, `target` to mount inside an element, etc.).
+- Hero: `NMThemeConfig.heroClear = true` makes the homepage hero paint the theme's page layers
+  (auto-wired from NMCosmos page layers, bottom first) outside the NM mark instead of flat black,
+  so the sky continues behind the collage. `NMThemeConfig.heroBackdrop` overrides the layer list
+  (canvas/img/video only; CSS gradients cannot be sampled); `heroBase` sets the colour under
+  them. `window.__nmHeroProgress` is the live 0..1 hero scroll progress.
+- Stacking (homepage): page layers are fixed at z -30/-20/-10 behind `#global-canvas` (z 0) and
+  `.nm-made-track` (z -1). These paint opaque `#0a0a0a` and hide the layers unless the theme
+  makes them transparent: `#nm-made` (the work collage section), `#about`, `#nm-brands`,
+  `#nm-services`, `#nm-sites`, the footer section, and the header's gradient scrim. About uses
+  `.nm-footer` and the body background; NMCosmos sets `body{isolation:isolate}` while layers exist.
+- Four WebGL contexts are already live on the homepage (hero, black hole, airbrush, stars);
+  do not add more full-screen WebGL layers without measuring.
