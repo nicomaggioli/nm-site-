@@ -26,10 +26,13 @@ html[data-nm-theme="stars"] body.nm-about-page,
 html[data-nm-theme="stars"] .nm-footer,
 html[data-nm-theme="stars"] body:not(.nm-about-page) { background: transparent !important; }
 
-html[data-nm-theme="stars"] #nm-sky {
+/* the sky (WebGL, opaque: it paints the ground too) and its overlay (events, reticle) */
+html[data-nm-theme="stars"] #nm-sky,
+html[data-nm-theme="stars"] .nm-sky-fx {
   position: fixed; left: 0; top: 0; width: 100%; height: 100vh; height: 100lvh;
-  z-index: -20; pointer-events: none; display: block;
+  z-index: -21; pointer-events: none; display: block;
 }
+html[data-nm-theme="stars"] .nm-sky-fx { z-index: -20; }
 
 /* ── header scrim ──────────────────────────────────────────────────────────
    The same gradient, moved to a layer js/nm-sky.js can lift (html.nm-sky-clear)
@@ -125,5 +128,5 @@ html[data-nm-theme="stars"] footer .foot-mark {
   html[data-nm-theme="stars"] .nm-hdr::before { transition: none; }
 }
 @media print {
-  html[data-nm-theme="stars"] :is(#nm-sky, .nm-sky-label, .nm-sky-cons) { display: none !important; }
+  html[data-nm-theme="stars"] :is(#nm-sky, .nm-sky-fx, .nm-sky-label, .nm-sky-cons) { display: none !important; }
 }
