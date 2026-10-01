@@ -4,8 +4,9 @@
    40 seconds while the visitor stays at the top; scrolling away re-arms the 9-second wait.
 
    The meteor draws on its own small overlay above the hero canvas (pointer-events none), so
-   its head and the cut stay in step. Homepage only; nothing under reduced motion, in a hidden
-   tab, during the opening, or while Cloud Run is open. ?sky=show fires one after 2 seconds. */
+   its head and the cut stay in step; between streaks the overlay is hidden at 0x0. Homepage
+   only; nothing under reduced motion, in a hidden tab, during the opening, or while Cloud Run
+   is open. ?sky=show fires one after 2 seconds. */
 (function () {
   'use strict';
   if (!/^\/(index\.html)?$/.test(location.pathname)) return;
@@ -41,6 +42,12 @@
     document.body.appendChild(cv);
     ctx = cv.getContext('2d');
   }
+  // between streaks the overlay is blank: take it off the compositor and free its backing
+  // store (a full-screen layer, ~20 MB at 2x), instead of keeping a transparent sheet on top
+  function release() {
+    cv.style.display = 'none';
+    cv.width = cv.height = 0;
+  }
 
   function fire() {
     var L = window.__nmLava, W = innerWidth, H = innerHeight;
@@ -70,6 +77,7 @@
     var fired = 0, sparks = [], t0 = performance.now();
 
     var dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.style.display = '';
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -123,7 +131,7 @@
         return true;
       });
       if (t < dur + fade || sparks.length) requestAnimationFrame(frame);
-      else { ctx.clearRect(0, 0, W, H); running = false; idleSince = performance.now(); }
+      else { release(); running = false; idleSince = performance.now(); }
     }
     requestAnimationFrame(frame);
   }
