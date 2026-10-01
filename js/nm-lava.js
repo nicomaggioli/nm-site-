@@ -147,8 +147,10 @@
     return best;
   }
   var MAX_AWAY = 2;               // the mark always stays readable
+  var strikeUntil = -1;           // a shooting star may send all four ends away at once
   function detach(i, dirx, diry) {
-    if (away[i] || !sdf || bites.length >= MAXI || Object.keys(away).length >= MAX_AWAY) return false;
+    var cap = now < strikeUntil ? 4 : MAX_AWAY;
+    if (away[i] || !sdf || bites.length >= MAXI || Object.keys(away).length >= cap) return false;
     var c = visualBulb(i), top = (i % 2) === 0;
     // mostly away from the stroke (up for a top end, down for a bottom end), a little with the cut
     var ox = dirx * .3, oy = (top ? -1 : 1) * .9 + diry * .2, ol = Math.hypot(ox, oy) || 1;
@@ -201,6 +203,34 @@
     seep(b, dirx, diry, w);
     var k = strokeCrossed(a, b), my = (a[1] + b[1]) / 2;
     if (k >= 0) detach(k * 2 + (my < .505 ? 0 : 1), dirx, diry);
+  }
+  /* A shooting star cuts clean through the mark (js/nm-starcut.js). It is called in pieces as
+     the meteor's head reaches each upright: path a->b in shapeUv, acting on the stretch t0..t1.
+     Each piece cuts along its stretch; every upright it crosses lets an end ooze away (alternating
+     up and down, so the mark reads as split in two) and bubbles bud from both lips of the cut. */
+  function strike(a, b, t0, t1) {
+    if (!sdf || !live()) return 0;
+    t0 = t0 == null ? 0 : t0; t1 = t1 == null ? 1 : t1;
+    var dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1e-4, ux = dx / len, uy = dy / len, w = .016;
+    strikeUntil = now + 12;
+    addCut(a[0] + dx * t0, a[1] + dy * t0, a[0] + dx * t1, a[1] + dy * t1, w);
+    var n = Math.max(2, Math.ceil(len * (t1 - t0) / .003)), e = null, hits = 0;
+    for (var i = 0; i <= n; i++) {
+      var t = t0 + (t1 - t0) * i / n, u = a[0] + dx * t, v = a[1] + dy * t, ins = inside(u, v);
+      if (ins && !e) e = [u, v];
+      if (e && (!ins || i === n)) {
+        var x = [u, v];
+        if (Math.hypot(x[0] - e[0], x[1] - e[1]) > .006) {
+          seep(x, ux, uy, w);
+          seep(e, -ux, -uy, w);
+          var k = strokeCrossed(e, x);
+          if (k >= 0) detach(k * 2 + (k % 2), ux, uy);
+          hits++;
+        }
+        e = null;
+      }
+    }
+    return hits;
   }
   function demoSlice() {
     // across the second upright, above its waist: trim the line to the stroke it crosses
@@ -414,5 +444,5 @@
   window.__nmLava = { step: step, bubbles: outB, cuts: outC, cutW: outW, bites: outI, necks: outK, neckW: outKW, box: outBox, counts: outN,
     // diagnostics and tests
     _state: function () { return { bubbles: blobs.length, cuts: cuts.length, bites: bites.length, necks: outN[3], away: Object.keys(away).length, sdf: !!sdf, frame: frame, crossings: crossings.slice() }; },
-    _toShape: toShape, _inside: inside, _slice: slice, _pop: pop, _ambient: ambient };
+    _toShape: toShape, _inside: inside, _slice: slice, _strike: strike, _pop: pop, _ambient: ambient };
 })();
