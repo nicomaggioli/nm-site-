@@ -17,7 +17,10 @@
     home: ['#about', '#nm-brands', '#nm-services', '#nm-sites'],
     about: ['main#main > section:not(#contact)']
   };
-  var START = 1000, FULL = 4500;      // px/s: no dip below START, full dip at FULL
+  // px/s: no dip below START, full dip at FULL. Tuned on trackpad-like flicks through Lenis (a fast
+  // flick ~53 px, ordinary wheel scrolling under 2 px, a slow two-finger scroll 0); the first
+  // tuning (1000/4500) needed flicks harder than Lenis's smoothing lets through, so it barely showed.
+  var START = 700, FULL = 1700;
   var DIP = 90;                       // px the centre sags at full speed (desktop width)
   var NS = 'http://www.w3.org/2000/svg';
   // Safari (and every iOS browser, all WebKit) has no section dip: it places a userSpaceOnUse
@@ -144,7 +147,7 @@
     var a = Math.abs(vel);
     var target = a <= START ? 0 : Math.min(1, (a - START) / (FULL - START)) * (vel > 0 ? 1 : -1);
     // quick to sag, slower to spring back, like a rope settling
-    warp += (target - warp) * ease(Math.abs(target) > Math.abs(warp) ? .22 : .1, dt);
+    warp += (target - warp) * ease(Math.abs(target) > Math.abs(warp) ? .45 : .1, dt);
     // stay at least one 60 Hz frame before giving up, so a fast screen judges the speed as fully as 60 Hz
     if (Math.abs(warp) < .004 && target === 0 && age > .014) { warp = 0; apply(0); moving = false; last = 0; vel = 0; return; }
     apply(warp);
