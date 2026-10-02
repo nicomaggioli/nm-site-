@@ -50,8 +50,8 @@
         sdf = g;
       } catch (e) { sdf = null; }
     };
-    // the same CORS mode as index.html's preload and the file's other loaders (the hero's,
-    // nm-space's), so they can all share one download and decode
+    // the same CORS mode as index.html's preload and the hero's three.js loader, so this uses
+    // the preload instead of a second request (nm-space.js still loads the file without CORS)
     img.crossOrigin = 'anonymous';
     img.src = '/textures/nm-mark-sdf.png';
   })();
