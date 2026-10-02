@@ -5,8 +5,9 @@
    Home and About: each section in normal flow is bent by an SVG displacement filter whose map is
    a horizontal curve (edges 0, centre 1), so text and images genuinely bow. The filter is only
    attached while the page is moving. Index: the image wall is a single 18,000px column, too big
-   to filter, so each tile drops by the curve at its centre and tilts to the curve's slope, like a
-   hammock. Never touches sticky/fixed layers. Off under prefers-reduced-motion. */
+   to filter, so each tile drops by the curve at its centre. Tiles stay upright (tilting them
+   opened black wedges and overlaps between neighbours), so each column of the wall dips as one
+   solid strip and the images stay whole. Never touches sticky/fixed layers. Off under prefers-reduced-motion. */
 (function () {
   'use strict';
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
@@ -24,7 +25,6 @@
 
   // the curve: 0 at both edges, 1 in the middle (a soft rope sag)
   function sag(u) { var t = 2 * u - 1; return 1 - t * t; }
-  function slope(u) { return -4 * (2 * u - 1); }   // d(sag)/du
 
   function buildMap() {
     // displacement map: R neutral (no sideways shift), G encodes how far up to sample from
@@ -105,9 +105,9 @@
       }
       if (it.tile) {
         var u = Math.max(0, Math.min(1, (r.left + r.width / 2) / vw));
-        var dy = amount * sag(u), ang = Math.atan(amount * slope(u) / vw) * 180 / Math.PI;
+        var dy = amount * sag(u);
         if (!it.wc) { it.wc = true; it.el.style.willChange = 'transform'; }
-        it.el.style.transform = 'translateY(' + dy.toFixed(1) + 'px) rotate(' + ang.toFixed(2) + 'deg)';
+        it.el.style.transform = 'translateY(' + dy.toFixed(1) + 'px)';
         it.on = true;
       } else {
         // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
