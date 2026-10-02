@@ -19,7 +19,8 @@
   var START = 1000, FULL = 4500;      // px/s: no dip below START, full dip at FULL
   var DIP = 90;                       // px the centre sags at full speed (desktop width)
   var NS = 'http://www.w3.org/2000/svg';
-  var items = [], svg = null, mapURL = '', last = 0, lastY = 0, vel = 0, warp = 0, raf = 0, moving = false;
+  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, lastY = 0, vel = 0, warp = 0, raf = 0, moving = false;
+  var firstDt = 1 / 60, age = 0;
 
   // the curve: 0 at both edges, 1 in the middle (a soft rope sag)
   function sag(u) { var t = 2 * u - 1; return 1 - t * t; }
@@ -38,7 +39,7 @@
   }
 
   function collect() {
-    items.forEach(function (it) { clear(it); });
+    flat();
     items = [];
     if (page === 'index') {
       document.querySelectorAll('main#main > figure.tile').forEach(function (el) { items.push({ el: el, tile: true }); });
@@ -75,22 +76,39 @@
       });
     });
   }
+  // it.on: this item carries the dip (items already flat are skipped); it.wc: this tile has will-change
   function clear(it) {
-    if (it.tile) { it.el.style.transform = ''; it.el.style.willChange = ''; }
-    else { it.el.style.filter = ''; }
+    if (!it.on) return;
+    it.on = false;
+    if (it.tile) it.el.style.transform = '';
+    else it.el.style.filter = '';
+  }
+  function release(it) { it.wc = false; it.el.style.willChange = ''; }
+  // the episode is over (or the items are rebuilt): everything flat, will-change dropped in one pass
+  function flat() {
+    for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
   }
   function apply(w) {
-    var vw = window.innerWidth, vh = window.innerHeight, amount = DIP * Math.min(1, vw / 1440) * w;
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i];
-      if (w === 0) { clear(it); continue; }
-      var r = it.el.getBoundingClientRect();
-      if (r.bottom < -vh * .5 || r.top > vh * 1.5) { clear(it); continue; }   // only what is near the screen
+    if (w === 0) { flat(); return; }
+    var vw = window.innerWidth, vh = window.innerHeight, amount = DIP * Math.min(1, vw / 1440) * w, n = items.length, i;
+    // Read every box before writing anything. A read after a write forces a style and layout pass,
+    // which on Index meant one per tile per frame. The boxes are the same either way: a tile's
+    // transform never moves another tile, and filters never move layout.
+    rects.length = n; far.length = 0;
+    for (i = 0; i < n; i++) rects[i] = items[i].el.getBoundingClientRect();
+    for (i = 0; i < n; i++) {
+      var it = items[i], r = rects[i];
+      if (r.bottom < -vh * .5 || r.top > vh * 1.5) {   // only what is near the screen
+        clear(it);
+        if (it.wc && (r.bottom < -vh * 1.5 || r.top > vh * 2.5)) far.push(it);
+        continue;
+      }
       if (it.tile) {
         var u = Math.max(0, Math.min(1, (r.left + r.width / 2) / vw));
         var dy = amount * sag(u), ang = Math.atan(amount * slope(u) / vw) * 180 / Math.PI;
-        it.el.style.willChange = 'transform';
+        if (!it.wc) { it.wc = true; it.el.style.willChange = 'transform'; }
         it.el.style.transform = 'translateY(' + dy.toFixed(1) + 'px) rotate(' + ang.toFixed(2) + 'deg)';
+        it.on = true;
       } else {
         // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
         var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(it.h + it.pad, Math.ceil(vh - r.top + it.pad));
@@ -100,37 +118,49 @@
         // the map samples from above by 0.5 * scale at the centre, so the centre moves down by that
         it.disp.setAttribute('scale', (2 * amount).toFixed(1));
         if (it.el.style.filter !== 'url("#' + it.id + '")' && it.el.style.filter !== 'url(#' + it.id + ')') it.el.style.filter = 'url(#' + it.id + ')';
+        it.on = true;
       }
     }
+    // Adding or dropping will-change rebuilds the page's layers. A tile keeps it while it is within a
+    // screen of the warped band; tiles further out give it up 16 at a time, not one per frame.
+    if (far.length >= 16) for (i = 0; i < far.length; i++) release(far[i]);
   }
+  // The easing rates below were tuned per 60 Hz frame. Each is applied as 1 - (1 - rate)^(dt * 60):
+  // exactly the tuned rate for a 60 Hz frame, and the same pull per second at 120 Hz.
+  function ease(rate, dt) { return 1 - Math.pow(1 - rate, dt * 60); }
   function frame(t) {
     raf = 0;
-    var dt = last ? Math.min(.05, (t - last) / 1000) : 1 / 60;
-    last = t;
+    var dt = last ? Math.min(.05, (t - last) / 1000) : firstDt;
+    last = t; age += dt;
     var y = window.scrollY;
-    if (dt > 0) vel = vel * .6 + ((y - lastY) / dt) * .4;
+    if (dt > 0) vel += ((y - lastY) / dt - vel) * ease(.4, dt);
     lastY = y;
     var a = Math.abs(vel);
     var target = a <= START ? 0 : Math.min(1, (a - START) / (FULL - START)) * (vel > 0 ? 1 : -1);
     // quick to sag, slower to spring back, like a rope settling
-    warp += (target - warp) * (Math.abs(target) > Math.abs(warp) ? .22 : .1);
-    if (Math.abs(warp) < .004 && target === 0) { warp = 0; apply(0); moving = false; last = 0; vel = 0; return; }
+    warp += (target - warp) * ease(Math.abs(target) > Math.abs(warp) ? .22 : .1, dt);
+    // stay at least one 60 Hz frame before giving up, so a fast screen judges the speed as fully as 60 Hz
+    if (Math.abs(warp) < .004 && target === 0 && age > .014) { warp = 0; apply(0); moving = false; last = 0; vel = 0; return; }
     apply(warp);
     raf = requestAnimationFrame(frame);
   }
   // Velocity needs the position before this scroll moved. Native scrolling (touch, and every page
   // without Lenis) has already moved when its event fires, so a gesture starts from the previous
-  // scroll event's position; a lone jump (End, a link) has no recent event and starts flat.
-  var evY = window.scrollY, evT = -1e9;
+  // scroll event's position; a lone jump (End, a link) has no recent event and starts flat. That
+  // first step counts as one 60 Hz frame, as tuned, unless the two events were clearly closer
+  // (a faster screen), when it counts as the frame time between them.
+  var evY = window.scrollY, evT = -1e9, evF = 0;
   function onScroll() {
-    var now = performance.now(), y = window.scrollY;
-    kick(now - evT < 120 ? evY : y);
-    evY = y; evT = now;
+    var now = performance.now(), y = window.scrollY, tl = document.timeline, f = tl && tl.currentTime;
+    if (typeof f !== 'number') f = now;   // the frame's time
+    var recent = now - evT < 120;
+    kick(recent ? evY : y, recent ? f - evF : 0);
+    evY = y; evT = now; evF = f;
   }
-  function kick(fromY) {
+  function kick(fromY, gap) {
     if (reduce && reduce.matches) return;
     if (!items.length) collect();
-    if (!moving) { moving = true; lastY = fromY; last = 0; }
+    if (!moving) { moving = true; lastY = fromY; last = 0; age = 0; firstDt = gap > 0 && gap < 12.5 ? Math.max(1 / 240, gap / 1000) : 1 / 60; }
     if (!raf) raf = requestAnimationFrame(frame);
   }
   function start() {
