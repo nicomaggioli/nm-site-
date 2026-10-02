@@ -192,8 +192,11 @@
   // the frame's path for the shaders: a (start x, y, extent x, y), b (weight / WAKE_C, 1 / |extent|²),
   // r (1 / R², css px per unit of push, segments, the strongest push in units), the box it reaches
   var WF = { now: -1, n: 0, a: new Float32Array(WK.N * 4), b: new Float32Array(WK.N * 4), box: [0, 0, 0, 0], r: [1 / (WK.R * WK.R), 0, 0, 0] };
+  // Off: Nico tried the wake on 2026-10-01 and asked for it to be removed. No listener is attached
+  // and nothing is displaced; the code goes with the next engine pass.
+  var WAKE_ON = false;
   function wakeOK() {
-    return fineQ.matches && !reduceQ.matches && !document.hidden && !gameOpen() && opts.push > 0;
+    return WAKE_ON && fineQ.matches && !reduceQ.matches && !document.hidden && !gameOpen() && opts.push > 0;
   }
   // the Index lightbox covers the sky (94%): no new path behind it, and what was already moving
   // settles on its own (no snap back as it fades in), then the layers idle at ~30 fps again
@@ -327,7 +330,7 @@
     '}'
   ].join('\n');
   // (capture: the path is recorded whatever the page does with the event)
-  document.addEventListener('pointermove', wakeMove, { passive: true, capture: true });
+  if (WAKE_ON) document.addEventListener('pointermove', wakeMove, { passive: true, capture: true });
   document.addEventListener('pointerout', function (e) { if (!e.relatedTarget) wake.lt = -1; }, { passive: true, capture: true });
 
   /* --------------------------------------------------------------- the path */
