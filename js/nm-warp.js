@@ -20,6 +20,12 @@
   var START = 1000, FULL = 4500;      // px/s: no dip below START, full dip at FULL
   var DIP = 90;                       // px the centre sags at full speed (desktop width)
   var NS = 'http://www.w3.org/2000/svg';
+  // Safari (and every iOS browser, all WebKit) has no section dip: it places a userSpaceOnUse
+  // filter region in page coordinates, so the section renders blank, and even in bounding-box
+  // units WebKit draws the displacement on the CPU (a fast fling went from 18 to 67 ms frames at
+  // p95). The Index column dip is transforms only and stays.
+  var ua = navigator.userAgent;
+  var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
   var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, lastY = 0, vel = 0, warp = 0, raf = 0, moving = false;
   var firstDt = 1 / 60, age = 0;
 
@@ -164,6 +170,7 @@
     if (!raf) raf = requestAnimationFrame(frame);
   }
   function start() {
+    if (WEBKIT && page !== 'index') return;   // nothing to dip there (see WEBKIT)
     collect();
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', function () { apply(0); warp = 0; collect(); }, { passive: true });
