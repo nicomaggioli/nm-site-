@@ -165,24 +165,30 @@ The look is unchanged; these change only when and how often the work is done.
   beat; without the space the sky keeps its own 31 ms clock. While the camera glides or the
   pointer's wake settles both still draw every display frame (60 or 120 Hz). `NMSpace.drawN` and
   `NMSky.drawN` count draws, for a backdrop that wants to skip uploading an unchanged canvas.
-- Start-up in small tasks. The space adds its canvas at mount and does the rest after the next
-  frame, a task per step: the context and its shaders handed to the driver (not waited for), the
-  particles and buffers, then, once `KHR_parallel_shader_compile` reports them compiled, their
-  results and the start. `NMSpace.whenReady(fn)` runs fn once it draws (or has failed). The sky
-  builds its sprite atlas in a task of its own (one pixel buffer and one `putImageData`, the same
-  pixels as before), and when its data is in: the catalogue; the context, shader and footer; then,
-  once the space is ready (so its first frame already turns with that camera), the layout, text
-  mask and first frame.
+- Start-up. The space is built at mount, as it always was: moved to the next frame or to tasks of
+  its own, it pushed back either the homepage hero's first frame or its own on a throttled phone
+  (the logo forming on an empty sky, or late). Only the wait for the driver is gone: the shaders go
+  to the driver first and compile in parallel while the particles are made, and their results are
+  read once `KHR_parallel_shader_compile` reports them done (by then, as a rule; else at the next
+  frame, which then draws the first one). `NMSpace.whenReady(fn)` runs fn once it has started (or
+  has failed). The sky builds its sprite atlas in a task of its own (one pixel buffer and one
+  `putImageData`, the same pixels as before), and when its data is in: the catalogue; the
+  context, shader and footer; then, once the space is ready (so its first frame already turns
+  with that camera), the layout, text mask and first frame.
 - Star data early. `js/nm-theme.js` asks for `stars.json` and the page's file at their content
   versions (its `DATA` map) while the scripts load: About from `<head>`, Index right after its
   first paint (asked during the parse, on a throttled phone it pushed the wall's first image back
-  ~70 ms and now and then made the half-parsed wall fetch ~10 more images), the homepage after
-  hydration at low priority (behind the hero). `window.__nmSkyData` is that promise and
-  `window.__nmSkyURLs` the URLs; nothing revalidates them. The page files carry only their
-  featured stars.
+  ~70 ms; after the paint it still shares the line with the wall's first images: on a Fast 4G
+  phone the largest one lands ~30 ms and the particle space ~0.1 s later, the stars ~0.45 s
+  sooner), the homepage after hydration at low priority (behind the hero). `window.__nmSkyData`
+  is that promise and `window.__nmSkyURLs` the URLs; nothing revalidates them. The page files
+  carry only their featured stars. (How many wall images an Index first view fetches is Chrome's
+  lazy-load distance, set by the connection's effective type when the first lazy image is
+  parsed, before any Night Sky script runs: 20 on 4G, ~32 on 3G.)
 - The footer NM's targets load in CORS mode like the homepage's preload (one request), on About
-  and Index in idle time; only the gathering layer's part of the particle buffer is uploaded
-  again, and no CPU copy of the rest is kept (~8 MB on desktop).
+  and Index in idle time or as soon as the footer comes near (a jump to the end); only the
+  gathering layer's part of the particle buffer is uploaded again, and no CPU copy of the rest is
+  kept (~8 MB on desktop).
 - The overlay (`NMSky.fx`, events and the reticle) is hidden while it is blank, and shown before
   anything draws on it; while only the footer's nodes are on it, each clear covers just their
   box. The footer canvas is not cleared again while it is already blank.
@@ -192,13 +198,18 @@ The look is unchanged; these change only when and how often the work is done.
 - Header scrim. While the page scrolls it is decided every frame from a cache of the page's content
   boxes (built at layout: lines of text, media, filled or ruled boxes, controls; what `openSky`
   counts), along the nine columns and over the rows the old probes used, stretched ahead in the
-  direction of travel by 0.3 s of the scroll's speed (90 px more during a warp fling), so the
-  scrim is back as content arrives instead of up to ~0.15 s later. Sticky sections keep their
-  boxes relative to themselves (About's résumé heading, including where it goes once it lets
-  go); where something inside one moves on its own (the homepage collage) the old probes decide
-  there (every 140 ms while it covers the band, every other frame while it does not). At rest the probes decide, as before, and the cache is rebuilt if it disagrees.
-  `NMSky.debug().veil` compares the two.
-- The featured-star label keeps clear of the fixed header (at least 8 px below it), on phones too.
+  direction of travel by 0.3 s of the scroll's speed (never past where the scroll will stop: the
+  page's end, or on the homepage Lenis's target; 90 px more during a warp fling), so the scrim
+  is back as content arrives instead of up to ~0.15 s later, and lifts where a scroll stops over
+  sky (the footer) as soon as it did before. Sticky sections keep their boxes relative to
+  themselves (About's résumé heading, including where it goes once it lets go); where something
+  inside one moves on its own (the homepage collage) the old probes decide there (every 140 ms
+  while it covers the band, every 60 ms while it does not). At rest the probes decide, as before,
+  and the cache is rebuilt if it disagrees. `NMSky.debug().veil` compares the two.
+- The featured-star label keeps clear of the fixed header (at least 8 px below it), on phones too:
+  above the star where it fits, else as high as the header allows if that still clears the star,
+  else below it (on a 390 px phone, Aldebaran's card near the top of the hero then covers the top
+  of the hero's NM while it is open).
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).

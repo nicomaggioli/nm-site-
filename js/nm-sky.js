@@ -883,12 +883,13 @@
   // While the page scrolls it is decided every frame from a cache of the page's content boxes in
   // document px (veilBuild, at layout: what openSky() counts as content: lines of text, media,
   // filled or ruled boxes, controls), along the nine columns and over the rows the probes use,
-  // stretched ahead in the direction of travel (VEIL_LEAD s of the scroll's speed), so the scrim
-  // is back as content arrives rather than a moment after it. Sticky sections move against the
+  // stretched ahead in the direction of travel (VEIL_LEAD s of the scroll's speed, never past
+  // where the scroll will stop: the page's end, or a smooth scroll's target), so the scrim is
+  // back as content arrives rather than a moment after it. Sticky sections move against the
   // page: their content is cached relative to them (About's résumé heading, also where it will be
   // once it lets go), or, where something inside moves on its own (the homepage's collage), the
-  // probes decide there (the frame it reaches the band, then each 140 ms over content, every
-  // other frame over sky). When the scroll comes to rest the probes (checkVeil's 27
+  // probes decide there (the frame it reaches the band, then each 140 ms over content, each
+  // 60 ms over sky). When the scroll comes to rest the probes (checkVeil's 27
   // elementsFromPoint reads) decide, as before, and check the cache: it is built again if they
   // disagree. Before the cache exists the probes decide alone.
   var VX = [0.015, 0.12, 0.25, 0.38, 0.5, 0.62, 0.75, 0.88, 0.985];
@@ -1082,9 +1083,10 @@
         continue;
       }
       if (r.bottom <= 0 || r.top >= hb) { L.on = false; continue; }
-      // (again every 140 ms while it covers the band; while it does not, every other frame, so
-      // content moving in is seen within a frame or two)
-      if (!L.on || now - L.at > (L.hit ? 140 : 30)) { L.on = true; L.at = now; L.hit = !probeClear(hb, r); }
+      // (again every 140 ms while it covers the band; while it does not, every 60 ms (the probes
+      // cost ~2 ms on a throttled phone), so content moving in is seen within a few frames, still
+      // well inside the 140 ms the probes alone took)
+      if (!L.on || now - L.at > (L.hit ? 140 : 60)) { L.on = true; L.at = now; L.hit = !probeClear(hb, r); }
       hit = hit || L.hit;
     }
     return hit;
@@ -1110,9 +1112,16 @@
     if (heroCovers()) { veilSet(false); return; }
     // the probes' rows (35% of the band down to its bottom), stretched ahead
     var lead = Math.min(Math.abs(veil.v) * VEIL_LEAD, S.vh * 0.6);
+    // no further than the scroll will go: the page's end, or where a smooth scroll (the
+    // homepage's Lenis) comes to rest, so the scrim lifts there as soon as it did before
+    var left = veil.v > 0 ? S.maxY - y : y, ln = window.__nmLenis;
+    if (ln && ln.isScrolling === 'smooth' && isFinite(ln.targetScroll)) left = Math.min(left, (ln.targetScroll - y) * (veil.v > 0 ? 1 : -1));
+    lead = Math.min(lead, Math.max(0, left));
     var y0 = y + hb * 0.35 - (veil.v < 0 ? lead : 0), y1 = y + hb + (veil.v > 0 ? lead : 0);
     var b0 = y - (veil.v < 0 ? lead : 0), b1 = y + hb + (veil.v > 0 ? lead : 0);
-    if (Math.abs(veil.v) > 900) { y0 -= 90; y1 += 90; b0 -= 90; b1 += 90; }   // a fast fling: the warp sags what moves (nm-warp, up to 90 px)
+    // a fast fling: the warp sags what moves (nm-warp, up to 90 px); not where the scroll stops
+    // (the page's end, a smooth scroll's target): decided there as at rest, as the probes did
+    if (Math.abs(veil.v) > 900 && left > 1) { y0 -= 90; y1 += 90; b0 -= 90; b1 += 90; }
     veilSet(!veilHit(y0, y1, b0, b1) && !veilLive(now, y, y0, y1, b0, b1));
   }
   // at rest: the probes check the cache at their own points; built again where they disagree
@@ -1188,7 +1197,9 @@
     if (side) { x = side > 0 ? a.x + gap : xl - gap - w; y = clamp(a.y - 18, top0, vh - h - 12); }
     else {
       var cx = a.cx != null ? a.cx : a.x, top = a.top != null ? a.top : a.y, bot = a.bottom != null ? a.bottom : a.y;
-      x = clamp(cx - w / 2, 12, vw - w - 12); y = top - gap - h >= top0 ? top - gap - h : bot + gap;
+      // above the star; else as high as the header allows if that still clears the star; else below
+      x = clamp(cx - w / 2, 12, vw - w - 12);
+      y = top - gap - h >= top0 ? top - gap - h : top0 + h + 8 <= top ? top0 : bot + gap;
     }
     label.x = x; label.y = y; label.side = side; label.ax = a.x; label.ay = a.y;
     labelEl.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
@@ -2015,7 +2026,7 @@
     var data = U.page === S.page && window.__nmSkyData && window.__nmSkyData.then ? window.__nmSkyData
       : (window.__nmSkyData = Promise.all([get(U.stars || '/media/sky/stars.json'), get(pages[S.page] || '/media/sky/' + S.page + '.json').catch(function () { return {}; })]));
     // then the start, a step per task: the catalogue; the GL context, shaders and footer; once the
-    // particle space draws (its camera turns this sky), the layout, text mask and first frame
+    // particle space has started (its camera turns this sky), the layout, text mask and first frame
     data.then(function (res) {
       ingest(res[0], res[1]);
       later(function () {
@@ -2044,7 +2055,7 @@
       });
     }).catch(function (err) { console.warn('[nm-sky] sky unavailable:', err && err.message); });
   }
-  // fn once the particle space draws or has failed (NMSpace.whenReady), so the sky's first frame
+  // fn once the particle space has started or has failed (NMSpace.whenReady), so the sky's first frame
   // already turns with its camera; at once without the space (and, should it never settle, after
   // 8 s of the page being shown)
   function afterSpace(fn) {

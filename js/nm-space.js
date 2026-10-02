@@ -88,7 +88,7 @@
      .tick(now)     step(now) and the frame's shared beat { t30 (the ~30 fps idle redraw), t60 }:
                     both layers redraw at rest on the same frames (null until the space runs)
      .drawN         draws so far
-     .whenReady(fn) fn once the space draws, or has failed (js/nm-sky.js waits on it)
+     .whenReady(fn) fn once the space has started, or has failed (js/nm-sky.js waits on it)
      .at(y)         the settled camera (no drift) at scroll y: { roll, yaw, pitch, z }
      .set(opts)     { brightness, glow, motion, density, push } live multipliers (1 = default)
      .wake          the pointer's wake: { K (the WK constants), GLSL (vec2 wake(vec2 css px)),
@@ -101,9 +101,9 @@
    display rate while the camera moves or the wake settles, ~30 fps on the beat shared with the
    sky (tick) while it only breathes; the wake costs a passive pointermove listener and a few
    uniforms a frame; stops in hidden tabs and while Cloud Run is open; one still frame (no
-   flight, no drift) under reduced motion. Start-up runs in its own tasks after the first frame
-   (context and shaders, particles, then the start once the driver has compiled); only the
-   gathering layer keeps a CPU copy. Notes: docs/night-sky.md, "Performance". */
+   flight, no drift) under reduced motion. Start-up at mount, as always, without waiting on the
+   driver's shader compile (KHR_parallel_shader_compile); only the gathering layer keeps a CPU
+   copy. Notes: docs/night-sky.md, "Performance". */
 (function () {
   'use strict';
   if (window.NMSpace) return;
@@ -476,7 +476,7 @@
       var hold = S.still ? my : Math.max(myEnd, S.vh - mh * 0.5 - S.vh * 0.06);
       CAM.mark = [(rect[0] + rect[2]) / 2, Math.min(my, hold), rect[2] - rect[0], my];
     }
-    if (!S.marks) { rT = 0; live = false; }
+    if (!S.marks) { if (live && S.markNow) S.markNow(); rT = 0; live = false; }
     var P0 = CAM.gather;
     if (S.still) {   // reduced motion: no flight, the mark is simply there with the footer
       CAM.graw = rT; CAM.vg = 0; CAM.gather = live ? 1 : 0; CAM.presence = live ? 1 : 0; CAM.vP = 0;
@@ -845,11 +845,11 @@
   ].join('\n');
 
   /* --------------------------------------------------------------------- GL */
-  /* Built in three steps, each its own task after mount (glBuild runs them at once when a lost
-     context comes back): the context and the shaders handed to the driver (glContext,
-     glCompile: compiled in parallel, not waited for), the particles and buffers (glData), then
-     the shaders' results and uniforms once the driver is done (glLink; polled through
-     KHR_parallel_shader_compile where there is one). */
+  /* Built in steps (at mount; glBuild runs them at once when a lost context comes back): the
+     context and the shaders handed to the driver (glContext, glCompile: compiled in parallel,
+     not waited for), the particles and buffers (glData), then the shaders' results and uniforms
+     once the driver is done (glLink; checked through KHR_parallel_shader_compile where there is
+     one). */
   function glContext() {
     if (G.gl || G.failed) return !!G.gl;
     var attrs = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
@@ -1182,13 +1182,7 @@
 
   /* -------------------------------------------------------------------- mount */
   var resizeT = 0, roT = 0;
-  // the next task after the coming frame (so a mount never lengthens the frame that hydrates the page)
-  function afterFrame(fn) {
-    var done = false, go = function () { if (!done) { done = true; setTimeout(fn, 0); } };
-    requestAnimationFrame(go);
-    setTimeout(go, 1000);   // (no frames in a background tab: start anyway)
-  }
-  // NMSpace.whenReady(fn): fn runs once the space draws (or has failed); the sky waits on it so
+  // NMSpace.whenReady(fn): fn runs once the space has started (or has failed); the sky waits on it so
   // its first frame already turns with this camera
   var readyQ = [];
   api.whenReady = function (fn) { if (S.ready || S.dead) fn(); else readyQ.push(fn); };
@@ -1213,31 +1207,38 @@
     document.body.insertBefore(canvas, document.body.firstChild);
     api.canvas = canvas;
     S.still = reduceQ.matches;
-    // the GL work runs in its own tasks after the next frame: the context and shaders, the
-    // particles, then (once the driver has compiled) the start
-    afterFrame(function () {
-      measure();
-      if (!glContext()) return gone();
-      try { glCompile(); } catch (e) { return gone(e); }
-      setTimeout(function () {
-        if (!G.gl) return;
-        try { glData(); } catch (e) { return gone(e); }
-        var polls = 0;
-        (function wait() {
-          if (!G.gl) return;
-          if (!glCompiled() && ++polls < 60) { setTimeout(wait, 16); return; }
-          try { glLink(); } catch (e) { return gone(e); }
-          try { start(); } finally { settled(); }
-        })();
-      }, 0);
-    });
+    // Built here, as it always was, so the first frame lands where it did and the homepage hero
+    // starts when it did (moved to a frame or tasks of their own, the start-up pushed back either
+    // the hero's or the space's on a throttled phone). Only the wait for the driver's compile is
+    // gone: the shaders go to the driver first and compile while the particles are made; in the
+    // rare case they are not done by then, their results are read at the next frame (a frame at
+    // a time, a timer in a hidden tab).
+    if (!glContext()) return gone();
+    try { glCompile(); measure(); glData(); } catch (e) { return gone(e); }
+    var done = false, polls = 0;
+    var boot = function (ts) {
+      if (done || !G.gl) return;
+      if (!glCompiled() && ++polls < 60) { if (document.hidden) setTimeout(boot, 16); else requestAnimationFrame(boot); return; }
+      done = true;
+      try { glLink(); } catch (e) { return gone(e); }
+      try { start(); } finally { settled(); }
+      // read at a frame: its first frame now, as the start at mount would have had it (not one later)
+      if (ts && S.running && G.ok) { S.last = 0; S.stepAt = -1; frame(ts); }
+    };
+    boot();
+    setTimeout(boot, 1000);   // (a tab hidden after the first look: go on)
   }
   function start() {
     S.ready = true;
     relayout();
     // the NM's targets: on the homepage at once (its preload has the file), elsewhere in idle
-    // time (the footer is a long scroll away)
-    var mark = function () { loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); }); };
+    // time (the footer is a long scroll away), or once the footer comes near (gatherStep)
+    var asked = false;
+    var mark = S.markNow = function () {
+      if (asked) return;
+      asked = true;
+      loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); });
+    };
     if (S.page === 'home') mark();
     else if (window.requestIdleCallback) requestIdleCallback(mark, { timeout: 2000 });
     else setTimeout(mark, 1200);
