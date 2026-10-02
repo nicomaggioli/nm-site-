@@ -85,6 +85,10 @@
                       seat ([cos, sin, dx, dy]: how its sky seats turn with the camera) }
      .GATHER        { W, start(i), path(...) } the shared timing and flight path (NMSky's nodes)
      .step(now)     advance the camera to this frame (idempotent; js/nm-sky.js calls it)
+     .tick(now)     step(now) and the frame's shared beat { t30 (the ~30 fps idle redraw), t60 }:
+                    both layers redraw at rest on the same frames (null until the space runs)
+     .drawN         draws so far
+     .whenReady(fn) fn once the space draws, or has failed (js/nm-sky.js waits on it)
      .at(y)         the settled camera (no drift) at scroll y: { roll, yaw, pitch, z }
      .set(opts)     { brightness, glow, motion, density, push } live multipliers (1 = default)
      .wake          the pointer's wake: { K (the WK constants), GLSL (vec2 wake(vec2 css px)),
@@ -94,9 +98,12 @@
      .debug()       counts, quality, camera, timings
 
    Budget: ~180k particles on desktop, ~50k on phones (fewer when frames run long), DPR <= 1.5;
-   display rate while the camera moves or the wake settles, ~30 fps while it only breathes; the
-   wake costs a passive pointermove listener and a few uniforms a frame; stops in hidden tabs
-   and while Cloud Run is open; one still frame (no flight, no drift) under reduced motion. */
+   display rate while the camera moves or the wake settles, ~30 fps on the beat shared with the
+   sky (tick) while it only breathes; the wake costs a passive pointermove listener and a few
+   uniforms a frame; stops in hidden tabs and while Cloud Run is open; one still frame (no
+   flight, no drift) under reduced motion. Start-up runs in its own tasks after the first frame
+   (context and shaders, particles, then the start once the driver has compiled); only the
+   gathering layer keeps a CPU copy. Notes: docs/night-sky.md, "Performance". */
 (function () {
   'use strict';
   if (window.NMSpace) return;
@@ -344,13 +351,26 @@
 
   /* -------------------------------------------------------------------- state */
   var S = {
-    page: null, cfg: null, ready: false, mounted: false, still: false, shown: false,
+    page: null, cfg: null, ready: false, mounted: false, dead: false, still: false, shown: false,
     vw: 0, vh: 0, dpr: 1, W: 0, H: 0, phone: false, maxY: 1, R: 0, zpx: 0.03,
     t: 0, last: 0, lastDraw: 0, running: false, raf: 0, force: false, stepAt: -1,
     N: 0, layers: null, q: 1, qT: 0, slow: 0, fast: 0,
     stats: { frames: 0, draws: 0, ms: 0, drawMs: 0, worst: 0, since: 0, gaps: [] }
   };
   var canvas, G = { ok: false, gl: null, failed: false, lost: false };
+  // The shared frame clock (NMSpace.tick): one ~30 fps idle beat for both layers, so the space and
+  // the sky (js/nm-sky.js) redraw on the same frames whichever loop runs first. Keyed by the frame's
+  // timestamp: every caller in a frame gets the same answer. t30: the idle redraw (more than 31 ms
+  // since the last, as the layers always used); t60: at most one in ~15 ms.
+  var TK = { at: -1, t30: false, t60: false, a30: -1e9, a60: -1e9 };
+  function tickAt(now) {
+    if (TK.at !== now) {
+      TK.at = now;
+      TK.t60 = now - TK.a60 >= 15; if (TK.t60) TK.a60 = now;
+      TK.t30 = now - TK.a30 > 31; if (TK.t30) TK.a30 = now;
+    }
+    return TK;
+  }
 
   /* ------------------------------------------------------------------- camera */
   var CAM = api.camera = {
@@ -541,6 +561,7 @@
   // Each star's start in the gather: the contour first, sweeping left to right, then the inside.
   function loadMark(done) {
     var img = new Image();
+    img.crossOrigin = 'anonymous';   // as the homepage's preload of the same file (one request, one decode)
     img.onload = function () {
       try {
         var c = document.createElement('canvas'); c.width = CROP.w; c.height = CROP.h;
@@ -554,12 +575,15 @@
     img.onerror = function () { done(null); };
     img.src = '/textures/nm-mark-sdf.png';
   }
+  // (G.tg: the CPU copy of only the layers that gather, the mark's 1800 / 3800 stars; only their
+  // part of the buffer is uploaded again)
   function fillTargets(gmap) {
-    if (!gmap || !G.ok) return;
-    var R = rng(4711), d = G.data, filled = 0;
-    S.layers.forEach(function (L) {
+    if (!gmap || !G.ok || !G.tg) return;
+    var R = rng(4711), filled = 0;
+    G.tg.forEach(function (T) {
+      var L = T.L, d = T.d;
       for (var i = 0; i < L.ng; i++) {
-        var o = (L.start + i) * STRIDE, tx = 0, ty = 0, edge = 0;
+        var o = i * STRIDE, tx = 0, ty = 0, edge = 0;
         for (var tries = 0; tries < 400; tries++) {
           tx = R() * CROP.w; ty = R() * CROP.h;
           var v = gmap[Math.min(CROP.h - 1, ty | 0) * CROP.w + Math.min(CROP.w - 1, tx | 0)];
@@ -575,7 +599,7 @@
     });
     var gl = G.gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, G.buf);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, d);
+    G.tg.forEach(function (T) { gl.bufferSubData(gl.ARRAY_BUFFER, T.L.start * STRIDE * 4, T.d); });
     S.marks = filled;
     kick();
   }
@@ -821,8 +845,13 @@
   ].join('\n');
 
   /* --------------------------------------------------------------------- GL */
-  function glInit() {
-    if (G.gl || G.failed) return G.ok;
+  /* Built in three steps, each its own task after mount (glBuild runs them at once when a lost
+     context comes back): the context and the shaders handed to the driver (glContext,
+     glCompile: compiled in parallel, not waited for), the particles and buffers (glData), then
+     the shaders' results and uniforms once the driver is done (glLink; polled through
+     KHR_parallel_shader_compile where there is one). */
+  function glContext() {
+    if (G.gl || G.failed) return !!G.gl;
     var attrs = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
       preserveDrawingBuffer: S.page === 'home', powerPreference: 'high-performance' };
     try {
@@ -830,31 +859,25 @@
       if (!gl) gl = canvas.getContext('webgl', attrs);
       if (!gl) throw new Error('no webgl');
       G.gl = gl; G.v2 = v2;
-      glBuild();
+      G.par = gl.getExtension('KHR_parallel_shader_compile');
       canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); G.ok = false; G.lost = true; });
       canvas.addEventListener('webglcontextrestored', function () { G.lost = false; try { glBuild(); kick(); } catch (err) { G.ok = false; } });
-    } catch (err) {
-      G.failed = true; G.ok = false; G.gl = null;
-      console.warn('[nm-space] particle space unavailable:', err && err.message);
-    }
-    return G.ok;
+      return true;
+    } catch (err) { glFail(err); return false; }
   }
-  function glBuild() {
+  function glFail(err) {
+    G.failed = true; G.ok = false; G.gl = null;
+    console.warn('[nm-space] particle space unavailable:', err && err.message);
+  }
+  function glCompile() {
     var gl = G.gl;
-    var sh = function (type, src) {
-      var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o);
-      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
-      return o;
-    };
+    var sh = function (type, src) { var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
     var prog = function (vs, fs, attrs, unis) {
-      var p = gl.createProgram();
-      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+      var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, fs);
+      gl.attachShader(p, v); gl.attachShader(p, f);
       attrs.forEach(function (a, i) { gl.bindAttribLocation(p, i, a); });
       gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(p));
-      var u = {};
-      unis.forEach(function (n) { u[n] = gl.getUniformLocation(p, n); });
-      return { p: p, u: u };
+      return { p: p, sh: [v, f], unis: unis, u: {} };
     };
     G.P = {
       part: prog(PART_VS, PART_FS, ['aA', 'aB', 'aT'], ['uC', 'uR', 'uU', 'uF', 'uV', 'uPP', 'uP', 'uNM', 'uG', 'uSeat', 'uL', 'uPal'].concat(wake.uniforms)),
@@ -862,6 +885,15 @@
       blur: prog(TRI_VS, BLUR_FS, ['p'], ['uS', 'uDir']),
       comp: prog(TRI_VS, COMP_FS, ['p'], ['uA', 'uB', 'uM', 'uMI', 'uCo', 'uRes', 'uGround'])
     };
+  }
+  // true once the driver has finished every program (at once without the extension)
+  function glCompiled() {
+    if (!G.par || !G.gl || G.gl.isContextLost()) return true;
+    for (var k in G.P) if (!G.gl.getProgramParameter(G.P[k].p, G.par.COMPLETION_STATUS_KHR)) return false;
+    return true;
+  }
+  function glData() {
+    var gl = G.gl;
     var pr = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
     G.maxPt = Math.min(48, pr && pr[1] ? pr[1] : 32);
     // the float accumulation format: RGBA16F where it renders, else RGBA8 (scaled)
@@ -870,10 +902,15 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, G.tri);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     var b = budget(), P = makeParticles(b);
-    G.data = P.data; S.layers = P.layers; S.budget = b;
+    S.layers = P.layers; S.budget = b;
     G.buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, G.buf);
-    gl.bufferData(gl.ARRAY_BUFFER, G.data, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, P.data, gl.STATIC_DRAW);
+    // keep a CPU copy of only the gathering layer (its NM targets are filled in later); the rest
+    // (~8 MB on desktop) lives on the GPU alone, and a lost context rebuilds it with makeParticles
+    G.tg = S.layers.filter(function (L) { return L.ng > 0; }).map(function (L) {
+      return { L: L, d: P.data.slice(L.start * STRIDE, (L.start + L.ng) * STRIDE) };
+    });
     G.mask = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, G.mask);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
@@ -881,9 +918,21 @@
     G.maskVer = -1;
     G.fbW = G.fbH = 0;
     gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
+  }
+  function glLink() {
+    var gl = G.gl;
+    for (var k in G.P) {
+      var P = G.P[k];
+      P.sh.forEach(function (o) {
+        if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
+      });
+      if (!gl.getProgramParameter(P.p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(P.p));
+      P.unis.forEach(function (n) { P.u[n] = gl.getUniformLocation(P.p, n); });
+    }
     G.ok = true;
     if (S.markMap) fillTargets(S.markMap);
   }
+  function glBuild() { glCompile(); glData(); glLink(); }
   function texParams(gl, filter) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -1035,6 +1084,7 @@
     fullscreen(Pc, null, S.W, S.H);
     S.stats.drawMs += performance.now() - t0;
     S.stats.draws++;
+    api.drawN++;
     if (!S.shown) {
       S.shown = true;
       canvas.style.transition = S.still ? 'none' : 'opacity 1.4s ease';
@@ -1065,6 +1115,7 @@
 
   /* -------------------------------------------------------------------- frame */
   function step(now) {
+    tickAt(now);
     if (S.stepAt === now) return;
     var dt = S.last ? Math.min(0.1, (now - S.last) / 1000) : 0;
     S.last = now; S.stepAt = now;
@@ -1072,6 +1123,13 @@
     camStep(dt);
   }
   api.step = function (now) { if (S.ready) step(now == null ? performance.now() : now); };
+  // advance to this frame (as step) and return its beat { t30, t60 } (null until the space runs)
+  api.tick = function (now) {
+    if (!S.ready) return null;
+    step(now == null ? performance.now() : now);
+    return TK;
+  };
+  api.drawN = 0;   // draws so far (the hero's backdrop can skip an upload when it has not changed)
   function quality(now, dt) {
     // frames that run long while the camera moves lower the particle count, then the resolution
     // (not while only the pointer's wake runs: a moving cursor also drives other work on the page,
@@ -1092,9 +1150,10 @@
     step(now);
     var dt = prev ? (now - prev) / 1000 : 0;
     quality(now, dt);
-    // display rate while the camera moves or the pointer's wake settles, else ~30 fps
+    // display rate while the camera moves or the pointer's wake settles, else ~30 fps on the
+    // shared beat (the sky draws on the same frames)
     var busy = CAM.moving || Math.abs(CAM.vg) > 1e-3 || wake.busy(now);
-    if (S.still || busy || now - S.lastDraw > 31 || !S.lastDraw || S.force) {
+    if (S.still || busy || TK.t30 || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
       if (G.ok && !G.lost) draw(now);
     }
@@ -1123,6 +1182,25 @@
 
   /* -------------------------------------------------------------------- mount */
   var resizeT = 0, roT = 0;
+  // the next task after the coming frame (so a mount never lengthens the frame that hydrates the page)
+  function afterFrame(fn) {
+    var done = false, go = function () { if (!done) { done = true; setTimeout(fn, 0); } };
+    requestAnimationFrame(go);
+    setTimeout(go, 1000);   // (no frames in a background tab: start anyway)
+  }
+  // NMSpace.whenReady(fn): fn runs once the space draws (or has failed); the sky waits on it so
+  // its first frame already turns with this camera
+  var readyQ = [];
+  api.whenReady = function (fn) { if (S.ready || S.dead) fn(); else readyQ.push(fn); };
+  function settled() {
+    readyQ.splice(0).forEach(function (fn) { try { fn(); } catch (e) { setTimeout(function () { throw e; }); } });
+  }
+  function gone(err) {
+    if (err) glFail(err);
+    if (canvas) canvas.remove();
+    api.canvas = null; S.dead = true;
+    settled();
+  }
   function mount() {
     if (S.mounted) return;
     S.mounted = true;
@@ -1135,11 +1213,34 @@
     document.body.insertBefore(canvas, document.body.firstChild);
     api.canvas = canvas;
     S.still = reduceQ.matches;
-    measure();
-    if (!glInit()) { canvas.remove(); api.canvas = null; return; }
+    // the GL work runs in its own tasks after the next frame: the context and shaders, the
+    // particles, then (once the driver has compiled) the start
+    afterFrame(function () {
+      measure();
+      if (!glContext()) return gone();
+      try { glCompile(); } catch (e) { return gone(e); }
+      setTimeout(function () {
+        if (!G.gl) return;
+        try { glData(); } catch (e) { return gone(e); }
+        var polls = 0;
+        (function wait() {
+          if (!G.gl) return;
+          if (!glCompiled() && ++polls < 60) { setTimeout(wait, 16); return; }
+          try { glLink(); } catch (e) { return gone(e); }
+          try { start(); } finally { settled(); }
+        })();
+      }, 0);
+    });
+  }
+  function start() {
     S.ready = true;
     relayout();
-    loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); });
+    // the NM's targets: on the homepage at once (its preload has the file), elsewhere in idle
+    // time (the footer is a long scroll away)
+    var mark = function () { loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); }); };
+    if (S.page === 'home') mark();
+    else if (window.requestIdleCallback) requestIdleCallback(mark, { timeout: 2000 });
+    else setTimeout(mark, 1200);
     addEventListener('resize', function () {
       clearTimeout(resizeT);
       resizeT = setTimeout(relayout, 140);
