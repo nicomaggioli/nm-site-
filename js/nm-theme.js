@@ -17,8 +17,8 @@
   'use strict';
   var VERSIONS = {
     '/js/theme-stars.js': 'ccdf605c09',
-    '/js/nm-starcut.js': 'a40aa413ec',
-    '/js/nm-warp.js': '92346f84d1',
+    '/js/nm-starcut.js': 'e72f4740b3',
+    '/js/nm-warp.js': '277aa38bdf',
     '/js/nm-space.js': 'ee59cb759c',
     '/js/nm-sky.js': '6d13d90b36'
   };
