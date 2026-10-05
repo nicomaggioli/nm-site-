@@ -20,10 +20,11 @@
   var START = 1000, FULL = 4500;      // px/s: no dip below START, full dip at FULL
   var DIP = 90;                       // px the centre sags at full speed (desktop width)
   var NS = 'http://www.w3.org/2000/svg';
-  // Safari (and every iOS browser, all WebKit) has no section dip: it places a userSpaceOnUse
-  // filter region in page coordinates, so the section renders blank, and even in bounding-box
-  // units WebKit draws the displacement on the CPU (a fast fling went from 18 to 67 ms frames at
-  // p95). The Index column dip is transforms only and stays.
+  // Safari (and every iOS browser, all WebKit) places a userSpaceOnUse filter region in page
+  // coordinates, so a section far down the page rendered blank. WebKit gets the same filter in
+  // bounding-box units instead (region, map and scale as fractions of the section; WebKit scales
+  // the displacement by the section's height, measured: a 60 px target dips 59 px). WebKit draws
+  // it on the CPU, so a fast fling there is heavier than in Chrome; Chrome keeps user units.
   var ua = navigator.userAgent;
   var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
   var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, lastY = 0, vel = 0, warp = 0, raf = 0, moving = false;
@@ -67,12 +68,15 @@
         if (pos === 'sticky' || pos === 'fixed') return;
         var w = el.offsetWidth, h = el.offsetHeight, pad = DIP * 1.2, id = 'nm-dip-' + (n++);
         var f = document.createElementNS(NS, 'filter');
-        f.setAttribute('id', id); f.setAttribute('filterUnits', 'userSpaceOnUse');
-        f.setAttribute('x', '0'); f.setAttribute('y', String(-pad)); f.setAttribute('width', String(w)); f.setAttribute('height', String(h + 2 * pad));
+        f.setAttribute('id', id);
+        if (WEBKIT) { f.setAttribute('primitiveUnits', 'objectBoundingBox'); w = 1; }
+        else f.setAttribute('filterUnits', 'userSpaceOnUse');
+        var y0 = WEBKIT ? -pad / h : -pad, fh = WEBKIT ? 1 + 2 * pad / h : h + 2 * pad;
+        f.setAttribute('x', '0'); f.setAttribute('y', String(y0)); f.setAttribute('width', String(w)); f.setAttribute('height', String(fh));
         f.setAttribute('color-interpolation-filters', 'sRGB');
         var im = document.createElementNS(NS, 'feImage');
         im.setAttribute('href', mapURL); im.setAttribute('preserveAspectRatio', 'none');
-        im.setAttribute('x', '0'); im.setAttribute('y', String(-pad)); im.setAttribute('width', String(w)); im.setAttribute('height', String(h + 2 * pad));
+        im.setAttribute('x', '0'); im.setAttribute('y', String(y0)); im.setAttribute('width', String(w)); im.setAttribute('height', String(fh));
         im.setAttribute('result', 'map');
         var d = document.createElementNS(NS, 'feDisplacementMap');
         d.setAttribute('in', 'SourceGraphic'); d.setAttribute('in2', 'map'); d.setAttribute('scale', '0');
@@ -119,10 +123,11 @@
         // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
         var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(it.h + it.pad, Math.ceil(vh - r.top + it.pad));
         if (y1 <= y0) { clear(it); continue; }
-        it.f.setAttribute('y', String(y0)); it.f.setAttribute('height', String(y1 - y0));
-        it.im.setAttribute('y', String(y0)); it.im.setAttribute('height', String(y1 - y0));
+        var k = WEBKIT ? 1 / it.h : 1;   // bounding-box units in WebKit
+        it.f.setAttribute('y', String(y0 * k)); it.f.setAttribute('height', String((y1 - y0) * k));
+        it.im.setAttribute('y', String(y0 * k)); it.im.setAttribute('height', String((y1 - y0) * k));
         // the map samples from above by 0.5 * scale at the centre, so the centre moves down by that
-        it.disp.setAttribute('scale', (2 * amount).toFixed(1));
+        it.disp.setAttribute('scale', WEBKIT ? String(2 * amount * k) : (2 * amount).toFixed(1));
         if (it.el.style.filter !== 'url("#' + it.id + '")' && it.el.style.filter !== 'url(#' + it.id + ')') it.el.style.filter = 'url(#' + it.id + ')';
         it.on = true;
       }
@@ -170,7 +175,6 @@
     if (!raf) raf = requestAnimationFrame(frame);
   }
   function start() {
-    if (WEBKIT && page !== 'index') return;   // nothing to dip there (see WEBKIT)
     collect();
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', function () { apply(0); warp = 0; collect(); }, { passive: true });
