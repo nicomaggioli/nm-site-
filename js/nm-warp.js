@@ -124,9 +124,10 @@
         it.on = true;
       } else {
         // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
-        var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(it.h + it.pad, Math.ceil(vh - r.top + it.pad));
+        var hh = r.height || it.h;   // the section's height now (images can still be loading)
+        var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(hh + it.pad, Math.ceil(vh - r.top + it.pad));
         if (y1 <= y0) { clear(it); continue; }
-        var k = WEBKIT ? 1 / it.h : 1;   // bounding-box units in WebKit
+        var k = WEBKIT ? 1 / hh : 1;   // bounding-box units in WebKit
         it.f.setAttribute('y', String(y0 * k)); it.f.setAttribute('height', String((y1 - y0) * k));
         it.im.setAttribute('y', String(y0 * k)); it.im.setAttribute('height', String((y1 - y0) * k));
         // the map samples from above by 0.5 * scale at the centre, so the centre moves down by that
@@ -173,7 +174,11 @@
   }
   function kick(fromY, gap) {
     if (reduce && reduce.matches) return;
-    if (!items.length) collect();
+    // Home and About: list the sections afresh at the start of every swipe. On the homepage most
+    // of them (brands, services, sites) are added by script after this file starts, so a list
+    // taken once at start-up could hold only the statement, the one section that then dipped.
+    if (!moving && page !== 'index') collect();
+    else if (!items.length) collect();
     if (!moving) { moving = true; lastY = fromY; last = 0; age = 0; firstDt = gap > 0 && gap < 12.5 ? Math.max(1 / 240, gap / 1000) : 1 / 60; }
     if (!raf) raf = requestAnimationFrame(frame);
   }
