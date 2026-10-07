@@ -170,3 +170,12 @@ html[data-nm-theme="stars"] footer .foot-mark {
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/about/"]) { order: 4; }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:last-child { order: 5; }
 }
+
+/* The fast-scroll dip (js/nm-warp.js) bends each section with an SVG filter. In Chrome's GPU
+   path, content clipped by overflow with rounded corners vanishes while an ancestor carries that
+   filter (the Services photo disappeared mid-swipe while the text bent), so that frame rounds its
+   content with a clip-path instead: the same corners at rest, and it bends with the section. */
+html[data-nm-theme="stars"] #nm-services .nm-svc-visual { overflow: visible; clip-path: inset(0 round 18px); }
+@media (min-width: 1920px) {
+  html[data-nm-theme="stars"] #nm-services .nm-svc-visual { clip-path: inset(0 round calc(18 * var(--nm-unit))); }
+}
