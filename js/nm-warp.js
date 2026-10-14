@@ -80,7 +80,8 @@
         f.setAttribute('id', id);
         if (WEBKIT) { f.setAttribute('primitiveUnits', 'objectBoundingBox'); w = 1; }
         else f.setAttribute('filterUnits', 'userSpaceOnUse');
-        var y0 = WEBKIT ? -pad / h : -pad, fh = WEBKIT ? 1 + 2 * pad / h : h + 2 * pad;
+        var hb = h || 1;   // a section with no height yet (apply() resizes the filter from its live height)
+        var y0 = WEBKIT ? -pad / hb : -pad, fh = WEBKIT ? 1 + 2 * pad / hb : h + 2 * pad;
         f.setAttribute('x', '0'); f.setAttribute('y', String(y0)); f.setAttribute('width', String(w)); f.setAttribute('height', String(fh));
         f.setAttribute('color-interpolation-filters', 'sRGB');
         var im = document.createElementNS(NS, 'feImage');
