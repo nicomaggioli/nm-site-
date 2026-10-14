@@ -114,8 +114,8 @@ original site plus a believable sky. Realism and restraint are the whole brief.
 
 Nico asked for the stars to ease away from a moving cursor (2026-10-01), saw it live and had it
 removed ("I don't like that"). It was switched off the same week and its code (the `pointermove`
-path, the `WK` tuning, the shaders' `wake()` and `NMSpace.wake`) was stripped in the `smooth`
-merge; it is in git history before that. Neither layer reacts to the pointer except the
+path, the `WK` tuning, the shaders' `wake()` and `NMSpace.wake`) was stripped by the commit
+"Night Sky: strip the cursor wake"; it is in git history before that. Neither layer reacts to the pointer except the
 featured stars' hover labels.
 
 ## Performance (2026-10-01)
