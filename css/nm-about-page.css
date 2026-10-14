@@ -9,7 +9,6 @@ html:has(.nm-about-page){background:#0a0a0a;scroll-padding-top:120px}
 .nm-about-page a:focus-visible{outline:2px solid var(--nm-orange);outline-offset:6px}
 .nm-about-page p{text-wrap:pretty}
 .nm-about-page .nm-hdr{background:linear-gradient(#0a0a0a 82%,#0a0a0a00)!important}
-.nm-about-page .nm-nav a[aria-current="page"]{color:var(--nm-orange)}
 .about-skip{position:fixed;z-index:500;top:12px;left:12px;padding:12px 18px;background:#fff;color:#0a0a0a!important;transform:translateY(-180%)}
 .about-skip:focus{transform:none}
 .about-intro,.about-focus,.about-process,.about-resume{margin:0 var(--about-gutter)}
