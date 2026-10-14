@@ -28,12 +28,6 @@
        the space.
    NMSky.mask: a page-length mask of every line of text, the most light the space may add
    behind it so the text keeps its WCAG AA contrast (NMSpace applies it).
-   The pointer's wake (fine pointers; NMSpace.wake has the model and the WK tuning): the stars
-   near the cursor's path ease away and drift back, with the particles. Here the catalogue
-   stars (in the star shader) and the footer's sky seats move K_SKY of the push (at infinity,
-   only slightly), the formed NM's nodes and chart lines K_MARK (it stays legible); featured
-   stars move too, and their hover test and reticle use the same displaced place (starScreen).
-   While it settles the sky, overlay and footer canvas draw at display rate (S.wb).
    Events (subtle, in open sky, riding with the sky): a shooting star 10-20 s after
    arriving, then every 40-80 s; a satellite every 1.5-3 min; the UFO first after 1-2 min,
    then every 5-8 min. Add ?sky=show to see each within the first few seconds.
@@ -51,10 +45,10 @@
      .openSky(x,y)  true when nothing but sky is painted at that viewport point
      .drawN         sky draws so far
 
-   Budget: a few thousand points per frame; display rate while the camera glides or the
-   pointer's wake settles, ~30 fps while it only floats, on the same frames as the particle space
-   (NMSpace.tick); stops in hidden tabs and while Cloud Run is open; one still frame (no float,
-   spin, dolly, events or wake) under prefers-reduced-motion. The data comes early from
+   Budget: a few thousand points per frame; display rate while the camera glides, ~30 fps while
+   it only floats, on the same frames as the particle space (NMSpace.tick); stops in hidden tabs
+   and while Cloud Run is open; one still frame (no float, spin, dolly or events) under
+   prefers-reduced-motion. The data comes early from
    js/nm-theme.js (window.__nmSkyData); start-up runs a step per task; the overlay is hidden
    while blank; the header scrim is decided from cached content boxes. Notes: docs/night-sky.md,
    "Performance". */
@@ -221,19 +215,6 @@
   };
   // the particle space's camera, when it runs (js/nm-space.js)
   function spaceCam() { var s = window.NMSpace; return s && s.canvas && s.camera && s.camera.F > 1 ? s : null; }
-  // the pointer's wake, shared with the particle space (NMSpace.wake; its header has the model)
-  function wakeOf() { var s = window.NMSpace; return s && s.wake && s.wake.at && s.wake.GLSL ? s.wake : null; }
-  var wakeTmp = [0, 0];
-  // move a screen point {x, y} by the wake there, k of full strength (k: the K_SKY or K_MARK factor)
-  function nudge(p, k) {
-    var W = G.wake || wakeOf();
-    if (!p || !W || !S.wb) return p;
-    W.at(p.x, p.y, S.now, wakeTmp);
-    p.x += wakeTmp[0] * k; p.y += wakeTmp[1] * k;
-    return p;
-  }
-  function kSky() { var W = G.wake || wakeOf(); return W ? W.K.K_SKY : 0; }
-  function kMark() { var W = G.wake || wakeOf(); return W ? W.K.K_MARK : 0; }
   function viewCfg() {
     var c = VIEWS[S.page] || VIEWS.home;
     return S.vw < 600 && c.phone ? c.phone : c.desk;
@@ -620,21 +601,15 @@
     '}',
     'float inNM(vec2 s, vec4 b) { vec2 a = smoothstep(b.xy - 22.0, b.xy + 6.0, s) * smoothstep(b.zw + 22.0, b.zw - 6.0, s); return a.x * a.y; }'
   ].join('\n');
-  // (built at glBuild: the pointer's wake is the particle space's, NMSpace.wake.GLSL)
-  function starVS(W) {
-    return [
+  var STAR_VS = [
     'attribute vec3 aDir; attribute float aMag; attribute vec3 aCol; attribute vec4 aTw;',
     'uniform mat3 uRot; uniform vec4 uView; uniform vec2 uPP; uniform vec4 uK; uniform vec4 uNM; uniform float uNMk;',
     'varying vec3 vCol; varying vec4 vA; varying vec4 vB; varying vec4 vC;',
     PSF_GLSL,
-    W ? W.GLSL : 'vec2 wake(vec2 p) { return vec2(0.0); }',
     'void main() {',
     '  vec3 v = aDir * uRot;',
     '  float z = max(v.z, 1e-3);',
     '  vec2 s = uPP + vec2(v.x, -v.y) / z * uView.w;',
-    // the pointer's wake: the stars at infinity move only slightly (featured ones too; their
-    // hover test and reticle use the same displaced place: starScreen)
-    '  s += wake(s) * ' + (W ? W.K.K_SKY : 0).toFixed(3) + ';',
     '  psf(aMag, 1.0, uView.z, uK.z, vA, vB);',
     '  float g = uK.x * (1.0 + uK.y * (aMag >= 4.0 ? 0.45 : 0.22));',
     '  g *= mix(1.0, aMag < 4.6 ? 0.05 : 0.4, uNMk * inNM(s, uNM));',
@@ -643,8 +618,7 @@
     '  gl_Position = vis ? vec4(s.x / uView.x * 2.0 - 1.0, 1.0 - s.y / uView.y * 2.0, 0.0, 1.0) : vec4(2.0, 2.0, 2.0, 1.0);',
     '  gl_PointSize = vis ? vB.z : 0.0;',
     '}'
-    ].join('\n');
-  }
+  ].join('\n');
   var STAR_FS = [
     'precision highp float;',
     'varying vec3 vCol; varying vec4 vA; varying vec4 vB; varying vec4 vC;',
@@ -692,13 +666,11 @@
   function glCompile() {
     var gl = G.gl;
     var sh = function (type, src) { var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
-    var W = wakeOf();
-    G.wake = W;
-    var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, starVS(W)), f = sh(gl.FRAGMENT_SHADER, STAR_FS);
+    var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, STAR_VS), f = sh(gl.FRAGMENT_SHADER, STAR_FS);
     gl.attachShader(p, v); gl.attachShader(p, f);
     ['aDir', 'aMag', 'aCol', 'aTw'].forEach(function (a, i) { gl.bindAttribLocation(p, i, a); });
     gl.linkProgram(p);
-    G.P.star = { p: p, sh: [v, f], u: {}, n: 4, unis: ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk'].concat(W ? W.uniforms : []) };
+    G.P.star = { p: p, sh: [v, f], u: {}, n: 4, unis: ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk'] };
   }
   function glBuild() {
     var gl = G.gl, P = G.P.star;
@@ -773,7 +745,6 @@
     gl.uniform4fv(u.uView, view); gl.uniform2f(u.uPP, CAM.cx, CAM.cy);
     gl.uniform4f(u.uK, br, S.foot, G.maxPt, 0);
     gl.uniform4fv(u.uNM, nm); gl.uniform1f(u.uNMk, nmk);
-    if (G.wake) G.wake.bind(gl, u, S.now);
     attribs([[0, G.B.stat, 3, 7, 0], [1, G.B.stat, 1, 7, 3], [2, G.B.stat, 3, 7, 4], [3, null, 1, 0, 0, 0]]);
     gl.drawArrays(gl.POINTS, 0, G.B.statN);
     updateTwinkle(time);
@@ -789,11 +760,11 @@
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
     c.clearRect(0, 0, S.W, S.H);
     c.globalCompositeOperation = 'lighter';
-    var list = S.cat, br = opts.brightness, ks = kSky();
+    var list = S.cat, br = opts.brightness;
     for (var i = 0; i < list.length; i++) {
       var s = list[i];
       if (s.m > 5.2) continue;
-      var p = nudge(project(s.u), ks);
+      var p = project(s.u);
       if (!p || p.x < -20 || p.y < -20 || p.x > S.vw + 20 || p.y > S.vh + 20) continue;
       var sp = s.sp || (s.sp = s.m < MAG_OWN ? ownSprite(s.m, s.bv) : binSprite(s.m, s.bv)), a = (s.m < MAG_OWN ? 1 : baseAlpha(s.m)) * br;
       var tw = s.m < MAG_DYN || s.f >= 0 ? twinkle(time, s.r1, s.r2, s.o1, s.o2, s.depth) : 1;
@@ -1176,12 +1147,11 @@
     labelEl.classList.remove('is-on');
     kick();
   }
-  // a featured star's viewport position, where the camera (and the pointer's wake, as the GPU
-  // draws it) has it now (null off screen)
+  // a featured star's viewport position, where the camera has it now (null off screen)
   function starScreen(k) {
     var f = S.featured[k];
     if (!f || !f.u) return null;
-    var p = nudge(project(f.u), kSky());
+    var p = project(f.u);
     return p && p.x > -30 && p.x < S.vw + 30 && p.y > -30 && p.y < S.vh + 30 ? p : null;
   }
   function anchor() { return label.kind === 'cons' ? cons.anchor() : starScreen(label.star); }
@@ -1193,13 +1163,11 @@
     // keep the side the label opened on while the star drifts, unless it no longer fits
     var fitR = a.x + gap + w <= vw - 12, fitL = xl - gap - w >= 12;
     var side = label.side === 1 && fitR ? 1 : label.side === -1 && fitL ? -1 : fitR ? 1 : fitL ? -1 : 0;
-    var x, y, top0 = Math.max(12, veil.hb + 8);   // (clear of the fixed header)
-    if (side) { x = side > 0 ? a.x + gap : xl - gap - w; y = clamp(a.y - 18, top0, vh - h - 12); }
+    var x, y;
+    if (side) { x = side > 0 ? a.x + gap : xl - gap - w; y = clamp(a.y - 18, 12, vh - h - 12); }
     else {
       var cx = a.cx != null ? a.cx : a.x, top = a.top != null ? a.top : a.y, bot = a.bottom != null ? a.bottom : a.y;
-      // above the star; else as high as the header allows if that still clears the star; else below
-      x = clamp(cx - w / 2, 12, vw - w - 12);
-      y = top - gap - h >= top0 ? top - gap - h : top0 + h + 8 <= top ? top0 : bot + gap;
+      x = clamp(cx - w / 2, 12, vw - w - 12); y = top - gap - h >= 12 ? top - gap - h : bot + gap;
     }
     label.x = x; label.y = y; label.side = side; label.ax = a.x; label.ay = a.y;
     labelEl.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
@@ -1423,7 +1391,7 @@
   function drawFx(now) {
     var nodes = fly.on, busy = fxBusy(), need = busy || nodes, d = S.dpr, full = false;
     if (!need && !fxDirty) return;
-    if (nodes && !busy && !S.still && !S.wb) {   // nodes at rest only twinkle: ~30 fps (the shared beat)
+    if (nodes && !busy && !S.still) {   // nodes at rest only twinkle: ~30 fps (the shared beat)
       var sp = spaceCam(), mk = sp && sp.camera.mark, sig = mk ? [sp.camera.gather, mk[0], mk[1], mk[2], S.vw, S.vh].join('|') : '';
       if (sig === fly.sig && !(S.t30 != null ? S.t30 : now - fly.drawn >= 31)) return;
       fly.sig = sig; fly.drawn = now;
@@ -1594,19 +1562,13 @@
     c.imageSmoothingEnabled = false;
     if (sp && nodes < 0.004) return;
     if (la > 0.004) {
-      // the chart lines follow the nodes through the pointer's wake (drawFly: the mark's push)
-      var off = null;
-      if (sp && S.wb) {
-        var cr = cons.canvas.getBoundingClientRect(), km = kMark();
-        off = st.map(function (s) { atTmp.x = cr.left + s.x; atTmp.y = cr.top + s.y; nudge(atTmp, km); return [atTmp.x - cr.left - s.x, atTmp.y - cr.top - s.y]; });
-      }
       c.strokeStyle = 'rgba(206,218,242,' + la.toFixed(3) + ')';
       c.lineWidth = Math.max(1, Math.round(0.7 * d));
       c.lineCap = 'round';
       c.beginPath();
       NM_LINES.forEach(function (ln) {
-        var a = st[ln[0]], b = st[ln[1]], oa = off ? off[ln[0]] : [0, 0], ob = off ? off[ln[1]] : [0, 0];
-        var ax = a.x + oa[0], ay = a.y + oa[1], bx = b.x + ob[0], by = b.y + ob[1];
+        var a = st[ln[0]], b = st[ln[1]];
+        var ax = a.x, ay = a.y, bx = b.x, by = b.y;
         var dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy);
         var ga = 3.4 + 0.8 * (6 - a.m), gb = 3.4 + 0.8 * (6 - b.m);
         if (len <= ga + gb + 2) return;
@@ -1782,16 +1744,11 @@
       if (tk !== n.take) { n.take = tk; n.src.star.take = tk; S.force = true; }
     });
   }
-  // a star at rest on the pixel grid (crisp), moved by the wake by k of its full strength (the
-  // offset keeps it continuous: a sub-pixel move is drawn smoothed from the same grid position)
-  var atTmp = { x: 0, y: 0 };
-  function drawAt(c, sp, m, x, y, k, a, tw, t, o3) {
-    var d = S.dpr, bx = Math.round(x * d), by = Math.round(y * d);
-    atTmp.x = x; atTmp.y = y; nudge(atTmp, k);
-    var ox = (atTmp.x - x) * d, oy = (atTmp.y - y) * d, moved = Math.abs(ox) + Math.abs(oy) > 0.01;
-    c.imageSmoothingEnabled = moved;
-    drawOne(c, sp, m, moved ? bx + ox : bx, moved ? by + oy : by, a, tw, t, o3);
+  // a star at rest on the pixel grid (crisp)
+  function drawAt(c, sp, m, x, y, a, tw, t, o3) {
+    var d = S.dpr;
     c.imageSmoothingEnabled = false;
+    drawOne(c, sp, m, Math.round(x * d), Math.round(y * d), a, tw, t, o3);
   }
   function drawFly(c, t) {
     var sp = spaceCam();
@@ -1799,32 +1756,30 @@
     var cam = sp.camera, G = sp.GATHER, mk = cam.mark, d = S.dpr, br = opts.brightness;
     if (!mk) return;
     var w = mk[2], h = w / ASPECT, foot = 1 + 0.22 * S.foot, lagP = clamp((cam.vP || 0) * G.TRAIL_T * 0.65, -0.06, 0.06);
-    var lift = (1.5 + 0.2 * cons.hover) * br, seatIn = smooth(0.5, 1, cam.presence), KS = kSky(), KM = kMark();
+    var lift = (1.5 + 0.2 * cons.hover) * br, seatIn = smooth(0.5, 1, cam.presence);
     c.globalCompositeOperation = 'lighter';
     fly.nodes.forEach(function (n) {
       var s = n.s, src = n.src, g = n.g;
       var tw = twinkle(t, s.r1, s.r2, s.o1, s.o2, s.depth);
       var tx = mk[0] + (s.u - 0.5) * w, ty = mk[1] + (s.v - 0.5) * h;
       if (g >= 1) {   // home: the node as the footer canvas drew it (wherever its star came from)
-        drawAt(c, s.sp, s.m, tx, ty, KM, s.a * lift, tw, t, s.o3);   // (the wake: as weak as the mark's)
+        drawAt(c, s.sp, s.m, tx, ty, s.a * lift, tw, t, s.o3);
         return;
       }
       var sxy = srcPos(n, fly.src);
       if (!sxy) return;
       var stw = src.star ? twinkle(t, src.star.r1, src.star.r2, src.star.o1, src.star.o2, src.star.depth) : twinkle(t, s.r2, s.r1, s.o2, s.o1, s.depth);
       if (g <= 0) {   // still in the sky (a catalogue star is drawn by the sky itself)
-        if (!src.star) drawAt(c, src.sp, src.m, sxy.x, sxy.y, KS, src.a0 * br * foot * seatIn, stw, t, s.o3);
+        if (!src.star) drawAt(c, src.sp, src.m, sxy.x, sxy.y, src.a0 * br * foot * seatIn, stw, t, s.o3);
         return;
       }
       var sw = G.SWIRL * n.sw, p = G.path(G.ease(g), sxy.x, sxy.y, tx, ty, mk[0], mk[1], sw, fly.pos);
       var k = smooth(0.12, 0.88, g), land = smooth(0.78, 0.93, g) * (1 - smooth(0.93, 1, g));
-      var kw = KS + (KM - KS) * k;   // the wake: from the sky's to the mark's as it flies in
-      nudge(p, kw);
       var boost = 1 + 0.55 * Math.sin(Math.PI * g) + 0.9 * land * (0.65 + 0.35 * Math.sin(t * 13 + n.i * 1.7));
       // the trail: where it was a moment ago, back along its path
       var gl = G.g(cam.gather - lagP, n.start);
       if (Math.abs(gl - g) > 0.002) {
-        var q = nudge(G.path(G.ease(gl), sxy.x, sxy.y, tx, ty, mk[0], mk[1], sw, fly.lag), kw), rgb = n.rgb;
+        var q = G.path(G.ease(gl), sxy.x, sxy.y, tx, ty, mk[0], mk[1], sw, fly.lag), rgb = n.rgb;
         var ta = clamp(0.45 * (1 - k) * src.a0 + 0.45 * k * s.a, 0.08, 0.5) * br * boost;
         var col = Math.round(255 * rgb[0]) + ',' + Math.round(255 * rgb[1]) + ',' + Math.round(255 * rgb[2]);
         var gr = c.createLinearGradient(q.x * d, q.y * d, p.x * d, p.y * d);
@@ -1889,9 +1844,8 @@
     var fl = footerLevel();
     S.foot = fl;
     flyStep();
-    var glide = camGlides(), W = G.wake || wakeOf();
-    S.wb = !S.still && !!W && W.busy(now);   // the pointer's wake is settling: display rate
-    if (S.still || glide || S.wb || fastEvent() || (tk ? tk.t30 : now - S.lastDraw > 31) || !S.lastDraw || S.force) {
+    var glide = camGlides();
+    if (S.still || glide || fastEvent() || (tk ? tk.t30 : now - S.lastDraw > 31) || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
       drawSky(t);
     }
@@ -1901,7 +1855,7 @@
     drawFx(now);
     cons.hover += (cons.hoverTo - cons.hover) * (S.still ? 1 : Math.min(1, dt * 6));
     cons.linesIn = S.still ? 1 : smooth(0.4, 0.9, fl);
-    if (cons.visible && cons.ctx && (S.still || S.force || (tk ? tk.t30 : now - cons.lastT > 31) || Math.abs(cons.hover - cons.hoverTo) > 0.01 || S.wb && cons.hover > 0.004)) { cons.lastT = now; drawCons(t); }
+    if (cons.visible && cons.ctx && (S.still || S.force || (tk ? tk.t30 : now - cons.lastT > 31) || Math.abs(cons.hover - cons.hoverTo) > 0.01)) { cons.lastT = now; drawCons(t); }
     hoverTick();
     if (S.running) veilTick(now);
     var ms = performance.now() - t0, st = S.stats;

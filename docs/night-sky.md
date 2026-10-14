@@ -110,49 +110,13 @@ original site plus a believable sky. Realism and restraint are the whole brief.
   The homepage already runs the WebGL hero and videos.
 - With no theme (`?theme=current`) nothing changes.
 
-## The pointer's wake (2026-10-01)
+## The pointer's wake (removed)
 
-Nico: "when your mouse moves around ... it interacts with the stars subtly? The stars push
-away." As a fine pointer moves (mouse or pen; `(hover: hover) and (pointer: fine)`), the stars
-near its path ease away from it and drift back once it has passed: a gentle wake, not a hole.
-Both layers move as one sky: the particle space (`js/nm-space.js`, displaced in the vertex
-shader in screen space after projection) and the catalogue stars (`js/nm-sky.js`, the star
-shader). Only positions move: no brightness, colour, ring or outline.
-
-- Model (`NMSpace.wake`, header of `js/nm-space.js`): a passive `pointermove` listener records
-  the path as short segments (50 ms or 60 px of travel, whichever comes first, so a fast sweep
-  parts one smooth lane instead of a chain of round bubbles); each pushes for `T` seconds,
-  starting from rest, out by ~0.25 T and back to rest at T, weighted by its length and the
-  pointer's speed, so a slow drift barely stirs and a sweep parts the sky. The push is away
-  from the path, zero on it, largest ~70 px out, nothing past `R`. One scale per frame (from
-  the strongest push, sampled along every segment) keeps the peak at about `A` however fast
-  the pointer moves or often it crosses itself, so the field keeps its smooth shape.
-  Time-based: 60 and 120 Hz look the same.
-- Measured (the nearest particles, `NMSpace.wake.at` on a grid, About at 1440x900): an
-  ordinary reach peaks at 14.8 px and moves them at most ~85 px/s; a fast sweep (1100 px in
-  0.6 s) 15.3 px, ~115 px/s; a flick (500 px in 0.18 s) 15.2 px, ~135 px/s; a straight move at
-  4000 px/s 15.1 px; a heavy scribble 16.7 px. One pass changes their local density by about
-  x0.7 to x1.35; where passes overlap (a scribble) they bunch between them up to ~x1.8. Far
-  particles move half as much, the catalogue stars 30%.
-- Depth: the nearest particles take the full push, far ones `K_FAR`, the catalogue stars
-  `K_SKY` (at infinity, only slightly), the formed footer NM (particles, nodes, chart lines)
-  `K_MARK`, so it stays legible. Featured stars move with the sky; their hover test and reticle
-  use the displaced position, so the labels still open where the star is drawn.
-- Off for touch and coarse pointers, under reduced motion, in hidden tabs and while Space Run is
-  open; behind the Index lightbox nothing new is recorded and what was moving settles on its
-  own. While it settles both layers draw at display rate, then fall back to ~30 fps, and the
-  home hero refreshes its copy of them every frame (`NMSpace.wake.live()`, read by `nmClear`
-  in the `nm-home-*` bundle; otherwise every other frame), so the wake around the logo moves
-  at display rate on 60 Hz screens too. Slow frames while only the wake runs do not lower the
-  particle count or resolution (the auto quality counts camera motion only).
-- Tuning (`WK` in `js/nm-space.js`): `A` 16 css px (about the most the nearest particles move;
-  sweeps peak ~15), `R` 170 css px (reach), `T` 1.15 s (how long a pass pushes), `GAIN` 1.25,
-  speed factor `S_MIN` 0.4 at `V0` 60 px/s rising to 1 at `V1` 1400 px/s, depth `NEAR` 3 /
-  `FAR` 26 / `K_FAR` 0.5, `K_SKY` 0.3, `K_MARK` 0.3, `SLICE` 50 ms and `SEG_MAX` 60 px per
-  segment; the shaders take `N` 40 segments (a sustained scribble over ~2100 px/s drops the
-  oldest; by then dozens overlap and nothing visibly steps). Live:
-  `NMSpace.set({ push: 0.5 })` halves it (0 turns it off); `NMSpace.debug().wake` shows the
-  live segments and the peak push in px.
+Nico asked for the stars to ease away from a moving cursor (2026-10-01), saw it live and had it
+removed ("I don't like that"). It was switched off the same week and its code (the `pointermove`
+path, the `WK` tuning, the shaders' `wake()` and `NMSpace.wake`) was stripped in the `smooth`
+merge; it is in git history before that. Neither layer reacts to the pointer except the
+featured stars' hover labels.
 
 ## Performance (2026-10-01)
 
@@ -162,9 +126,12 @@ The look is unchanged; these change only when and how often the work is done.
   frames: `NMSpace.tick(now)` returns the frame's `{ t30, t60 }`, keyed by the rAF timestamp, so it
   does not matter which loop runs first (the space's loop or the sky's, which restart on their
   own after a hidden tab or Space Run). The sky's overlay nodes and footer canvas follow the same
-  beat; without the space the sky keeps its own 31 ms clock. While the camera glides or the
-  pointer's wake settles both still draw every display frame (60 or 120 Hz). `NMSpace.drawN` and
-  `NMSky.drawN` count draws, for a backdrop that wants to skip uploading an unchanged canvas.
+  beat; without the space the sky keeps its own 31 ms clock. While the camera glides both still
+  draw every display frame (60 or 120 Hz). `NMSpace.drawN` and `NMSky.drawN` count draws: the
+  homepage hero (`nmClear` in the `nm-home-*` bundle) copies the space or sky canvas into its
+  backdrop texture only when it has drawn since the last copy (still on the hero's every-other-
+  frame cadence, one canvas a frame in Safari), so at rest on a 120 Hz screen, or under reduced
+  motion, it skips the copies of unchanged frames.
 - Start-up. The space is built at mount, as it always was: moved to the next frame or to tasks of
   its own, it pushed back either the homepage hero's first frame or its own on a throttled phone
   (the logo forming on an empty sky, or late). Only the wait for the driver is gone: the shaders go
@@ -206,10 +173,6 @@ The look is unchanged; these change only when and how often the work is done.
   inside one moves on its own (the homepage collage) the old probes decide there (every 140 ms
   while it covers the band, every 60 ms while it does not). At rest the probes decide, as before,
   and the cache is rebuilt if it disagrees. `NMSky.debug().veil` compares the two.
-- The featured-star label keeps clear of the fixed header (at least 8 px below it), on phones too:
-  above the star where it fits, else as high as the header allows if that still clears the star,
-  else below it (on a 390 px phone, Aldebaran's card near the top of the hero then covers the top
-  of the hero's NM while it is open).
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).
