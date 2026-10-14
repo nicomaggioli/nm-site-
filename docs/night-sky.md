@@ -127,11 +127,11 @@ The look is unchanged; these change only when and how often the work is done.
   does not matter which loop runs first (the space's loop or the sky's, which restart on their
   own after a hidden tab or Space Run). The sky's overlay nodes and footer canvas follow the same
   beat; without the space the sky keeps its own 31 ms clock. While the camera glides both still
-  draw every display frame (60 or 120 Hz). `NMSpace.drawN` and `NMSky.drawN` count draws. The
-  hero bundle `nm-home-e6f8d0b23fc4.js` uses them (its `nmClear` copies the space or sky canvas
-  only when it has drawn since the last copy, so at rest on a 120 Hz screen, or under reduced
-  motion, it skips unchanged frames) but is not referenced yet: the pages still load
-  `nm-home-47e800661b09.js`, which copies every other frame. It ships as its own step (2026-10-14).
+  draw every display frame (60 or 120 Hz). `NMSpace.drawN` and `NMSky.drawN` count draws: the
+  homepage hero (`nmClear` in the `nm-home-*` bundle) copies the space or sky canvas into its
+  backdrop texture only when it has drawn since the last copy (still on the hero's every-other-
+  frame cadence, one canvas a frame in Safari), so at rest on a 120 Hz screen, or under reduced
+  motion, it skips the copies of unchanged frames.
 - Start-up. The space is built at mount, as it always was: moved to the next frame or to tasks of
   its own, it pushed back either the homepage hero's first frame or its own on a throttled phone
   (the logo forming on an empty sky, or late). Only the wait for the driver is gone: the shaders go
