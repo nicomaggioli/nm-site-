@@ -15,7 +15,8 @@
     return out;
   };
 
-  // Nav bar: a Work link, so the centred wordmark has two links on each side.
+  // Nav bar: a Work link, so the centred wordmark has two links on each side. Index and About
+  // have it in their HTML (so the row never shifts); the homepage's React header gets it here.
   function addWork() {
     var ul = document.querySelector('header[data-nm-header] > nav > ul, .nm-hdr .nm-nav');
     if (!ul || ul.querySelector('a[href="/#work"]')) return;

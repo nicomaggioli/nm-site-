@@ -139,7 +139,9 @@ html[data-nm-theme="stars"] footer .foot-mark {
    About, Contact), every gap the same: link to link and link to name. The row is a centred flex
    line with a name-sized spacer in the middle; theme-stars.js measures the words and sets the
    gap, the name width, and a skew pad that keeps the spacer under the name although the right
-   pair is wider than the left. The defaults below match those numbers at the shipped fonts.
+   pair is wider than the left. The defaults below are the same sums in CSS (the wordmark's
+   width rule, the links' widths at the shipped 14px Geist, grown by --nm-unit past 1920), so the
+   first frame already sits where the script puts it and the row never shifts.
    Same type as the live site. Phones keep their menu button. */
 @media (min-width: 768px) {
   html[data-nm-theme="stars"] header[data-nm-header],
@@ -157,18 +159,28 @@ html[data-nm-theme="stars"] footer .foot-mark {
   html[data-nm-theme="stars"] .nm-hdr .nm-nav {
     display: flex; justify-content: center; align-items: center;
     width: 100%; margin: 0;
-    gap: var(--nm-nav-gap, calc(25% - 112px));
-    padding: 0 max(0px, calc(-1 * var(--nm-nav-skew, 28px))) 0 max(0px, var(--nm-nav-skew, 28px));
+    /* the wordmark's border box (css/nm-header.css); links: left pair 82.72, right pair 110.06 */
+    --nm-nav-name0: calc(max(clamp(126px, 12.5vw, 180px), 9.375vw) + 2 * max(clamp(14px, 1.5vw, 22px), 1.1458vw) + 2 * max(2px, .1042vw));
+    --nm-nav-skew0: calc(27.34 * var(--nm-unit, 1px));
+    /* spaceNav: (clientWidth / 2 - name / 2 - right) / 2, and clientWidth = content + skew pad */
+    gap: var(--nm-nav-gap, max(16px, calc(25% - 48.195 * var(--nm-unit, 1px) - var(--nm-nav-name0) / 4)));
+    padding: 0 max(0px, calc(-1 * var(--nm-nav-skew, var(--nm-nav-skew0)))) 0 max(0px, var(--nm-nav-skew, var(--nm-nav-skew0)));
     position: static; left: auto; right: auto; top: auto; transform: none;   /* the live design floats this list to the centre */
   }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul)::after {
-    content: ""; order: 3; flex: none; width: var(--nm-nav-name, 227px); height: 1px;   /* the name sits over this */
+    content: ""; order: 3; flex: none; width: var(--nm-nav-name, var(--nm-nav-name0)); height: 1px;   /* the name sits over this */
   }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li { flex: none; }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/#work"]) { order: 1; }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/index/"]) { order: 2; }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:has(> a[href="/about/"]) { order: 4; }
   html[data-nm-theme="stars"] header :is(.nm-nav, nav > ul) > li:last-child { order: 5; }
+  /* Index and About carry the Work link in their HTML. The homepage's header is React's, so
+     theme-stars.js adds the link after React commits; until then its own (hidden) work button
+     holds the slot, invisibly, so the row is laid out once and never shifts. */
+  html[data-nm-theme="stars"] header[data-nm-header] nav ul:not(:has(a[href="/#work"])) > li:first-child {
+    display: flex !important; order: 1; visibility: hidden;
+  }
 }
 
 /* The fast-scroll dip (js/nm-warp.js) bends each section with an SVG filter. In Chrome's GPU

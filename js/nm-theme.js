@@ -24,7 +24,7 @@
 (function () {
   'use strict';
   var VERSIONS = {
-    '/js/theme-stars.js': 'ccdf605c09',
+    '/js/theme-stars.js': '19d1735148',
     '/js/nm-starcut.js': 'e72f4740b3',
     '/js/nm-warp.js': '6391fbeaeb',
     '/js/nm-space.js': '797d29fb2b',
