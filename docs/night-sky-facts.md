@@ -29,12 +29,6 @@ re-checked by an independent adversarial pass the same day (see "Fact-check log"
 
 ## How the sky files were built
 
-The page files now keep only `page`, `featured` and `source` (2026-10-01): the engine draws every
-catalogue star from `media/sky/stars.json` and frames each page with its own `VIEWS` in
-`js/nm-sky.js`, so the per-page `stars` and `view` described below were never read and were
-dropped (about 20 KB gzipped per page). They are in git history before that change; this section
-records how they were made.
-
 - `stars`: every catalogue star with V ≤ 6.0 within the page's region plus a 20° margin. The
   region is the area that the viewport sweeps over the full page scroll, for any aspect ratio up
   to 4:3. Concretely, a star is included when it lies within 48.9° (47.8° on the index page) + 20°

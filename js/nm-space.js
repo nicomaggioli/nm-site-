@@ -45,6 +45,37 @@
      - scrolling back up sends every star back out along its path to its place in the sky.
      NMSky's constellation star-nodes fly in on the same progress (camera.gather/.presence/.mark).
      Reduced motion: the mark is simply there, formed, with the footer.
+   The pointer's wake (NMSpace.wake, shared with js/nm-sky.js so the sky moves as one thing):
+     - fine pointers only ((hover: hover) and (pointer: fine), mouse or pen), off under reduced
+       motion, in hidden tabs and while Space Run is open; no new path behind the Index lightbox;
+     - as the cursor moves, the stars near its path ease away from it and drift back once it has
+       passed, like water parting behind a hand. A passive pointermove listener only records the
+       path, as short segments (each WK.SLICE ms of travel or WK.SEG_MAX px, whichever comes
+       first, so a fast sweep parts one lane rather than a chain of bubbles); each pushes for
+       WK.T s with the envelope u^1.5 (1-u)^4.5 (u = age / T: from rest, out by ~0.25 T, back to
+       rest at T), weighted by its length and the pointer's speed (a slow drift barely stirs, a
+       sweep parts the sky). Time-based, so 60 and 120 Hz look the same (and 60, 120 or 250 Hz
+       pointer events, within ~0.3 px); it settles when the pointer rests or leaves the window;
+     - the push at a point is away from the nearest point of each segment, r (1 - r²/R²)²:
+       zero on the path itself, largest ~0.43 R out, nothing beyond WK.R. The segments add, and
+       one scale per frame (from the strongest push anywhere, sampled along every segment) keeps
+       the peak at about WK.A css px however fast the pointer moves or often it crosses itself
+       (measured 14.8 px on an ordinary reach, 15.1-15.3 on fast sweeps and flicks up to
+       4000 px/s, ~16.7 in a heavy scribble), so the field keeps its smooth shape: no hole, ring
+       or edge. The nearest particles move at most ~85 px/s on an ordinary reach and ~135 on a
+       flick; one pass changes their local density by about x0.7..x1.35, and where passes
+       overlap (a scribble) they bunch between them up to ~x1.8. Only positions move: no
+       brightness or colour change;
+     - evaluated in screen space after projection: on the GPU (WAKE_GLSL, the particles here and
+       the catalogue stars in nm-sky.js) and on the CPU (wake.at: the featured stars' hover test
+       and reticle, the NM's nodes and chart lines), so what is drawn and what is hit agree.
+       Depth parallax: particles at view depth <= WK.NEAR take the full push, beyond WK.FAR
+       WK.K_FAR of it; the catalogue stars WK.K_SKY; the formed NM mark WK.K_MARK (legible);
+     - both layers draw at display rate while it settles, then idle again at ~30 fps (and the
+       home hero refreshes its copy of them every frame while it settles: wake.live()).
+       The auto quality (quality()) still counts slow frames only while the camera moves.
+     Tuning: the WK constants below (live: NMSpace.set({ push: 0.5 }) scales the push, 0 = off;
+     NMSpace.debug().wake shows the live segments and the peak push in px).
 
    window.NMSpace
      .canvas        the fixed canvas (opaque WebGL; paints the ground too)
@@ -54,20 +85,18 @@
                       seat ([cos, sin, dx, dy]: how its sky seats turn with the camera) }
      .GATHER        { W, start(i), path(...) } the shared timing and flight path (NMSky's nodes)
      .step(now)     advance the camera to this frame (idempotent; js/nm-sky.js calls it)
-     .tick(now)     step(now) and the frame's shared beat { t30 (the ~30 fps idle redraw), t60 }:
-                    both layers redraw at rest on the same frames (null until the space runs)
-     .drawN         draws so far
-     .whenReady(fn) fn once the space has started, or has failed (js/nm-sky.js waits on it)
      .at(y)         the settled camera (no drift) at scroll y: { roll, yaw, pitch, z }
-     .set(opts)     { brightness, glow, motion, density } live multipliers (1 = default)
+     .set(opts)     { brightness, glow, motion, density, push } live multipliers (1 = default)
+     .wake          the pointer's wake: { K (the WK constants), GLSL (vec2 wake(vec2 css px)),
+                      uniforms, bind(gl, uniforms, now), at(x, y, now, out) (css px of push at
+                      full strength; callers scale by their K), busy(now), live() (busy at the
+                      frame last evaluated, without evaluating one), reset() }
      .debug()       counts, quality, camera, timings
 
    Budget: ~180k particles on desktop, ~50k on phones (fewer when frames run long), DPR <= 1.5;
-   display rate while the camera moves, ~30 fps on the beat shared with the sky (tick) while it
-   only breathes; stops in hidden tabs and while Cloud Run is open; one still frame (no flight,
-   no drift) under reduced motion. Start-up at mount, as always, without waiting on the
-   driver's shader compile (KHR_parallel_shader_compile); only the gathering layer keeps a CPU
-   copy. Notes: docs/night-sky.md, "Performance". */
+   display rate while the camera moves or the wake settles, ~30 fps while it only breathes; the
+   wake costs a passive pointermove listener and a few uniforms a frame; stops in hidden tabs
+   and while Cloud Run is open; one still frame (no flight, no drift) under reduced motion. */
 (function () {
   'use strict';
   if (window.NMSpace) return;
@@ -106,8 +135,28 @@
   var PAL = { cream: lin('#EDE1CC'), white: lin('#F4F8F0'), ice: lin('#BCD3E0'), peach: lin('#E9B4A3'), coral: lin('#E3837A'), violet: lin('#6E6BD6') };
   var GROUND = lin('#0a0a0a');
 
+  /* The pointer's wake (see the header). Displacements are css px. */
+  var WK = {
+    SLICE: 50,      // ms of pointer travel per path segment ...
+    SEG_MAX: 60,    // ... or this many css px, whichever comes first (a fast sweep parts one lane, not a chain of bubbles)
+    T: 1.15,        // s: how long a segment pushes (strongest ~0.25 T after the pointer passed, at rest by T)
+    R: 170,         // css px: the reach; nothing moves farther than this from the pointer's path
+    A: 16,          // css px: about the most the nearest particles move (a sweep ~0.93 A, a heavy scribble ~1.04 A)
+    GAIN: 1.25,     // a sweep's strength (with how the segments add, its peak ~0.93 A: 14.8-15.3 px)
+    V0: 60,         // px/s: at and below this the pointer's speed factor is S_MIN ...
+    V1: 1400,       // ... rising to 1 at this speed (a slow drift barely stirs, a sweep parts the sky)
+    S_MIN: 0.4,
+    NEAR: 3,        // view depth at and nearer than which particles take the full push
+    FAR: 26,        // and beyond which they take K_FAR of it (depth parallax)
+    K_FAR: 0.5,
+    K_SKY: 0.3,     // the catalogue stars and the footer's sky seats, at infinity
+    K_MARK: 0.3     // the formed NM mark (its particles, nodes and chart lines): stays legible
+  };
+  // segments the shaders take (2 N + 14 vertex uniform vectors, inside WebGL's minimum of 128): all
+  // that SLICE alone leaves alive, and room for SEG_MAX's extra ones up to ~35 a second (2100 px/s)
+  WK.N = Math.max(Math.ceil(WK.T * 1000 / WK.SLICE) + 4, 40);
   var api = window.NMSpace = { canvas: null, camera: null, version: 1 };
-  var opts = { brightness: 1, glow: 1, motion: 1, density: 1 };
+  var opts = { brightness: 1, glow: 1, motion: 1, density: 1, push: 1 };
 
   /* ------------------------------------------------------------------ helpers */
   function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
@@ -131,6 +180,159 @@
     return 'home';
   }
 
+  /* -------------------------------------------------------- the pointer's wake */
+  // The pointer's path as segments { ax, ay, bx, by, t (s, when the pointer was at a), w }, the
+  // newest last. Recorded by a passive pointermove listener; read once per frame (frameOf) by
+  // both layers' draws and the CPU mirror (at).
+  var fineQ = mq('(hover: hover) and (pointer: fine)');
+  var WAKE_C = 0.286 * WK.R;              // a segment's peak push at unit weight (r (1 - r²/R²)² at r = R / √5)
+  var WAKE_L = 0.965 * WK.R;              // the path length whose chain of segments adds up to one long sweep
+  var WAKE_P = 0.43 * WK.R;               // where the push peaks beside the path (R/√6 a line .. R/√5 a point)
+  var wake = api.wake = { K: WK, segs: [], cur: null, lx: 0, ly: 0, lt: -1, vs: 0 };
+  // the frame's path for the shaders: a (start x, y, extent x, y), b (weight / WAKE_C, 1 / |extent|²),
+  // r (1 / R², css px per unit of push, segments, the strongest push in units), the box it reaches
+  var WF = { now: -1, n: 0, a: new Float32Array(WK.N * 4), b: new Float32Array(WK.N * 4), box: [0, 0, 0, 0], r: [1 / (WK.R * WK.R), 0, 0, 0] };
+  // Off: Nico tried the wake on 2026-10-01 and asked for it to be removed. No listener is attached
+  // and nothing is displaced; the code goes with the next engine pass.
+  var WAKE_ON = false;
+  function wakeOK() {
+    return WAKE_ON && fineQ.matches && !reduceQ.matches && !document.hidden && !gameOpen() && opts.push > 0;
+  }
+  // the Index lightbox covers the sky (94%): no new path behind it, and what was already moving
+  // settles on its own (no snap back as it fades in), then the layers idle at ~30 fps again
+  function lbOpen() { return root.classList.contains('nm-lb-open'); }
+  // a segment's strength at u = age / T: u^1.5 (1 - u)^4.5, 1 at its peak (u = 0.25); it starts
+  // from rest (no kick as the pointer passes) and settles smoothly back to rest at u = 1
+  function wakeEnv(u) { var v = 1 - u, v2 = v * v; return 29.1961 * u * Math.sqrt(u) * v2 * v2 * Math.sqrt(v); }
+  wake.reset = function () { wake.segs.length = 0; wake.cur = null; wake.lt = -1; wake.vs = 0; WF.now = -1; WF.n = 0; WF.r[2] = WF.r[3] = 0; };
+  function wakeMove(e) {
+    if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+    if (!wakeOK() || lbOpen()) { wake.lt = -1; return; }
+    var now = performance.now() / 1000, x = e.clientX, y = e.clientY, lx = wake.lx, ly = wake.ly, lt = wake.lt;
+    if (!isFinite(x) || !isFinite(y)) return;
+    if (lt >= 0 && x === lx && y === ly) return;
+    wake.lx = x; wake.ly = y; wake.lt = now;
+    // a fresh start (first move, back in the window, after a pause): no segment across the jump
+    if (lt < 0 || now - lt > 0.14) { wake.vs = 0; wake.cur = null; return; }
+    var dx = x - lx, dy = y - ly, d = Math.sqrt(dx * dx + dy * dy), dt = Math.max(0.004, now - lt);
+    wake.vs += (d / dt - wake.vs) * Math.min(1, dt / 0.05);   // the pointer's speed, px/s, smoothed
+    // the open segment grows until it holds SLICE ms of travel or SEG_MAX px of path, then the next
+    // one starts where it ends. Long segments would push out at their rounded ends like a chain of
+    // bubbles; the length limit keeps a fast sweep one smooth lane. On time alone at most
+    // T / SLICE + 2 are alive; only a sustained frantic scribble (over ~2100 px/s for a second)
+    // makes more than N, and then the oldest goes (by then dozens overlap: no visible step)
+    var S2 = wake.segs, cur = wake.cur;
+    while (S2.length && now - S2[0].t >= WK.T) S2.shift();
+    if (cur && cur.bx === lx && cur.by === ly && (lt - cur.t) * 1000 < WK.SLICE &&
+        Math.hypot(cur.bx - cur.ax, cur.by - cur.ay) < WK.SEG_MAX) { cur.bx = x; cur.by = y; }
+    else {
+      cur = wake.cur = { ax: lx, ay: ly, bx: x, by: y, t: lt, w: 0 };
+      S2.push(cur);
+      if (S2.length > WK.N) S2.shift();
+    }
+    var len = Math.hypot(cur.bx - cur.ax, cur.by - cur.ay);
+    cur.w = WK.GAIN * Math.min(1, len / WAKE_L) * (WK.S_MIN + (1 - WK.S_MIN) * smooth(WK.V0, WK.V1, wake.vs));
+  }
+  // the summed push at (x, y) in units (1: one full-strength segment's peak), into out
+  function fieldAt(f, x, y, out) {
+    var A = f.a, B = f.b, R2i = f.r[0], Fx = 0, Fy = 0;
+    for (var i = 0; i < f.n; i++) {
+      var o = i * 4, px = x - A[o], py = y - A[o + 1], h = clamp((px * A[o + 2] + py * A[o + 3]) * B[o + 1], 0, 1);
+      var rx = px - A[o + 2] * h, ry = py - A[o + 3] * h, q = 1 - (rx * rx + ry * ry) * R2i;
+      if (q > 0) { Fx += rx * B[o] * q * q; Fy += ry * B[o] * q * q; }
+    }
+    out[0] = Fx; out[1] = Fy;
+    return out;
+  }
+  var wTmp = [0, 0];
+  // the path as the shaders take it at now (a rAF timestamp, ms; default performance.now())
+  function frameOf(now) {
+    var t = (now == null ? performance.now() : now) / 1000;
+    if (WF.now === t) return WF;
+    WF.now = t; WF.n = 0; WF.r[2] = WF.r[3] = 0;
+    var S2 = wake.segs;
+    while (S2.length && t - S2[0].t >= WK.T) S2.shift();
+    if (!S2.length) return WF;
+    if (!wakeOK()) { wake.reset(); WF.now = t; return WF; }
+    var A = WF.a, B = WF.b, n = 0, x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (var i = 0; i < S2.length && n < WK.N; i++) {
+      var s = S2[i], w = s.w * wakeEnv(clamp((t - s.t) / WK.T, 0, 1));
+      if (w < 1e-4) continue;
+      var ex = s.bx - s.ax, ey = s.by - s.ay, e2 = ex * ex + ey * ey, o = n * 4;
+      A[o] = s.ax; A[o + 1] = s.ay; A[o + 2] = ex; A[o + 3] = ey;
+      B[o] = w / WAKE_C; B[o + 1] = e2 > 1e-6 ? 1 / e2 : 0; B[o + 2] = 0; B[o + 3] = 0;
+      x0 = Math.min(x0, s.ax, s.bx); y0 = Math.min(y0, s.ay, s.by); x1 = Math.max(x1, s.ax, s.bx); y1 = Math.max(y1, s.ay, s.by);
+      n++;
+    }
+    WF.n = n;
+    if (!n) return WF;
+    WF.box[0] = x0 - WK.R; WF.box[1] = y0 - WK.R; WF.box[2] = x1 + WK.R; WF.box[3] = y1 + WK.R;
+    // The strongest push anywhere (sampled WAKE_P either side of each segment at its ends, quarters
+    // and middle, where it peaks) sets one scale for the whole frame: M / cbrt(1 + M³) of A at the
+    // peak. One scale keeps the field's shape however many passes overlap (a cap per point would
+    // flatten the overlap into a step: a groove along the path, a hollow round a scribble).
+    var M = 0;
+    for (var j = 0; j < n; j++) {
+      var p = j * 4, el = Math.sqrt(A[p + 2] * A[p + 2] + A[p + 3] * A[p + 3]);
+      var nx = el > 1e-3 ? -A[p + 3] / el * WAKE_P : WAKE_P, ny = el > 1e-3 ? A[p + 2] / el * WAKE_P : 0;
+      for (var k = 0; k <= 4; k++) {
+        var mx = A[p] + A[p + 2] * k * 0.25, my = A[p + 1] + A[p + 3] * k * 0.25;
+        for (var sd = -1; sd <= 1; sd += 2) {
+          fieldAt(WF, mx + nx * sd, my + ny * sd, wTmp);
+          M = Math.max(M, Math.sqrt(wTmp[0] * wTmp[0] + wTmp[1] * wTmp[1]));
+        }
+      }
+    }
+    WF.r[1] = WK.A * opts.push / Math.cbrt(1 + M * M * M); WF.r[2] = n; WF.r[3] = M;
+    return WF;
+  }
+  // true while any of the path still pushes (the layers draw at display rate until it settles)
+  wake.busy = function (now) { return frameOf(now).n > 0; };
+  // the same for the frame last evaluated, without evaluating one (the hero's backdrop reads it)
+  wake.live = function () { return WF.n > 0; };
+  // the push at (x, y), css px at full strength (the caller scales it by its layer's K)
+  wake.at = function (x, y, now, out) {
+    var f = frameOf(now);
+    out = out || [0, 0]; out[0] = 0; out[1] = 0;
+    if (!f.n || x < f.box[0] || y < f.box[1] || x > f.box[2] || y > f.box[3]) return out;
+    fieldAt(f, x, y, out);
+    out[0] *= f.r[1]; out[1] *= f.r[1];
+    return out;
+  };
+  // set a program's wake uniforms (uWa, uWb, uWr, uWx) for the frame at now
+  wake.bind = function (gl, u, now) {
+    var f = frameOf(now);
+    if (f.n) {
+      gl.uniform4fv(u.uWa, f.a); gl.uniform4fv(u.uWb, f.b);
+      gl.uniform4f(u.uWx, f.box[0], f.box[1], f.box[2], f.box[3]);
+    }
+    gl.uniform4f(u.uWr, f.r[0], f.r[1], f.n, 0);
+  };
+  wake.uniforms = ['uWa', 'uWb', 'uWr', 'uWx'];
+  // The same push on the GPU: wake(p) is the css px of push at p (full strength).
+  var WAKE_GLSL = wake.GLSL = [
+    'uniform vec4 uWa[' + WK.N + '];   // the path: segment start x, y and extent x, y (css px)',
+    'uniform vec4 uWb[' + WK.N + '];   // its weight (per unit peak), 1 / |extent|²',
+    'uniform vec4 uWr;          // 1 / R², css px per unit (this frame\'s scale), segments, peak',
+    'uniform vec4 uWx;          // the path\'s box grown by R',
+    'vec2 wake(vec2 p) {',
+    '  if (uWr.z < 0.5 || p.x < uWx.x || p.y < uWx.y || p.x > uWx.z || p.y > uWx.w) return vec2(0.0);',
+    '  vec2 F = vec2(0.0);',
+    '  for (int i = 0; i < ' + WK.N + '; i++) {',
+    '    if (float(i) >= uWr.z) break;',
+    '    vec4 s = uWa[i]; vec4 b = uWb[i];',
+    '    vec2 ap = p - s.xy;',
+    '    vec2 r = ap - s.zw * clamp(dot(ap, s.zw) * b.y, 0.0, 1.0);',
+    '    float q = 1.0 - dot(r, r) * uWr.x;',
+    '    if (q > 0.0) F += r * (b.x * q * q);',
+    '  }',
+    '  return F * uWr.y;',
+    '}'
+  ].join('\n');
+  // (capture: the path is recorded whatever the page does with the event)
+  if (WAKE_ON) document.addEventListener('pointermove', wakeMove, { passive: true, capture: true });
+  document.addEventListener('pointerout', function (e) { if (!e.relatedTarget) wake.lt = -1; }, { passive: true, capture: true });
+
   /* --------------------------------------------------------------- the path */
   // The flight path's centre line (the GLSL copy is PATH_GLSL): slow bends left and right,
   // a gentle rise and fall. The sheets are laid out around it, so the canyon follows it.
@@ -145,26 +347,13 @@
 
   /* -------------------------------------------------------------------- state */
   var S = {
-    page: null, cfg: null, ready: false, mounted: false, dead: false, still: false, shown: false,
+    page: null, cfg: null, ready: false, mounted: false, still: false, shown: false,
     vw: 0, vh: 0, dpr: 1, W: 0, H: 0, phone: false, maxY: 1, R: 0, zpx: 0.03,
     t: 0, last: 0, lastDraw: 0, running: false, raf: 0, force: false, stepAt: -1,
     N: 0, layers: null, q: 1, qT: 0, slow: 0, fast: 0,
     stats: { frames: 0, draws: 0, ms: 0, drawMs: 0, worst: 0, since: 0, gaps: [] }
   };
   var canvas, G = { ok: false, gl: null, failed: false, lost: false };
-  // The shared frame clock (NMSpace.tick): one ~30 fps idle beat for both layers, so the space and
-  // the sky (js/nm-sky.js) redraw on the same frames whichever loop runs first. Keyed by the frame's
-  // timestamp: every caller in a frame gets the same answer. t30: the idle redraw (more than 31 ms
-  // since the last, as the layers always used); t60: at most one in ~15 ms.
-  var TK = { at: -1, t30: false, t60: false, a30: -1e9, a60: -1e9 };
-  function tickAt(now) {
-    if (TK.at !== now) {
-      TK.at = now;
-      TK.t60 = now - TK.a60 >= 15; if (TK.t60) TK.a60 = now;
-      TK.t30 = now - TK.a30 > 31; if (TK.t30) TK.a30 = now;
-    }
-    return TK;
-  }
 
   /* ------------------------------------------------------------------- camera */
   var CAM = api.camera = {
@@ -270,7 +459,7 @@
       var hold = S.still ? my : Math.max(myEnd, S.vh - mh * 0.5 - S.vh * 0.06);
       CAM.mark = [(rect[0] + rect[2]) / 2, Math.min(my, hold), rect[2] - rect[0], my];
     }
-    if (!S.marks) { if (live && S.markNow) S.markNow(); rT = 0; live = false; }
+    if (!S.marks) { rT = 0; live = false; }
     var P0 = CAM.gather;
     if (S.still) {   // reduced motion: no flight, the mark is simply there with the footer
       CAM.graw = rT; CAM.vg = 0; CAM.gather = live ? 1 : 0; CAM.presence = live ? 1 : 0; CAM.vP = 0;
@@ -355,7 +544,6 @@
   // Each star's start in the gather: the contour first, sweeping left to right, then the inside.
   function loadMark(done) {
     var img = new Image();
-    img.crossOrigin = 'anonymous';   // as the homepage's preload of the same file (one request, one decode)
     img.onload = function () {
       try {
         var c = document.createElement('canvas'); c.width = CROP.w; c.height = CROP.h;
@@ -369,15 +557,12 @@
     img.onerror = function () { done(null); };
     img.src = '/textures/nm-mark-sdf.png';
   }
-  // (G.tg: the CPU copy of only the layers that gather, the mark's 1800 / 3800 stars; only their
-  // part of the buffer is uploaded again)
   function fillTargets(gmap) {
-    if (!gmap || !G.ok || !G.tg) return;
-    var R = rng(4711), filled = 0;
-    G.tg.forEach(function (T) {
-      var L = T.L, d = T.d;
+    if (!gmap || !G.ok) return;
+    var R = rng(4711), d = G.data, filled = 0;
+    S.layers.forEach(function (L) {
       for (var i = 0; i < L.ng; i++) {
-        var o = i * STRIDE, tx = 0, ty = 0, edge = 0;
+        var o = (L.start + i) * STRIDE, tx = 0, ty = 0, edge = 0;
         for (var tries = 0; tries < 400; tries++) {
           tx = R() * CROP.w; ty = R() * CROP.h;
           var v = gmap[Math.min(CROP.h - 1, ty | 0) * CROP.w + Math.min(CROP.w - 1, tx | 0)];
@@ -393,7 +578,7 @@
     });
     var gl = G.gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, G.buf);
-    G.tg.forEach(function (T) { gl.bufferSubData(gl.ARRAY_BUFFER, T.L.start * STRIDE * 4, T.d); });
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, d);
     S.marks = filled;
     kick();
   }
@@ -439,6 +624,7 @@
     'uniform vec4 uL;    // energy gain, max point size (device px), focus depth, blur',
     'uniform vec4 uPal;  // warm lean, 0, 0, 0',
     'varying vec4 vC; varying float vD;',
+    WAKE_GLSL,
     NOISE_GLSL,
     PATH_GLSL,
     'const vec3 CREAM = ' + v3(PAL.cream) + ';',
@@ -471,6 +657,8 @@
     '    vec2 dd = mix(st, tg, e) - uNM.xy;',
     '    float th = uG.w * (0.55 + 0.9 * r1) * 4.0 * e * (1.0 - e), cs = cos(th), sn = sin(th);',
     '    vec2 sc = uNM.xy + vec2(dd.x * cs - dd.y * sn, dd.x * sn + dd.y * cs);',
+    // the pointer's wake: K_SKY of it in their sky seats (like the catalogue stars), K_MARK in the mark
+    '    sc += wake(sc) * mix(' + WK.K_SKY.toFixed(3) + ', ' + WK.K_MARK.toFixed(3) + ', e);',
     // in the sky: a star among stars (a few bright, most faint); in flight: a little brighter;
     // landing: a tiny twinkle; in the mark: as it always was
     '    float seatI = 0.14 * (0.35 + 1.65 * pow(r2, 3.0) + 1.5 * smoothstep(0.93, 1.0, r2)) * A * (0.82 + 0.18 * sin(t * (0.9 + 1.4 * r1) + r2 * 60.0));',
@@ -555,6 +743,8 @@
     '  float I = E * fog;',
     '  float z = max(v.z, 0.05);',
     '  vec2 sc = uPP + vec2(v.x, -v.y) / z * uV.w;',
+    // the pointer's wake, in screen space; the nearer the particle, the more it moves
+    '  sc += wake(sc) * mix(' + WK.K_FAR.toFixed(3) + ', 1.0, smoothstep(' + WK.FAR.toFixed(1) + ', ' + WK.NEAR.toFixed(1) + ', z));',
     // the space behind the forming mark quiets so the mark reads first
     '  if (uNM.w > 0.0005) {',
     '    vec2 dm = abs(sc - uNM.xy) / vec2(uNM.z * 0.62, uNM.z * 0.36);',
@@ -634,13 +824,8 @@
   ].join('\n');
 
   /* --------------------------------------------------------------------- GL */
-  /* Built in steps (at mount; glBuild runs them at once when a lost context comes back): the
-     context and the shaders handed to the driver (glContext, glCompile: compiled in parallel,
-     not waited for), the particles and buffers (glData), then the shaders' results and uniforms
-     once the driver is done (glLink; checked through KHR_parallel_shader_compile where there is
-     one). */
-  function glContext() {
-    if (G.gl || G.failed) return !!G.gl;
+  function glInit() {
+    if (G.gl || G.failed) return G.ok;
     var attrs = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
       preserveDrawingBuffer: S.page === 'home', powerPreference: 'high-performance' };
     try {
@@ -648,41 +833,38 @@
       if (!gl) gl = canvas.getContext('webgl', attrs);
       if (!gl) throw new Error('no webgl');
       G.gl = gl; G.v2 = v2;
-      G.par = gl.getExtension('KHR_parallel_shader_compile');
+      glBuild();
       canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); G.ok = false; G.lost = true; });
       canvas.addEventListener('webglcontextrestored', function () { G.lost = false; try { glBuild(); kick(); } catch (err) { G.ok = false; } });
-      return true;
-    } catch (err) { glFail(err); return false; }
+    } catch (err) {
+      G.failed = true; G.ok = false; G.gl = null;
+      console.warn('[nm-space] particle space unavailable:', err && err.message);
+    }
+    return G.ok;
   }
-  function glFail(err) {
-    G.failed = true; G.ok = false; G.gl = null;
-    console.warn('[nm-space] particle space unavailable:', err && err.message);
-  }
-  function glCompile() {
+  function glBuild() {
     var gl = G.gl;
-    var sh = function (type, src) { var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+    var sh = function (type, src) {
+      var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o);
+      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
+      return o;
+    };
     var prog = function (vs, fs, attrs, unis) {
-      var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, fs);
-      gl.attachShader(p, v); gl.attachShader(p, f);
+      var p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
       attrs.forEach(function (a, i) { gl.bindAttribLocation(p, i, a); });
       gl.linkProgram(p);
-      return { p: p, sh: [v, f], unis: unis, u: {} };
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(p));
+      var u = {};
+      unis.forEach(function (n) { u[n] = gl.getUniformLocation(p, n); });
+      return { p: p, u: u };
     };
     G.P = {
-      part: prog(PART_VS, PART_FS, ['aA', 'aB', 'aT'], ['uC', 'uR', 'uU', 'uF', 'uV', 'uPP', 'uP', 'uNM', 'uG', 'uSeat', 'uL', 'uPal']),
+      part: prog(PART_VS, PART_FS, ['aA', 'aB', 'aT'], ['uC', 'uR', 'uU', 'uF', 'uV', 'uPP', 'uP', 'uNM', 'uG', 'uSeat', 'uL', 'uPal'].concat(wake.uniforms)),
       down: prog(TRI_VS, DOWN_FS, ['p'], ['uS', 'uTx']),
       blur: prog(TRI_VS, BLUR_FS, ['p'], ['uS', 'uDir']),
       comp: prog(TRI_VS, COMP_FS, ['p'], ['uA', 'uB', 'uM', 'uMI', 'uCo', 'uRes', 'uGround'])
     };
-  }
-  // true once the driver has finished every program (at once without the extension)
-  function glCompiled() {
-    if (!G.par || !G.gl || G.gl.isContextLost()) return true;
-    for (var k in G.P) if (!G.gl.getProgramParameter(G.P[k].p, G.par.COMPLETION_STATUS_KHR)) return false;
-    return true;
-  }
-  function glData() {
-    var gl = G.gl;
     var pr = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
     G.maxPt = Math.min(48, pr && pr[1] ? pr[1] : 32);
     // the float accumulation format: RGBA16F where it renders, else RGBA8 (scaled)
@@ -691,15 +873,10 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, G.tri);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     var b = budget(), P = makeParticles(b);
-    S.layers = P.layers; S.budget = b;
+    G.data = P.data; S.layers = P.layers; S.budget = b;
     G.buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, G.buf);
-    gl.bufferData(gl.ARRAY_BUFFER, P.data, gl.STATIC_DRAW);
-    // keep a CPU copy of only the gathering layer (its NM targets are filled in later); the rest
-    // (~8 MB on desktop) lives on the GPU alone, and a lost context rebuilds it with makeParticles
-    G.tg = S.layers.filter(function (L) { return L.ng > 0; }).map(function (L) {
-      return { L: L, d: P.data.slice(L.start * STRIDE, (L.start + L.ng) * STRIDE) };
-    });
+    gl.bufferData(gl.ARRAY_BUFFER, G.data, gl.STATIC_DRAW);
     G.mask = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, G.mask);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
@@ -707,21 +884,9 @@
     G.maskVer = -1;
     G.fbW = G.fbH = 0;
     gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
-  }
-  function glLink() {
-    var gl = G.gl;
-    for (var k in G.P) {
-      var P = G.P[k];
-      P.sh.forEach(function (o) {
-        if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
-      });
-      if (!gl.getProgramParameter(P.p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(P.p));
-      P.unis.forEach(function (n) { P.u[n] = gl.getUniformLocation(P.p, n); });
-    }
     G.ok = true;
     if (S.markMap) fillTargets(S.markMap);
   }
-  function glBuild() { glCompile(); glData(); glLink(); }
   function texParams(gl, filter) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -794,7 +959,7 @@
     gl.useProgram(P.p);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
-  function draw() {
+  function draw(now) {
     var gl = G.gl, t0 = performance.now(), sy = window.scrollY || 0;
     ensureTargets();
     var mask = window.NMSky && NMSky.mask;
@@ -819,6 +984,7 @@
     gl.uniform4f(u.uG, pres, 0, 0, SWIRL);
     gl.uniform4f(u.uSeat, st[0], st[1], st[2], st[3]);
     gl.uniform4f(u.uPal, S.cfg.warm, 0, 0, 0);
+    wake.bind(gl, u, now);
     attribsPart();
     var q = S.q, gain = opts.brightness / G.fmt.scale * (S.budget.phone ? 1.35 : 1), ML = null;
     S.layers.forEach(function (L) {
@@ -872,7 +1038,6 @@
     fullscreen(Pc, null, S.W, S.H);
     S.stats.drawMs += performance.now() - t0;
     S.stats.draws++;
-    api.drawN++;
     if (!S.shown) {
       S.shown = true;
       canvas.style.transition = S.still ? 'none' : 'opacity 1.4s ease';
@@ -903,7 +1068,6 @@
 
   /* -------------------------------------------------------------------- frame */
   function step(now) {
-    tickAt(now);
     if (S.stepAt === now) return;
     var dt = S.last ? Math.min(0.1, (now - S.last) / 1000) : 0;
     S.last = now; S.stepAt = now;
@@ -911,15 +1075,10 @@
     camStep(dt);
   }
   api.step = function (now) { if (S.ready) step(now == null ? performance.now() : now); };
-  // advance to this frame (as step) and return its beat { t30, t60 } (null until the space runs)
-  api.tick = function (now) {
-    if (!S.ready) return null;
-    step(now == null ? performance.now() : now);
-    return TK;
-  };
-  api.drawN = 0;   // draws so far (the hero's backdrop can skip an upload when it has not changed)
   function quality(now, dt) {
     // frames that run long while the camera moves lower the particle count, then the resolution
+    // (not while only the pointer's wake runs: a moving cursor also drives other work on the page,
+    // like the hero logo, and the wake's own cost is small next to a camera flight)
     if (S.still || !dt) return;
     var ms = dt * 1000;
     if (CAM.moving || CAM.vg) {
@@ -936,12 +1095,11 @@
     step(now);
     var dt = prev ? (now - prev) / 1000 : 0;
     quality(now, dt);
-    // display rate while the camera moves, else ~30 fps on the shared beat (the sky draws on the
-    // same frames)
-    var busy = CAM.moving || Math.abs(CAM.vg) > 1e-3;
-    if (S.still || busy || TK.t30 || !S.lastDraw || S.force) {
+    // display rate while the camera moves or the pointer's wake settles, else ~30 fps
+    var busy = CAM.moving || Math.abs(CAM.vg) > 1e-3 || wake.busy(now);
+    if (S.still || busy || now - S.lastDraw > 31 || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
-      if (G.ok && !G.lost) draw();
+      if (G.ok && !G.lost) draw(now);
     }
     var st = S.stats, ms = performance.now() - t0;
     st.frames++; st.ms += ms; if (ms > st.worst) st.worst = ms;
@@ -954,6 +1112,7 @@
     S.still = reduceQ.matches;
     if (was !== S.still) { CAM.init = false; S.force = true; }
     var go = active() && !S.still;
+    if (!go) wake.reset();   // paused (hidden, Space Run) or reduced motion: the stars are at rest
     if (go && !S.running) { S.running = true; S.last = 0; S.raf = requestAnimationFrame(loop); }
     else if (!go && S.running) { S.running = false; cancelAnimationFrame(S.raf); S.raf = 0; }
     if (active() && S.still) kick();
@@ -967,19 +1126,6 @@
 
   /* -------------------------------------------------------------------- mount */
   var resizeT = 0, roT = 0;
-  // NMSpace.whenReady(fn): fn runs once the space has started (or has failed); the sky waits on it so
-  // its first frame already turns with this camera
-  var readyQ = [];
-  api.whenReady = function (fn) { if (S.ready || S.dead) fn(); else readyQ.push(fn); };
-  function settled() {
-    readyQ.splice(0).forEach(function (fn) { try { fn(); } catch (e) { setTimeout(function () { throw e; }); } });
-  }
-  function gone(err) {
-    if (err) glFail(err);
-    if (canvas) canvas.remove();
-    api.canvas = null; S.dead = true;
-    settled();
-  }
   function mount() {
     if (S.mounted) return;
     S.mounted = true;
@@ -992,41 +1138,11 @@
     document.body.insertBefore(canvas, document.body.firstChild);
     api.canvas = canvas;
     S.still = reduceQ.matches;
-    // Built here, as it always was, so the first frame lands where it did and the homepage hero
-    // starts when it did (moved to a frame or tasks of their own, the start-up pushed back either
-    // the hero's or the space's on a throttled phone). Only the wait for the driver's compile is
-    // gone: the shaders go to the driver first and compile while the particles are made; in the
-    // rare case they are not done by then, their results are read at the next frame (a frame at
-    // a time, a timer in a hidden tab).
-    if (!glContext()) return gone();
-    try { glCompile(); measure(); glData(); } catch (e) { return gone(e); }
-    var done = false, polls = 0;
-    var boot = function (ts) {
-      if (done || !G.gl) return;
-      if (!glCompiled() && ++polls < 60) { if (document.hidden) setTimeout(boot, 16); else requestAnimationFrame(boot); return; }
-      done = true;
-      try { glLink(); } catch (e) { return gone(e); }
-      try { start(); } finally { settled(); }
-      // read at a frame: its first frame now, as the start at mount would have had it (not one later)
-      if (ts && S.running && G.ok) { S.last = 0; S.stepAt = -1; frame(ts); }
-    };
-    boot();
-    setTimeout(boot, 1000);   // (a tab hidden after the first look: go on)
-  }
-  function start() {
+    measure();
+    if (!glInit()) { canvas.remove(); api.canvas = null; return; }
     S.ready = true;
     relayout();
-    // the NM's targets: on the homepage at once (its preload has the file), elsewhere in idle
-    // time (the footer is a long scroll away), or once the footer comes near (gatherStep)
-    var asked = false;
-    var mark = S.markNow = function () {
-      if (asked) return;
-      asked = true;
-      loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); });
-    };
-    if (S.page === 'home') mark();
-    else if (window.requestIdleCallback) requestIdleCallback(mark, { timeout: 2000 });
-    else setTimeout(mark, 1200);
+    loadMark(function (g) { S.markMap = g; if (g) fillTargets(g); });
     addEventListener('resize', function () {
       clearTimeout(resizeT);
       resizeT = setTimeout(relayout, 140);
@@ -1048,7 +1164,7 @@
   /* ---------------------------------------------------------------------- API */
   api.set = function (o) {
     if (!o) return;
-    ['brightness', 'glow', 'motion', 'density'].forEach(function (k) { if (o[k] != null) opts[k] = Math.max(0, +o[k] || 0); });
+    ['brightness', 'glow', 'motion', 'density', 'push'].forEach(function (k) { if (o[k] != null) opts[k] = Math.max(0, +o[k] || 0); });
     if (o.quality != null) S.q = clamp(+o.quality, 0.2, 1);
     kick();
   };
@@ -1065,6 +1181,8 @@
       cam: { y: +CAM.y.toFixed(1), vy: +CAM.vy.toFixed(1), hp: +CAM.hp.toFixed(3), z: +CAM.z.toFixed(2), roll: +CAM.roll.toFixed(2),
         yaw: +(CAM.yaw * 57.3).toFixed(2), pitch: +(CAM.pitch * 57.3).toFixed(2), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], F: +CAM.F.toFixed(1),
         gather: +CAM.gather.toFixed(3), presence: +CAM.presence.toFixed(3), vP: +CAM.vP.toFixed(3), mark: CAM.mark && CAM.mark.map(Math.round) },
+      wake: (function (f) { return { on: wakeOK() && !lbOpen(), segs: wake.segs.length, live: f.n, speed: Math.round(wake.vs), push: opts.push,
+        peakPx: +(f.r[3] * f.r[1]).toFixed(2) }; })(frameOf(S.last || undefined)),
       stats: { frames: S.stats.frames, draws: S.stats.draws, avgMs: S.stats.frames ? +(S.stats.ms / S.stats.frames).toFixed(2) : 0,
         drawAvgMs: S.stats.draws ? +(S.stats.drawMs / S.stats.draws).toFixed(2) : 0, worstMs: +S.stats.worst.toFixed(1),
         gap: { p50: pct(0.5), p95: pct(0.95), p99: pct(0.99) } }

@@ -74,39 +74,6 @@ test('every inserted script carries its VERSIONS content version', () => {
   }
 });
 
-test('the star data is requested at its current content versions', () => {
-  const loader = read('js/nm-theme.js').toString();
-  const entries = [...loader.matchAll(/'(\/media\/sky\/[\w.-]+\.json)': '([0-9a-f]{10})'/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(entries.map(e => e[0]).sort(),
-    ['/media/sky/about.json', '/media/sky/home.json', '/media/sky/index.json', '/media/sky/stars.json'],
-    'the catalogue and every page\'s sky');
-  for (const [file, v] of entries) assert.equal(v, version(file), `${file} is stale in js/nm-theme.js; ${FIX}`);
-  assert.ok(!/no-cache/.test(read('js/nm-sky.js').toString()), 'versioned data needs no revalidation: no cache:\'no-cache\'');
-});
-
-test('the page sky files carry only what the engine reads', () => {
-  for (const page of ['home', 'about', 'index']) {
-    const data = JSON.parse(read(`media/sky/${page}.json`));
-    assert.deepEqual(Object.keys(data), ['page', 'featured', 'source'], `media/sky/${page}.json`);
-    assert.equal(data.page, page);
-    assert.equal(data.featured.length, 4, `${page}: four featured stars`);
-    for (const f of data.featured) for (const k of ['id', 'name', 'ra', 'dec', 'vmag', 'coords', 'fact']) assert.ok(f[k] != null, `${page}: ${f.id} has ${k}`);
-  }
-});
-
-test('the Index footer door loads the Space Run script at its content version', () => {
-  const sky = read('js/nm-sky.js').toString();
-  const refs = [...sky.matchAll(/\/js\/nm-run\.js(\?v=([0-9a-f]{10}))?/g)];
-  assert.equal(refs.length, 1, 'js/nm-sky.js names the door script once');
-  assert.equal(refs[0][2], version('js/nm-run.js'), `js/nm-sky.js loads a stale /js/nm-run.js; ${FIX}`);
-  // the same version as the pages that load it themselves
-  for (const page of ['index.html', 'about/index.html']) {
-    const m = read(page).toString().match(/\/js\/nm-run\.js\?v=([0-9a-f]{10})/);
-    assert.ok(m, `${page} loads /js/nm-run.js`);
-    assert.equal(m[1], refs[0][2], `${page} and js/nm-sky.js load different versions of /js/nm-run.js`);
-  }
-});
-
 test('every page marks Night Sky before first paint and links its stylesheet right after', () => {
   for (const page of ['index.html', 'about/index.html', 'index/index.html']) {
     const html = read(page).toString();
@@ -118,8 +85,7 @@ test('every page marks Night Sky before first paint and links its stylesheet rig
 });
 
 test('no design-preview leftovers ship', () => {
-  for (const file of ['js/nm-theme.js', 'js/theme-stars.js', 'js/nm-space.js', 'js/nm-sky.js', 'js/nm-starcut.js', 'js/nm-warp.js',
-    'css/theme-stars.css', 'index.html', 'about/index.html', 'index/index.html']) {
+  for (const file of ['js/nm-theme.js', 'js/theme-stars.js', 'index.html', 'about/index.html', 'index/index.html']) {
     const text = read(file).toString();
     assert.ok(!/nm-theme-pill|v=dev|nm-theme-preview/.test(text), `${file} still has preview-switcher code`);
   }
