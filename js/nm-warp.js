@@ -17,11 +17,15 @@
     home: ['#about', '#nm-brands', '#nm-services', '#nm-sites'],
     about: ['main#main > section:not(#contact)']
   };
-  // px/s: no dip below START, full dip at FULL. Tuned on trackpad-like flicks through Lenis (a fast
-  // flick ~53 px, ordinary wheel scrolling under 2 px, a slow two-finger scroll 0); the first
-  // tuning (1000/4500) needed flicks harder than Lenis's smoothing lets through, so it barely showed.
-  var START = 700, FULL = 1700;
-  var DIP = 90;                       // px the centre sags at full speed (desktop width)
+  // px/s of page speed: no dip below START, the full dip at FULL. The homepage scrolls through
+  // Lenis, which turns a swipe into a longer glide and moves the page a little faster than the
+  // gesture, so it has its own pair and reads its speed over a longer stretch. Tuned with Chrome's
+  // synthetic swipes (Input.synthesizeScrollGesture) so a swipe dips the same on every page:
+  // ~6 px at an ordinary 800 px/s, the full dip from ~2500 px/s.
+  var LENIS = page === 'home';
+  var START = LENIS ? 1400 : 700, FULL = LENIS ? 2100 : 1700;
+  var DIP = 45;                       // px the centre sags at full speed (desktop width); Nico halved it from 90 (2026-10-14)
+  var WINDOW = LENIS ? 250 : 100;     // ms of motion the speed is read over (the homepage: see LENIS)
   var NS = 'http://www.w3.org/2000/svg';
   // Safari (and every iOS browser, all WebKit) places a userSpaceOnUse filter region in page
   // coordinates, so a section far down the page rendered blank. WebKit gets the same filter in
@@ -30,7 +34,8 @@
   // it on the CPU, so a fast fling there is heavier than in Chrome; Chrome keeps user units.
   var ua = navigator.userAgent;
   var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
-  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, lastY = 0, vel = 0, warp = 0, raf = 0, moving = false;
+  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false;
+  var hist = [], seen = -1;   // recent [time, scrollY] pairs; how many sections the last list found
   var firstDt = 1 / 60, age = 0;
 
   // the curve: 0 at both edges, 1 in the middle (a soft rope sag)
@@ -64,6 +69,7 @@
       mapURL = buildMap();
     }
     svg.textContent = '';
+    seen = document.querySelectorAll(SECTIONS[page].join(',')).length;
     var n = 0;
     SECTIONS[page].forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (el) {
@@ -143,19 +149,26 @@
   // The easing rates below were tuned per 60 Hz frame. Each is applied as 1 - (1 - rate)^(dt * 60):
   // exactly the tuned rate for a 60 Hz frame, and the same pull per second at 120 Hz.
   function ease(rate, dt) { return 1 - Math.pow(1 - rate, dt * 60); }
+  // The scroll speed over the last WINDOW ms, in px/s: the distance moved since the newest sample
+  // at least that old. Steady at any frame rate, and one slow frame cannot fake a burst of speed
+  // (the homepage's smooth scrolling made per-frame readings jump between swipes).
+  function speed(t, y) {
+    hist.push(t, y);
+    while (hist.length > 4 && t - hist[2] >= WINDOW) hist.splice(0, 2);
+    var span = t - hist[0];
+    return span > 4 ? (y - hist[1]) / span * 1000 : 0;
+  }
   function frame(t) {
     raf = 0;
     var dt = last ? Math.min(.05, (t - last) / 1000) : firstDt;
     last = t; age += dt;
-    var y = window.scrollY;
-    if (dt > 0) vel += ((y - lastY) / dt - vel) * ease(.4, dt);
-    lastY = y;
+    vel = speed(t, window.scrollY);
     var a = Math.abs(vel);
     var target = a <= START ? 0 : Math.min(1, (a - START) / (FULL - START)) * (vel > 0 ? 1 : -1);
     // quick to sag, slower to spring back, like a rope settling
     warp += (target - warp) * ease(Math.abs(target) > Math.abs(warp) ? .45 : .1, dt);
     // stay at least one 60 Hz frame before giving up, so a fast screen judges the speed as fully as 60 Hz
-    if (Math.abs(warp) < .004 && target === 0 && age > .014) { warp = 0; apply(0); moving = false; last = 0; vel = 0; return; }
+    if (Math.abs(warp) < .004 && target === 0 && age > .014) { warp = 0; apply(0); moving = false; last = 0; vel = 0; hist = []; return; }
     apply(warp);
     raf = requestAnimationFrame(frame);
   }
@@ -169,17 +182,17 @@
     var now = performance.now(), y = window.scrollY, tl = document.timeline, f = tl && tl.currentTime;
     if (typeof f !== 'number') f = now;   // the frame's time
     var recent = now - evT < 120;
-    kick(recent ? evY : y, recent ? f - evF : 0);
+    kick(recent ? evY : y, recent ? evF : f);
     evY = y; evT = now; evF = f;
   }
-  function kick(fromY, gap) {
+  function kick(fromY, fromT) {
     if (reduce && reduce.matches) return;
-    // Home and About: list the sections afresh at the start of every swipe. On the homepage most
-    // of them (brands, services, sites) are added by script after this file starts, so a list
-    // taken once at start-up could hold only the statement, the one section that then dipped.
-    if (!moving && page !== 'index') collect();
+    // Home and About: on the homepage most sections (brands, services, sites) are added by script
+    // after this file starts, so a list taken at start-up could hold only the statement. Re-list
+    // them when a swipe starts and their number has changed.
+    if (!moving && page !== 'index' && document.querySelectorAll(SECTIONS[page].join(',')).length !== seen) collect();
     else if (!items.length) collect();
-    if (!moving) { moving = true; lastY = fromY; last = 0; age = 0; firstDt = gap > 0 && gap < 12.5 ? Math.max(1 / 240, gap / 1000) : 1 / 60; }
+    if (!moving) { moving = true; hist = [fromT, fromY]; last = 0; age = 0; firstDt = 1 / 60; }
     if (!raf) raf = requestAnimationFrame(frame);
   }
   function start() {
