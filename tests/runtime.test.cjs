@@ -428,12 +428,12 @@ test('idle mouse trails stop clearing and uploading the canvas texture after the
 
 // The hero's Night Sky backdrop (nmClear): the space and sky canvases are copied into textures every
 // other frame (one canvas a frame in Safari), and not again while their draw counter has not moved.
-function backdropRun({ webkit = false, counters = true, frames = 12, draws = () => [0, 0] } = {}) {
+function backdropRun({ webkit = false, counters = true, frames = 12, draws = () => [0, 0], resize = () => {}, made = null } = {}) {
   const bundle = homeBundle();
   const source = bundle.slice(bundle.indexOf('let nmBd={'), bundle.indexOf('function tO('));
   const uploads = [];
   class Texture {
-    constructor(image) { this.image = image; this.i = image.id; }
+    constructor(image) { this.image = image; this.i = image.id; if (made) made.push([frame, image.id, image.width]); }
     set needsUpdate(v) { if (v) uploads.push([frame, this.i]); }
     dispose() {}
   }
@@ -456,6 +456,7 @@ function backdropRun({ webkit = false, counters = true, frames = 12, draws = () 
   for (frame = 1; frame <= frames; frame++) {
     const [a, b] = draws(frame);   // draws each layer made before this hero frame
     if (counters) { NMSpace.drawN += a; NMSky.drawN += b; }
+    resize(frame, space, sky);
     nmClear(U, g, 0);
   }
   return uploads.map(u => u.join(':'));
@@ -475,4 +476,15 @@ test('the hero copies a backdrop canvas only when it has drawn since its last co
   // Safari: still one canvas a frame, alternating, and only when it drew
   assert.deepEqual(backdropRun({ webkit: true, frames: 6, draws: () => [1, 1] }), ['1:0', '1:1', '2:1', '3:0', '4:1', '5:0', '6:1']);
   assert.deepEqual(backdropRun({ webkit: true, frames: 6 }), ['1:0', '1:1']);
+});
+
+test('the hero makes a new backdrop texture when a canvas changes size', () => {
+  // the sky can be sized after the hero's first frame (a slow load, or the window growing): its
+  // texture must follow, or every later upload overflows the old one and the stars behind the
+  // hero stop updating
+  const made = [];
+  const uploads = backdropRun({ frames: 6, draws: () => [1, 1], made, resize: (f, space, sky) => { if (f === 4) sky.width = 300; } });
+  assert.deepEqual(made, [[1, 0, 100], [1, 1, 100], [4, 1, 300]]);
+  // the new texture is filled at once, then back on the every-other-frame cadence
+  assert.deepEqual(uploads, ['1:0', '1:1', '3:0', '3:1', '4:1', '5:0', '5:1']);
 });
