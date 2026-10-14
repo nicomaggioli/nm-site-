@@ -49,11 +49,15 @@
      .debug()       camera, featured-star positions and open-sky tests, events, timings
      .at(y)         where the featured stars sit with the camera settled at scroll y
      .openSky(x,y)  true when nothing but sky is painted at that viewport point
+     .drawN         sky draws so far
 
    Budget: a few thousand points per frame; display rate while the camera glides or the
-   pointer's wake settles, ~30 fps while it only floats; stops in hidden tabs and while Cloud
-   Run is open; one still frame (no float, spin, dolly, events or wake) under
-   prefers-reduced-motion. */
+   pointer's wake settles, ~30 fps while it only floats, on the same frames as the particle space
+   (NMSpace.tick); stops in hidden tabs and while Cloud Run is open; one still frame (no float,
+   spin, dolly, events or wake) under prefers-reduced-motion. The data comes early from
+   js/nm-theme.js (window.__nmSkyData); start-up runs a step per task; the overlay is hidden
+   while blank; the header scrim is decided from cached content boxes. Notes: docs/night-sky.md,
+   "Performance". */
 (function () {
   'use strict';
   if (window.NMSky) return;
@@ -107,7 +111,7 @@
     [4, 10], [10, 5], [6, 14], [14, 11], [11, 7], [14, 5]];
   var NM_LABEL = { name: 'NM', designation: 'Nico Maggioli', coords: '42.3601° N · 71.0589° W', distance: 'Boston, MA', fact: '' };
 
-  var api = window.NMSky = { canvas: null, fx: null, page: null, version: 4 };
+  var api = window.NMSky = { canvas: null, fx: null, page: null, version: 4, drawN: 0 };
   var opts = { brightness: 1, twinkle: 1, motion: 1 };
 
   /* ------------------------------------------------------------------ helpers */
@@ -367,15 +371,18 @@
   function mLo(b) { return -1.75 + b * 0.5; }
   function mBin(m) { return clamp(Math.floor((m + 1.75) / 0.5), 0, SB - 1); }
   function cBin(bv) { return clamp(Math.floor((bv + 0.4) / 0.3), 0, CBN - 1); }
-  function renderSprite(m, bv, peakScale, haloOnly, tint) {
+  // a sprite's radius in device px
+  function spriteR(m) {
+    var d = S.dpr, pf = profile(m);
+    return Math.max(1, Math.ceil(Math.max(pf.sc * d * 2.8, pf.w ? pf.sw * d * 3 : 0, pf.ha ? pf.hr * d * 3.2 : 0)));
+  }
+  // its pixels, written into px (RGBA, row stride W px) with its top-left at (ox, oy)
+  function paintSprite(px, W, ox, oy, m, bv, peakScale, haloOnly, tint) {
     var d = S.dpr, pf = profile(m), sc = pf.sc * d, sw = pf.sw * d, hr = pf.hr * d;
-    var peak = peakOf(m) * peakScale;
-    var R = Math.max(1, Math.ceil(Math.max(sc * 2.8, pf.w ? sw * 3 : 0, pf.ha ? hr * 3.2 : 0)));
-    var s = 2 * R + 1, c = document.createElement('canvas');
-    c.width = c.height = s;
-    var x = c.getContext('2d'), img = x.createImageData(s, s), px = img.data;
-    var rgb = tint || starRgb(bv, m), i = 0;
+    var peak = peakOf(m) * peakScale, R = spriteR(m);
+    var rgb = tint || starRgb(bv, m);
     for (var yy = -R; yy <= R; yy++) {
+      var i = ((oy + yy + R) * W + ox) * 4;
       for (var xx = -R; xx <= R; xx++, i += 4) {
         var r2 = xx * xx + yy * yy, v = haloOnly ? 0 : peak * Math.exp(-r2 / (2 * sc * sc));
         if (pf.w) v += pf.w * peakScale * Math.exp(-r2 / (2 * sw * sw));
@@ -384,26 +391,41 @@
         px[i] = 255 * rgb[0]; px[i + 1] = 255 * rgb[1]; px[i + 2] = 255 * rgb[2]; px[i + 3] = Math.round(255 * v);
       }
     }
+  }
+  function renderSprite(m, bv, peakScale, haloOnly, tint) {
+    var R = spriteR(m), s = 2 * R + 1, c = document.createElement('canvas');
+    c.width = c.height = s;
+    var x = c.getContext('2d'), img = x.createImageData(s, s);
+    paintSprite(img.data, s, 0, 0, m, bv, peakScale, haloOnly, tint);
     x.putImageData(img, 0, 0);
     return { img: c, sx: 0, sy: 0, s: s, R: R };
   }
+  // The binned sprites, laid out in rows in one canvas and painted in a single pixel buffer (one
+  // putImageData; the same pixels as painting each on its own canvas and copying it in).
   function buildAtlas() {
     var list = [], ax = 0, ay = 0, rowH = 0, AW = 512;
     for (var b = 0; b < SB; b++) {
       for (var c = 0; c < CBN; c++) {
-        var sp = renderSprite(mLo(b), -0.25 + c * 0.3, HEAD, false, null);
-        if (ax + sp.s > AW) { ax = 0; ay += rowH + 1; rowH = 0; }
-        sp.sx = ax; sp.sy = ay; ax += sp.s + 1; rowH = Math.max(rowH, sp.s);
-        list.push(sp);
+        var R = spriteR(mLo(b)), s = 2 * R + 1;
+        if (ax + s > AW) { ax = 0; ay += rowH + 1; rowH = 0; }
+        list.push({ img: null, sx: ax, sy: ay, s: s, R: R, m: mLo(b), bv: -0.25 + c * 0.3 });
+        ax += s + 1; rowH = Math.max(rowH, s);
       }
     }
     var cv = document.createElement('canvas');
     cv.width = AW; cv.height = ay + rowH + 1;
-    var x = cv.getContext('2d');
-    list.forEach(function (sp) { x.drawImage(sp.img, sp.sx, sp.sy); sp.img = cv; });
+    var x = cv.getContext('2d'), img = x.createImageData(cv.width, cv.height);
+    list.forEach(function (sp) { paintSprite(img.data, AW, sp.sx, sp.sy, sp.m, sp.bv, HEAD, false, null); sp.img = cv; });
+    x.putImageData(img, 0, 0);
     // tinted cores for the colour flashes of the brightest stars: blue, red, green
     var flash = [[0.55, 0.72, 1], [1, 0.5, 0.38], [0.62, 1, 0.68]].map(function (t) { return renderSprite(1.2, 0, 1, false, t); });
-    atlas = { canvas: cv, bins: list, flash: flash, own: {} };
+    atlas = { canvas: cv, bins: list, flash: flash, own: {}, dpr: S.dpr };
+  }
+  // the atlas for the current dpr (built once off the mount task; again when the dpr changes)
+  function ensureAtlas() {
+    if (atlas && atlas.dpr === S.dpr) return;
+    buildAtlas(); consSprites();
+    if (S.cat) S.cat.forEach(function (s) { s.sp = null; });
   }
   function binSprite(m, bv) { return atlas.bins[mBin(m) * CBN + cBin(bv)]; }
   function baseAlpha(m) { return peakOf(m) / (peakOf(mLo(mBin(m))) * HEAD); }
@@ -411,10 +433,16 @@
     var key = m.toFixed(2) + '/' + bv.toFixed(2);
     return atlas.own[key] || (atlas.own[key] = { core: renderSprite(m, bv, 1, false, null), flare: renderSprite(m, bv, 1, true, null) });
   }
+  var BOX = null;   // while set, [x0, y0, x1, y1]: grown by every sprite drawn (the overlay's next clear)
+  function boxAdd(x0, y0, x1, y1) {
+    if (x0 < BOX[0]) BOX[0] = x0; if (y0 < BOX[1]) BOX[1] = y0;
+    if (x1 > BOX[2]) BOX[2] = x1; if (y1 > BOX[3]) BOX[3] = y1;
+  }
   function blit(c, sp, xd, yd, a) {
     if (a <= 0.004) return;
     c.globalAlpha = a > 1 ? 1 : a;
     c.drawImage(sp.img, sp.sx, sp.sy, sp.s, sp.s, xd - sp.R, yd - sp.R, sp.s, sp.s);
+    if (BOX) boxAdd(xd - sp.R, yd - sp.R, xd - sp.R + sp.s, yd - sp.R + sp.s);
   }
 
   /* ----------------------------------------------------------------- twinkle */
@@ -492,6 +520,7 @@
     S.sig = sig;
     buildPath();
     buildMask();
+    veilBuildSoon();
     kick();
   }
 
@@ -526,7 +555,7 @@
     while ((n = walk.nextNode())) {
       if (!/\S/.test(n.data)) continue;
       var el = n.parentElement;
-      if (!el || el.closest('script,style,noscript,header,.nm-hdr,.nm-sky-label,#nm-theme-pill,[aria-hidden="true"] svg')) continue;
+      if (!el || el.closest('script,style,noscript,header,.nm-hdr,.nm-sky-label,[aria-hidden="true"] svg')) continue;
       var cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') continue;
       var fixed = false, stickyEl = null;
@@ -636,44 +665,50 @@
     '}'
   ].join('\n');
 
+  // The context and the star shader handed to the driver (glInit: compiled in parallel, not waited
+  // for), then a task or more later its result, uniforms and the star buffers (glReady). A lost
+  // context comes back with both at once.
   function glInit() {
-    if (G.gl || G.failed) return G.ok;
+    if (G.gl || G.failed) return !!G.gl;
     try {
       var gl = canvas.getContext('webgl', { alpha: true, antialias: false, depth: false, stencil: false, premultipliedAlpha: true,
         preserveDrawingBuffer: S.page === 'home', powerPreference: 'default' });
       if (!gl) throw new Error('no webgl');
       G.gl = gl;
-      glBuild();
+      glCompile();
       canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); G.ok = false; G.lost = true; });
-      canvas.addEventListener('webglcontextrestored', function () { G.lost = false; try { glBuild(); kick(); } catch (err) { G.ok = false; } });
-    } catch (err) {
-      G.failed = true; G.ok = false; G.gl = null;
-      console.warn('[nm-sky] WebGL sky unavailable, drawing a simpler one:', err && err.message);
-    }
-    return G.ok;
+      canvas.addEventListener('webglcontextrestored', function () { G.lost = false; try { glCompile(); glBuild(); kick(); } catch (err) { G.ok = false; } });
+      return true;
+    } catch (err) { glFailed(err); return false; }
   }
-  function glBuild() {
+  function glReady() {
+    if (!G.gl) return false;
+    try { glBuild(); return true; } catch (err) { glFailed(err); return false; }
+  }
+  function glFailed(err) {
+    G.failed = true; G.ok = false; G.gl = null;
+    console.warn('[nm-sky] WebGL sky unavailable, drawing a simpler one:', err && err.message);
+  }
+  function glCompile() {
     var gl = G.gl;
-    var sh = function (type, src) {
-      var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o);
-      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
-      return o;
-    };
-    var prog = function (vs, fs, attrs, unis) {
-      var p = gl.createProgram();
-      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
-      attrs.forEach(function (a, i) { gl.bindAttribLocation(p, i, a); });
-      gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(p));
-      var u = {};
-      unis.forEach(function (n) { u[n] = gl.getUniformLocation(p, n); });
-      return { p: p, u: u, n: attrs.length };
-    };
-    var pr = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
-    G.maxPt = pr && pr[1] ? pr[1] : 64;
+    var sh = function (type, src) { var o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
     var W = wakeOf();
     G.wake = W;
-    G.P.star = prog(starVS(W), STAR_FS, ['aDir', 'aMag', 'aCol', 'aTw'], ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk'].concat(W ? W.uniforms : []));
+    var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, starVS(W)), f = sh(gl.FRAGMENT_SHADER, STAR_FS);
+    gl.attachShader(p, v); gl.attachShader(p, f);
+    ['aDir', 'aMag', 'aCol', 'aTw'].forEach(function (a, i) { gl.bindAttribLocation(p, i, a); });
+    gl.linkProgram(p);
+    G.P.star = { p: p, sh: [v, f], u: {}, n: 4, unis: ['uRot', 'uView', 'uPP', 'uK', 'uNM', 'uNMk'].concat(W ? W.uniforms : []) };
+  }
+  function glBuild() {
+    var gl = G.gl, P = G.P.star;
+    P.sh.forEach(function (o) {
+      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error(gl.getShaderInfoLog(o));
+    });
+    if (!gl.getProgramParameter(P.p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error(gl.getProgramInfoLog(P.p));
+    P.unis.forEach(function (n) { P.u[n] = gl.getUniformLocation(P.p, n); });
+    var pr = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
+    G.maxPt = pr && pr[1] ? pr[1] : 64;
     var buf = function (data, usage) { var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, usage || gl.STATIC_DRAW); return b; };
     // the catalogue: faint (static) and scintillating (with a per-frame twinkle buffer)
     var pack = function (list) {
@@ -770,6 +805,7 @@
     if (G.ok && !G.lost) drawGL(time);
     else if (S.c2d) draw2D(time);
     S.stats.draws++;
+    api.drawN++;
     if (!S.shown) {
       S.shown = true;
       canvas.style.transition = S.still ? 'none' : 'opacity 1.2s ease';
@@ -844,26 +880,265 @@
   // The header's dark gradient exists so the nav stays readable over content. Over open
   // sky it would only hide stars, so it is lifted (html.nm-sky-clear) while nothing but
   // sky passes under the header band, and returns the moment content does.
-  var veil = { t: 0, last: 0, clear: null, y: -1 };
+  // While the page scrolls it is decided every frame from a cache of the page's content boxes in
+  // document px (veilBuild, at layout: what openSky() counts as content: lines of text, media,
+  // filled or ruled boxes, controls), along the nine columns and over the rows the probes use,
+  // stretched ahead in the direction of travel (VEIL_LEAD s of the scroll's speed, never past
+  // where the scroll will stop: the page's end, or a smooth scroll's target), so the scrim is
+  // back as content arrives rather than a moment after it. Sticky sections move against the
+  // page: their content is cached relative to them (About's résumé heading, also where it will be
+  // once it lets go), or, where something inside moves on its own (the homepage's collage), the
+  // probes decide there (the frame it reaches the band, then each 140 ms over content, each
+  // 60 ms over sky). When the scroll comes to rest the probes (checkVeil's 27
+  // elementsFromPoint reads) decide, as before, and check the cache: it is built again if they
+  // disagree. Before the cache exists the probes decide alone.
+  var VX = [0.015, 0.12, 0.25, 0.38, 0.5, 0.62, 0.75, 0.88, 0.985];
+  var VEIL_LEAD = 0.3, VEIL_B = 256;
+  var veil = { t: 0, last: 0, clear: null, y: -1, at: 0, v: 0, moved: 0, hb: 0, box: null, live: [], queued: false, bad: -1e9 };
+  function headerBand() {
+    if (!headerEl || !headerEl.isConnected) headerEl = document.querySelector('header[data-nm-header], .nm-hdr');
+    return headerEl ? Math.min(headerEl.getBoundingClientRect().bottom, 150) : 0;
+  }
+  function heroShown() {   // the hero's WebGL canvas is drawing (nm-scenes hides its wrapper when paused)
+    var gc = heroCanvas.parentElement && heroCanvas.closest('#global-canvas');
+    return gc ? gc.style.visibility !== 'hidden' : getComputedStyle(heroCanvas).visibility !== 'hidden';
+  }
+  function heroCovers() { return !!heroCanvas && heroZone() && (window.scrollY || 0) > S.vh * 0.1 && heroShown(); }
+  function veilSet(clear) { if (clear !== veil.clear) { veil.clear = clear; root.classList.toggle('nm-sky-clear', clear); } }
+  // the probes: is the header band (rows at 35%, 70% and the bottom) clear at this moment
+  function probeClear(hb, inside) {
+    var ys = [hb * 0.35, hb * 0.7, hb - 3];
+    for (var a = 0; a < ys.length; a++) for (var b = 0; b < VX.length; b++) {
+      var x = VX[b] * S.vw, y = ys[a];
+      if (inside && !(x >= inside.left && x <= inside.right && y >= inside.top && y <= inside.bottom)) continue;
+      if (!openSky(x, y, hb)) return false;
+    }
+    return true;
+  }
   function checkVeil() {
     veil.last = performance.now();
-    if (!headerEl || !headerEl.isConnected) headerEl = document.querySelector('header[data-nm-header], .nm-hdr');
+    var hb = veil.hb = headerBand();
     if (!headerEl) return;
-    var hb = Math.min(headerEl.getBoundingClientRect().bottom, 150), clear = true;
-    if (hb <= 0) clear = true;
-    else if (heroCanvas && heroZone() && getComputedStyle(heroCanvas).visibility !== 'hidden' && (window.scrollY || 0) > S.vh * 0.1) clear = false;
-    else {
-      var ys = [hb * 0.35, hb * 0.7, hb - 3], xs = [0.015, 0.12, 0.25, 0.38, 0.5, 0.62, 0.75, 0.88, 0.985];
-      for (var a = 0; a < ys.length && clear; a++) for (var b = 0; b < xs.length; b++) {
-        if (!openSky(xs[b] * S.vw, ys[a], hb)) { clear = false; break; }
-      }
-    }
-    if (clear !== veil.clear) { veil.clear = clear; root.classList.toggle('nm-sky-clear', clear); }
+    veilSet(hb <= 0 || !heroCovers() && probeClear(hb, null));
   }
   function veilSoon() {
     clearTimeout(veil.t);
     var wait = Math.max(0, 140 - (performance.now() - veil.last));
     veil.t = setTimeout(checkVeil, wait);
+  }
+  /* The cache: entries { l, r, t, b, k, g } in document px, k 0 a box (covered where it meets the
+     band), 1 a top rule and 2 a bottom rule (covered while the line lies in the band), g the
+     element when it was under 5% opacity (openSky skips it then: checked live), filed in
+     VEIL_B px buckets of document height. */
+  function veilBuild() {
+    veil.queued = false;
+    if (!S.ready || !document.body) return;
+    var t0 = performance.now();
+    veil.hb = headerBand();
+    var sy = window.scrollY || 0, box = [], live = [], inf = 1e9, into = null;
+    var file = function (l, t, r, b, k, g, clip, other) {
+      l = Math.max(l, clip[0]); r = Math.min(r, clip[2]);
+      if (k === 0) { t = Math.max(t, clip[1]); b = Math.min(b, clip[3]); }
+      else if (t < clip[1] || t > clip[3]) return;
+      if (r < l || b < t) return;
+      // (a rule's box, from its line to the other edge: where a probe can hit it)
+      var e = { l: l, r: r, t: t, b: b, k: k, g: g, o: other == null ? t : other };
+      if (into) { into.list.push(e); return; }
+      for (var i = Math.max(0, Math.floor(t / VEIL_B)), n = Math.floor(b / VEIL_B); i <= n; i++) (box[i] || (box[i] = [])).push(e);
+    };
+    var visit = function (el, clip) {
+      if (el === headerEl || own(el)) return;
+      var tag = el.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'TEMPLATE') return;
+      var cs = getComputedStyle(el);
+      if (cs.display === 'none') return;
+      var pos = cs.position;
+      if (pos === 'fixed') return;   // overlays (menus, the lightbox, the hero canvas): above the page, not in it
+      if (pos === 'sticky' && !into) {
+        // moves against the page: its content is filed relative to it (it moves as one), unless
+        // something inside it moves on its own (a transform: the homepage collage), where the
+        // probes decide
+        var pr = el.parentElement ? el.parentElement.getBoundingClientRect() : el.getBoundingClientRect();
+        var L = { el: el, pt: pr.top + sy, pb: pr.bottom + sy, top0: el.getBoundingClientRect().top + sy, list: [], rigid: true,
+          on: false, at: 0, hit: false, last: null };
+        live.push(L);
+        into = L; body(el, cs, clip, tag); into = null;
+        return;
+      }
+      if (into && (cs.transform !== 'none' || cs.animationName !== 'none')) into.rigid = false;
+      body(el, cs, clip, tag);
+    };
+    var body = function (el, cs, clip, tag) {
+      var hit = cs.visibility === 'visible' && cs.pointerEvents !== 'none';
+      var g = +cs.opacity < 0.05 ? el : null, r = null;
+      var rect = function () { return r || (r = el.getBoundingClientRect()); };
+      if (MEDIA.test(tag) || el instanceof SVGElement) {   // media count whatever their opacity
+        if (hit) { rect(); if (r.width && r.height) file(r.left, r.top + sy, r.right, r.bottom + sy, 0, null, clip); }
+        return;
+      }
+      if (hit && cs.animationName !== 'none') {   // a moving part (the logo strip) counts as a whole
+        rect(); if (r.width && r.height) file(r.left, r.top + sy, r.right, r.bottom + sy, 0, g, clip);
+        return;
+      }
+      if (hit) {
+        var on = function (w, c) { return parseFloat(w) > 0 && alphaOf(c) > 0.1; };
+        if (alphaOf(cs.backgroundColor) > 0.2 || cs.backgroundImage !== 'none' || el.matches(INTERACTIVE) ||
+            on(cs.borderLeftWidth, cs.borderLeftColor) || on(cs.borderRightWidth, cs.borderRightColor)) {
+          rect(); if (r.width || r.height) file(r.left, r.top + sy, r.right, r.bottom + sy, 0, g, clip);
+        } else {
+          // a hairline across the band (ruleIn): the line, with the box it bounds
+          if (on(cs.borderTopWidth, cs.borderTopColor)) { rect(); file(r.left, r.top + sy, r.right, r.top + sy, 1, g, clip, r.bottom + sy); }
+          if (on(cs.borderBottomWidth, cs.borderBottomColor)) { rect(); file(r.left, r.bottom + sy, r.right, r.bottom + sy, 2, g, clip, r.top + sy); }
+        }
+        // its own lines of text, with textAt's margins, where the element itself is hit
+        for (var n = el.firstChild; n; n = n.nextSibling) {
+          if (n.nodeType !== 3 || !/\S/.test(n.data)) continue;
+          textRange.selectNodeContents(n);
+          var rs = textRange.getClientRects();
+          if (!rs.length) continue;
+          rect();
+          for (var j = 0; j < rs.length; j++) {
+            file(Math.max(rs[j].left - 6, r.left), Math.max(rs[j].top - 4, r.top) + sy, Math.min(rs[j].right + 6, r.right), Math.min(rs[j].bottom + 4, r.bottom) + sy, 0, g, clip);
+          }
+        }
+      }
+      // what it clips, its children cannot be hit outside of
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible' || /paint|strict|content/.test(cs.contain)) {
+        rect();
+        clip = [Math.max(clip[0], r.left), Math.max(clip[1], r.top + sy), Math.min(clip[2], r.right), Math.min(clip[3], r.bottom + sy)];
+        if (clip[2] < clip[0] || clip[3] < clip[1]) return;
+      }
+      for (var c = el.firstElementChild; c; c = c.nextElementSibling) visit(c, clip);
+    };
+    try {
+      for (var c = document.body.firstElementChild; c; c = c.nextElementSibling) visit(c, [-inf, -inf, inf, inf]);
+    } catch (e) { veil.box = null; return; }
+    veil.box = box; veil.live = live; veil.ms = performance.now() - t0;
+  }
+  function veilBuildSoon() {
+    if (veil.queued) return;
+    veil.queued = true;
+    later(function () { veilBuild(); if (veil.box && !veil.moved && S.running) veilVerify(performance.now()); });
+  }
+  // an entry of list that passes test(e) and lies on one of the columns
+  function veilAny(list, test) {
+    var xs = VX, vw = S.vw;
+    for (var j = 0; j < list.length; j++) {
+      var e = list[j];
+      if (!test(e)) continue;
+      var col = false;
+      for (var x = 0; x < xs.length; x++) { var px = xs[x] * vw; if (px >= e.l && px <= e.r) { col = true; break; } }
+      if (!col) continue;
+      if (e.g && +getComputedStyle(e.g).opacity < 0.05) continue;
+      return true;
+    }
+    return false;
+  }
+  // the same over the entries filed in document y0..y1
+  function veilScan(y0, y1, test) {
+    var box = veil.box;
+    for (var i = Math.max(0, Math.floor((y0 - 2) / VEIL_B)), n = Math.floor((y1 + 2) / VEIL_B); i <= n; i++) {
+      if (box[i] && veilAny(box[i], test)) return true;
+    }
+    return false;
+  }
+  // content over the rows y0..y1 (document px) under the header band b0..b1 (a rule: its line
+  // in the band and its box over the rows, as ruleIn)
+  function bandTest(y0, y1, b0, b1) {
+    return function (e) {
+      return e.k === 0 ? e.b >= y0 && e.t <= y1
+        : e.k === 1 ? e.t >= b0 - 2 && e.t <= b1 && e.o >= y0 && e.t <= y1
+        : e.t >= b0 && e.t <= b1 + 2 && e.t >= y0 && e.o <= y1;
+    };
+  }
+  function veilHit(y0, y1, b0, b1) { return veilScan(Math.min(y0, b0), Math.max(y1, b1), bandTest(y0, y1, b0, b1)); }
+  // what the probes' row at document y sees with the header band at sy..sy+hb (ruleIn's test)
+  function veilRow(y, sy, hb) {
+    return veilScan(sy, sy + hb, function (e) {
+      return e.k === 0 ? e.t <= y && e.b >= y
+        : e.k === 1 ? e.t >= sy - 2 && e.t <= sy + hb && y >= e.t && y <= e.o
+        : e.t >= sy && e.t <= sy + hb + 2 && y >= e.o && y <= e.t;
+    });
+  }
+  // the sticky sections near the band, where they are now: their own entries moved with them (the
+  // band stretched ahead only while one moves with the page), or the probes where something inside
+  // moves on its own (the frame it reaches the band, then as below)
+  function veilLive(now, y, y0, y1, b0, b1) {
+    var hit = false, hb = veil.hb;
+    for (var i = 0; i < veil.live.length; i++) {
+      var L = veil.live[i];
+      if (!L.el.isConnected) { L.on = false; veilBuildSoon(); continue; }   // (replaced: build again)
+      if (L.pb < b0 || L.pt > b1) { L.on = false; L.last = null; continue; }
+      var r = L.el.getBoundingClientRect(), rt = r.top, moving = L.last != null && Math.abs(rt - L.last) > 0.5;
+      L.last = rt;
+      // stuck now while the page scrolls down: where it will be once it lets go, within the lead
+      var pt = !moving && veil.v > 0 ? Math.min(rt, L.pb - r.height - y1 + hb) : rt;
+      var a0 = moving ? y0 : y + hb * 0.35, a1 = moving ? y1 : y + hb, c0 = moving ? b0 : y, c1 = moving ? b1 : y + hb;
+      if (r.bottom + y < c0 || pt + y > c1 || !r.width) { L.on = false; continue; }
+      if (L.rigid) {
+        var off = rt + y - L.top0, t0 = L.top0 - rt;
+        L.on = true;
+        if (moving ? veilAny(L.list, bandTest(a0 - off, a1 - off, c0 - off, c1 - off))
+            : veilAny(L.list, bandTest(t0 + hb * 0.35, L.top0 - pt + hb, t0, L.top0 - pt + hb))) hit = true;
+        continue;
+      }
+      if (r.bottom <= 0 || r.top >= hb) { L.on = false; continue; }
+      // (again every 140 ms while it covers the band; while it does not, every 60 ms (the probes
+      // cost ~2 ms on a throttled phone), so content moving in is seen within a few frames, still
+      // well inside the 140 ms the probes alone took)
+      if (!L.on || now - L.at > (L.hit ? 140 : 60)) { L.on = true; L.at = now; L.hit = !probeClear(hb, r); }
+      hit = hit || L.hit;
+    }
+    return hit;
+  }
+  // every frame: the scrim while the page scrolls, and the probes' check once it comes to rest
+  function veilTick(now) {
+    var y = window.scrollY || 0;
+    if (!veil.box) {   // no cache yet: the probes, at most every 140 ms
+      if (Math.abs(y - veil.y) > 0.5) { veil.y = y; veilSoon(); }
+      return;
+    }
+    var dy = y - veil.y, dt = now - veil.at;
+    if (Math.abs(dy) > 0.5) {
+      var v = veil.y >= 0 && dt > 0 && dt < 250 ? dy / dt * 1000 : 0;
+      veil.v += (v - veil.v) * 0.5;
+      veil.y = y; veil.at = now; veil.moved = now;
+    } else {   // at rest: nothing to do but, once, the probes' check
+      if (veil.moved && now - veil.moved > 150) { veil.moved = 0; veil.v = 0; veil.at = now; veilVerify(now); }
+      return;
+    }
+    var hb = veil.hb;
+    if (hb <= 0) { veilSet(true); return; }
+    if (heroCovers()) { veilSet(false); return; }
+    // the probes' rows (35% of the band down to its bottom), stretched ahead
+    var lead = Math.min(Math.abs(veil.v) * VEIL_LEAD, S.vh * 0.6);
+    // no further than the scroll will go: the page's end, or where a smooth scroll (the
+    // homepage's Lenis) comes to rest, so the scrim lifts there as soon as it did before
+    var left = veil.v > 0 ? S.maxY - y : y, ln = window.__nmLenis;
+    if (ln && ln.isScrolling === 'smooth' && isFinite(ln.targetScroll)) left = Math.min(left, (ln.targetScroll - y) * (veil.v > 0 ? 1 : -1));
+    lead = Math.min(lead, Math.max(0, left));
+    var y0 = y + hb * 0.35 - (veil.v < 0 ? lead : 0), y1 = y + hb + (veil.v > 0 ? lead : 0);
+    var b0 = y - (veil.v < 0 ? lead : 0), b1 = y + hb + (veil.v > 0 ? lead : 0);
+    // a fast fling: the warp sags what moves (nm-warp, up to 90 px); not where the scroll stops
+    // (the page's end, a smooth scroll's target): decided there as at rest, as the probes did
+    if (Math.abs(veil.v) > 900 && left > 1) { y0 -= 90; y1 += 90; b0 -= 90; b1 += 90; }
+    veilSet(!veilHit(y0, y1, b0, b1) && !veilLive(now, y, y0, y1, b0, b1));
+  }
+  // at rest: the probes check the cache at their own points; built again where they disagree
+  function veilVerify(now) {
+    var hb = veil.hb = headerBand(), y = window.scrollY || 0;
+    veil.last = performance.now();
+    if (hb <= 0) { veilSet(true); return; }
+    if (heroCovers()) { veilSet(false); return; }
+    var probe = probeClear(hb, null), cached = true;
+    var ys = [hb * 0.35, hb * 0.7, hb - 3];
+    for (var a = 0; a < ys.length && cached; a++) if (veilRow(y + ys[a], y, hb)) cached = false;
+    if (cached && veilLive(now, y, y + hb * 0.35, y + hb, y, y + hb)) cached = false;
+    // at rest the probes decide, as they always did; if the cache saw it differently it is out of
+    // date (something moved, opened or loaded) and is built again (once per place: where it cannot
+    // agree, as at a text's margin, the probes go on deciding at rest)
+    veilSet(probe);
+    if (probe !== cached && Math.abs(y - veil.bad) > 2) { veil.bad = y; veilBuildSoon(); }
   }
 
   /* -------------------------------------------------------------------- label */
@@ -892,6 +1167,7 @@
     label.on = true; label.since = performance.now(); label.sy = window.scrollY || 0;
     placeLabel();
     labelEl.classList.add('is-on');
+    fxShow(true);   // (its reticle goes on the overlay)
     kick();
   }
   function hideLabel() {
@@ -917,11 +1193,13 @@
     // keep the side the label opened on while the star drifts, unless it no longer fits
     var fitR = a.x + gap + w <= vw - 12, fitL = xl - gap - w >= 12;
     var side = label.side === 1 && fitR ? 1 : label.side === -1 && fitL ? -1 : fitR ? 1 : fitL ? -1 : 0;
-    var x, y;
-    if (side) { x = side > 0 ? a.x + gap : xl - gap - w; y = clamp(a.y - 18, 12, vh - h - 12); }
+    var x, y, top0 = Math.max(12, veil.hb + 8);   // (clear of the fixed header)
+    if (side) { x = side > 0 ? a.x + gap : xl - gap - w; y = clamp(a.y - 18, top0, vh - h - 12); }
     else {
       var cx = a.cx != null ? a.cx : a.x, top = a.top != null ? a.top : a.y, bot = a.bottom != null ? a.bottom : a.y;
-      x = clamp(cx - w / 2, 12, vw - w - 12); y = top - gap - h >= 12 ? top - gap - h : bot + gap;
+      // above the star; else as high as the header allows if that still clears the star; else below
+      x = clamp(cx - w / 2, 12, vw - w - 12);
+      y = top - gap - h >= top0 ? top - gap - h : top0 + h + 8 <= top ? top0 : bot + gap;
     }
     label.x = x; label.y = y; label.side = side; label.ax = a.x; label.ay = a.y;
     labelEl.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
@@ -1023,7 +1301,7 @@
         glide: 6 + evR() * 4, pause: 1.8 + evR() * 2.2, dart: evR() < 0.7, rot: evR() * 6.28,
         da: evR() * Math.PI * 2, sp: binSprite(3.5, 0.5), amber: binSprite(3.8, 1.6), a0: baseAlpha(3.5) };
     }
-    if (e) { EV.list.push(e); EV.seen[kind]++; kick(); }
+    if (e) { EV.list.push(e); EV.seen[kind]++; fxShow(true); kick(); }
     return !!e;
   }
   function eventsTick(dt) {
@@ -1135,24 +1413,35 @@
   };
 
   /* --------------------------------------------------------------- the overlay */
-  var fxDirty = true;
+  // The overlay is a full-viewport layer that is blank most of the time: while blank it is hidden
+  // (visibility), so it costs no compositing, and shown again before anything draws on it
+  // (fxShow; the hero samples it only while fxBusy()). When only the footer's nodes are on it, the
+  // next clear covers just their box (fxBox, device px; null: clear it all).
+  var fxDirty = true, fxShown = true, fxBox = null;
+  function fxShow(on) { if (fx && on !== fxShown) { fxShown = on; fx.style.visibility = on ? '' : 'hidden'; } }
   function fxBusy() { return EV.list.length > 0 || label.a > 0.01; }
-  function drawFx() {
-    var nodes = fly.on, need = fxBusy() || nodes, d = S.dpr;
+  function drawFx(now) {
+    var nodes = fly.on, busy = fxBusy(), need = busy || nodes, d = S.dpr, full = false;
     if (!need && !fxDirty) return;
-    if (nodes && !fxBusy() && !S.still && !S.wb) {   // nodes at rest only twinkle: ~30 fps is plenty
+    if (nodes && !busy && !S.still && !S.wb) {   // nodes at rest only twinkle: ~30 fps (the shared beat)
       var sp = spaceCam(), mk = sp && sp.camera.mark, sig = mk ? [sp.camera.gather, mk[0], mk[1], mk[2], S.vw, S.vh].join('|') : '';
-      var now = performance.now();
-      if (sig === fly.sig && now - fly.drawn < 31) return;
+      if (sig === fly.sig && !(S.t30 != null ? S.t30 : now - fly.drawn >= 31)) return;
       fly.sig = sig; fly.drawn = now;
     }
+    if (need) fxShow(true);
     fxc.setTransform(1, 0, 0, 1, 0, 0);
     fxc.globalCompositeOperation = 'source-over';
     fxc.globalAlpha = 1;
-    fxc.clearRect(0, 0, fx.width, fx.height);
+    if (!fxBox) fxc.clearRect(0, 0, fx.width, fx.height);
+    else if (fxBox[2] > fxBox[0]) {
+      var bx0 = Math.max(0, Math.floor(fxBox[0]) - 2), by0 = Math.max(0, Math.floor(fxBox[1]) - 2);
+      var bx1 = Math.min(fx.width, Math.ceil(fxBox[2]) + 2), by1 = Math.min(fx.height, Math.ceil(fxBox[3]) + 2);
+      if (bx1 > bx0 && by1 > by0) fxc.clearRect(bx0, by0, bx1 - bx0, by1 - by0);
+    }
     fxDirty = need;
     // the label's reticle and leader, in the sky
     if (label.a > 0.01 && label.kind === 'star' && label.ax != null) {
+      full = true;
       var ax = label.ax * d, ay = label.ay * d, la = label.a * 0.32;
       fxc.strokeStyle = 'rgba(220,226,240,' + la.toFixed(3) + ')';
       fxc.lineWidth = Math.max(1, Math.round(0.6 * d));
@@ -1163,8 +1452,11 @@
         fxc.beginPath(); fxc.moveTo(sx0, ay); fxc.lineTo(ex - (ex > ax ? 4 : -4) * d, ey); fxc.stroke();
       }
     }
-    if (EV.list.length) drawEvents(fxc);
-    if (nodes) drawFly(fxc, S.still ? 0 : S.t);
+    if (EV.list.length) { full = true; drawEvents(fxc); }
+    var box = [1e9, 1e9, -1e9, -1e9];
+    if (nodes) { BOX = box; drawFly(fxc, S.still ? 0 : S.t); BOX = null; }
+    fxBox = full ? null : box;
+    if (!need) fxShow(false);
   }
 
   /* ------------------------------------------------------- NM constellation */
@@ -1190,13 +1482,15 @@
     return door;
   }
   var runLoading = null;
+  // the shared door's script at its content version (tools/build-theme-versions.py keeps it current)
+  var RUN_SRC = '/js/nm-run.js?v=47f043fd01';
   function openRun(door) {   // the archive has no Cloud Run script of its own: load the shared door
     if (window.__nmRun) { window.__nmRun.open(); return; }
     if (!runLoading) {
       door.setAttribute('aria-busy', 'true');
       runLoading = new Promise(function (resolve, reject) {
         var s = document.createElement('script');
-        s.src = '/js/nm-run.js';
+        s.src = RUN_SRC;
         s.onload = resolve;
         s.onerror = function () { s.remove(); runLoading = null; reject(new Error('Cloud Run could not load')); };
         document.head.appendChild(s);
@@ -1283,17 +1577,21 @@
   function drawCons(t) {
     var c = cons.ctx, d = S.dpr;
     if (!c || !cons.stars || !cons.stars[0].sp) return;
+    // With the particle space the mark is the gathered particles: the nodes fly in with it
+    // (only the brighter ones, drawn on the overlay: drawFly; here only under reduced motion),
+    // and the chart lines only show while the door is hovered.
+    var sp = spaceCam(), nodes = sp ? (S.still ? 1 : smooth(0.6, 1, sp.camera.gather || 0)) : 1;
+    var hov = cons.hover, st = cons.stars, la = sp ? 0.34 * hov * nodes : (0.3 + 0.2 * hov) * cons.linesIn;
+    // nothing to draw on a canvas that is already blank: leave it (no clear)
+    var blank = !!sp && (nodes < 0.004 || la <= 0.004 && !S.still && !!sp.GATHER);
+    if (blank && cons.blank) return;
+    cons.blank = blank;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalCompositeOperation = 'source-over';
     c.globalAlpha = 1;
     c.clearRect(0, 0, cons.canvas.width, cons.canvas.height);
     c.globalCompositeOperation = 'lighter';
     c.imageSmoothingEnabled = false;
-    // With the particle space the mark is the gathered particles: the nodes fly in with it
-    // (only the brighter ones, drawn on the overlay: drawFly; here only under reduced motion),
-    // and the chart lines only show while the door is hovered.
-    var sp = spaceCam(), nodes = sp ? (S.still ? 1 : smooth(0.6, 1, sp.camera.gather || 0)) : 1;
-    var hov = cons.hover, st = cons.stars, la = sp ? 0.34 * hov * nodes : (0.3 + 0.2 * hov) * cons.linesIn;
     if (sp && nodes < 0.004) return;
     if (la > 0.004) {
       // the chart lines follow the nodes through the pointer's wake (drawFly: the mark's push)
@@ -1335,7 +1633,7 @@
   // moves, and lands with a tiny twinkle. Scrolling back up flies it home and the star is back
   // in the sky. Drawn on the fixed overlay (fx), in step with the particles; the footer canvas
   // keeps the chart lines (hover).
-  var fly = { on: false, set: false, nodes: null, pos: { x: 0, y: 0 }, lag: { x: 0, y: 0 }, src: { x: 0, y: 0 } };
+  var fly = { on: false, set: false, job: null, nodes: null, pos: { x: 0, y: 0 }, lag: { x: 0, y: 0 }, src: { x: 0, y: 0 } };
   function flyCam() {
     var sp = spaceCam();
     if (!sp || S.still || !sp.GATHER || !cons.stars || !atlas || !S.dyn) return null;
@@ -1358,12 +1656,17 @@
   }
   function flyRelease() {
     if (fly.nodes) fly.nodes.forEach(function (n) { if (n.src && n.src.star) n.src.star.take = 0; n.src = null; n.take = 0; });
-    fly.set = false; fly.on = false;
+    fly.set = false; fly.on = false; fly.job = null;
     S.force = true;
   }
   function nodeAng(n, w, h) { return Math.atan2((n.s.v - 0.5) * h, (n.s.u - 0.5) * w); }
   function angGap(a, b) { var x = Math.abs(a - b) % (2 * Math.PI); return x > Math.PI ? 2 * Math.PI - x : x; }
-  function flyAssign(c) {
+  /* Picking the nodes' sources reads the page (openSky: is that star in open sky?), so it runs a
+     few reads a frame (FLY_READS) over the frames while the footer's stars settle in; it is done
+     before any node lifts off (flyStep finishes it at once if the gather starts first). The pick is
+     the same as made in one go: the brightest open stars around the mark, else stars of its own. */
+  var FLY_READS = 8;
+  function flyAssign(c) {   // start a pick (no page reads yet)
     var nodes = flyNodes(), mk = c.mark, w = mk[2], h = w / ASPECT, cx = mk[0], cy = mk[1], list = [];
     var near = function (x, y) { return Math.abs(x - cx) < w * 0.75 && Math.abs(y - cy) < h * 0.95; };
     for (var i = 0; i < S.dyn.length; i++) {
@@ -1374,19 +1677,49 @@
       list.push({ s: s, a: Math.atan2(p.y - cy, p.x - cx), x: p.x, y: p.y });
     }
     list.sort(function (a, b) { return a.s.m - b.s.m; });
-    var open = [];   // (openSky reads the page: stop once there are enough)
-    for (var c2 = 0; c2 < list.length && c2 < nodes.length * 3 && open.length < nodes.length * 2; c2++) if (openSky(list[c2].x, list[c2].y, false)) open.push(list[c2]);
-    list = open;
-    // as many as there are nodes, spread all around the mark
-    list.sort(function (a, b) { return a.a - b.a; });
-    var pick = [], n = Math.min(nodes.length, list.length);
-    for (var k = 0; k < n; k++) pick.push(list[Math.floor(k * list.length / n)]);
-    var R = rng(4242), own = [];   // (picked again: the stars of its own stay where they are)
+    var own = [];   // (picked again: the stars of its own stay where they are)
     nodes.forEach(function (nd) { if (nd.src && !nd.src.star) own.push({ x: nd.src.fx * S.vw, y: nd.src.fy * S.vh }); });
-    while (pick.length < nodes.length) {
-      var q = own.shift() || openPoint(40, 10, function (x, y) { return !near(x, y) && openSky(x, y, false); }) || { x: 40 + R() * (S.vw - 80), y: 40 + R() * S.vh * 0.4 };
-      pick.push({ s: null, a: Math.atan2(q.y - cy, q.x - cx), x: q.x, y: q.y });
+    fly.job = { list: list, c2: 0, open: [], pick: null, own: own, R: rng(4242), tries: 0, near: near, cx: cx, cy: cy, at: S.now || 0 };
+  }
+  // carry the pick on by up to `reads` page reads; true once it is complete (and applied)
+  function flyWork(c, reads) {
+    var J = fly.job, nodes = flyNodes(), list = J.list;
+    while (!J.pick) {   // 1. the brightest catalogue stars in open sky (stop once there are enough)
+      if (!(J.c2 < list.length && J.c2 < nodes.length * 3 && J.open.length < nodes.length * 2)) {
+        // as many as there are nodes, spread all around the mark
+        var open = J.open.sort(function (a, b) { return a.a - b.a; }), n = Math.min(nodes.length, open.length);
+        J.pick = [];
+        for (var k = 0; k < n; k++) J.pick.push(open[Math.floor(k * open.length / n)]);
+        break;
+      }
+      if (reads-- <= 0) return false;
+      // (where the star was when the pick began: the pick is that moment's, as when made in one go)
+      var q0 = list[J.c2++];
+      if (openSky(q0.x, q0.y, false)) J.open.push(q0);
     }
+    while (J.pick.length < nodes.length) {   // 2. too few: stars of its own, in open sky
+      var q = J.own.shift();
+      if (!q) {
+        // (openPoint(40, 10, test), a read per try)
+        for (; J.tries < 10 && !q; J.tries++) {
+          if (reads <= 0) return false;
+          var x = 40 + evR() * (S.vw - 80), y = 40 + evR() * (S.vh - 80);
+          if (J.near(x, y)) continue;
+          reads--;
+          if (openSky(x, y, false)) q = { x: x, y: y };
+        }
+        if (!q) q = { x: 40 + J.R() * (S.vw - 80), y: 40 + J.R() * S.vh * 0.4 };
+        J.tries = 0;
+      }
+      J.pick.push({ s: null, a: Math.atan2(q.y - J.cy, q.x - J.cx), x: q.x, y: q.y });
+    }
+    fly.job = null;
+    flyApply(c, J.pick, J.at);
+    return true;
+  }
+  function flyApply(c, pick, at) {
+    var nodes = flyNodes(), mk = c.mark, w = mk[2], h = w / ASPECT;
+    nodes.forEach(function (nd) { if (nd.src && nd.src.star) nd.src.star.take = 0; });   // (a pick made again)
     // pair them with the nodes in the same order around the centre (the best turn of the ring),
     // so the flights converge without crossing
     pick.sort(function (a, b) { return a.a - b.a; });
@@ -1402,7 +1735,7 @@
       else { var m = nd.s.m + 1.6; src = { star: null, fx: q.x / S.vw, fy: q.y / S.vh, m: m, bv: nd.s.bv, sp: binSprite(m, nd.s.bv), a0: baseAlpha(m) }; }
       nd.src = src; nd.lx = null; nd.ly = null;
     });
-    fly.set = true; fly.at = S.now || 0;
+    fly.set = true; fly.at = at;
   }
   // where a node's source is now (a catalogue star turns with the sky; behind the view, its last
   // known place), or null
@@ -1431,11 +1764,17 @@
   // every frame, before the sky draws: each node's progress, and the stars that left the sky
   function flyStep() {
     var sp = flyCam();
-    if (!sp) { if (fly.set) flyRelease(); return; }
+    if (!sp) { if (fly.set || fly.job) flyRelease(); return; }
     var c = sp.camera, G = sp.GATHER;
-    if (!fly.set && c.presence > 0.5) flyAssign(c);
+    if (!fly.set && !fly.job && c.presence > 0.5) flyAssign(c);
+    if (fly.set && !fly.job && (S.now || 0) - fly.at > 450 && flyStale()) flyAssign(c);
+    if (fly.job) {
+      // a pick made again comes too late once a node has lifted off: they keep their sources;
+      // otherwise it is finished at once when the flight begins
+      if (fly.set && fly.nodes.some(function (n) { return n.g > 0; })) fly.job = null;
+      else flyWork(c, c.gather > 0 ? 1e9 : FLY_READS);
+    }
     if (!fly.set) return;
-    if ((S.now || 0) - fly.at > 450 && flyStale()) flyAssign(c);
     fly.on = true;
     fly.nodes.forEach(function (n) {
       n.g = G.g(c.gather, n.start);
@@ -1494,6 +1833,7 @@
         c.globalAlpha = 1;
         c.strokeStyle = gr; c.lineWidth = 1.15 * d; c.lineCap = 'round';
         c.beginPath(); c.moveTo(q.x * d, q.y * d); c.lineTo(p.x * d, p.y * d); c.stroke();
+        if (BOX) boxAdd(Math.min(q.x, p.x) * d - d, Math.min(q.y, p.y) * d - d, Math.max(q.x, p.x) * d + d, Math.max(q.y, p.y) * d + d);
       }
       c.imageSmoothingEnabled = true;
       var fade = src.star ? n.take : 1;
@@ -1527,7 +1867,8 @@
     if (vw * vh > 2600000) dpr = Math.min(dpr, 1.5);
     var changed = vw !== S.vw || vh !== S.vh || dpr !== S.dpr;
     S.vw = vw; S.vh = vh; S.phone = vw < 600;
-    if (dpr !== S.dpr || !atlas) { S.dpr = dpr; buildAtlas(); consSprites(); S.cat && S.cat.forEach(function (s) { s.sp = null; }); }
+    S.dpr = dpr;
+    if (atlas) ensureAtlas();   // (the first one is built in its own task after mount)
     S.W = Math.round(vw * dpr); S.H = Math.round(vh * dpr);
     if (canvas.width !== S.W || canvas.height !== S.H) { canvas.width = S.W; canvas.height = S.H; }
     if (fx && (fx.width !== S.W || fx.height !== S.H)) { fx.width = S.W; fx.height = S.H; fxDirty = true; }
@@ -1539,6 +1880,10 @@
     S.last = now; S.now = now;
     if (!S.still) S.t += dt;
     var t = S.still ? 0 : S.t;
+    // the shared ~30 fps beat (NMSpace.tick): the sky, its overlay and the footer canvas redraw at
+    // rest on the same frames as the particle space; without the space, the sky's own 31 ms clock
+    var sp = spaceCam(), tk = sp && sp.tick ? sp.tick(now) : null;
+    S.t30 = tk ? tk.t30 : null;
     camStep(dt);
     // the footer, its constellation and the sky's footer lift
     var fl = footerLevel();
@@ -1546,20 +1891,19 @@
     flyStep();
     var glide = camGlides(), W = G.wake || wakeOf();
     S.wb = !S.still && !!W && W.busy(now);   // the pointer's wake is settling: display rate
-    if (S.still || glide || S.wb || fastEvent() || now - S.lastDraw > 31 || !S.lastDraw || S.force) {
+    if (S.still || glide || S.wb || fastEvent() || (tk ? tk.t30 : now - S.lastDraw > 31) || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
       drawSky(t);
     }
     label.a += ((label.on ? 1 : 0) - label.a) * (S.still ? 1 : Math.min(1, dt * 7));
     if (label.on) placeLabel();
     eventsTick(dt);
-    drawFx();
+    drawFx(now);
     cons.hover += (cons.hoverTo - cons.hover) * (S.still ? 1 : Math.min(1, dt * 6));
     cons.linesIn = S.still ? 1 : smooth(0.4, 0.9, fl);
-    if (cons.visible && cons.ctx && (S.still || S.force || now - cons.lastT > 31 || Math.abs(cons.hover - cons.hoverTo) > 0.01 || S.wb && cons.hover > 0.004)) { cons.lastT = now; drawCons(t); }
+    if (cons.visible && cons.ctx && (S.still || S.force || (tk ? tk.t30 : now - cons.lastT > 31) || Math.abs(cons.hover - cons.hoverTo) > 0.01 || S.wb && cons.hover > 0.004)) { cons.lastT = now; drawCons(t); }
     hoverTick();
-    var y = window.scrollY || 0;
-    if (Math.abs(y - veil.y) > 0.5) { veil.y = y; veilSoon(); }
+    if (S.running) veilTick(now);
     var ms = performance.now() - t0, st = S.stats;
     st.frames++; st.ms += ms; if (ms > st.worst) st.worst = ms;
   }
@@ -1648,7 +1992,6 @@
     heroCanvas = document.querySelector('#global-canvas canvas');
     headerEl = document.querySelector('header[data-nm-header], .nm-hdr');
     makeLabel();
-    measure();
     api.canvas = canvas;
     api.fx = fx;
     root.classList.add('nm-sky-on');
@@ -1671,25 +2014,67 @@
       }).observe(document.body);
     }
 
-    var get = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); }); };
-    Promise.all([get('/media/sky/stars.json'), get('/media/sky/' + S.page + '.json').catch(function () { return {}; })])
-      .then(function (res) {
-        ingest(res[0], res[1]);
+    // the size (a layout read) and the sprite atlas, in a task of its own once the page has painted
+    afterFrame(function () { if (!atlas) { measure(); ensureAtlas(); } });
+    // The star data: js/nm-theme.js requested it early (window.__nmSkyData, versioned URLs that
+    // the HTTP cache keeps); otherwise ask now (low priority on the homepage, after its hero), and
+    // say so (window.__nmSkyData), so the loader does not ask again.
+    var U = window.__nmSkyURLs || {}, pages = U.pages || {};
+    var get = function (u) {
+      return fetch(u, S.page === 'home' ? { priority: 'low' } : {}).then(function (r) { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
+    };
+    var data = U.page === S.page && window.__nmSkyData && window.__nmSkyData.then ? window.__nmSkyData
+      : (window.__nmSkyData = Promise.all([get(U.stars || '/media/sky/stars.json'), get(pages[S.page] || '/media/sky/' + S.page + '.json').catch(function () { return {}; })]));
+    // then the start, a step per task: the catalogue; the GL context, shaders and footer; once the
+    // particle space has started (its camera turns this sky), the layout, text mask and first frame
+    data.then(function (res) {
+      ingest(res[0], res[1]);
+      later(function () {
         S.still = reduceQ.matches;
-        if (!glInit()) S.c2d = canvas.getContext('2d');
+        if (!atlas) { measure(); ensureAtlas(); }
+        var gl = glInit();
+        if (!gl) S.c2d = canvas.getContext('2d');
         setupFooter();
-        S.ready = true;
-        relayout(true);
-        ['meteor', 'satellite', 'ufo'].forEach(function (k) { schedule(k, true); });
-        update();
-        kick();
-        checkVeil();
-        setTimeout(checkVeil, 900);
-        // the homepage keeps mounting for a moment after hydration: settle the layout again
-        setTimeout(function () { relayout(false); }, 1200);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { relayout(false); });
-      })
-      .catch(function (err) { console.warn('[nm-sky] sky unavailable:', err && err.message); });
+        afterSpace(function () {
+          later(function () {
+            if (gl && !glReady()) S.c2d = canvas.getContext('2d');
+            S.ready = true;
+            relayout(true);
+            ['meteor', 'satellite', 'ufo'].forEach(function (k) { schedule(k, true); });
+            update();
+            kick();
+            later(function () {
+              checkVeil();
+              setTimeout(checkVeil, 900);
+            });
+            // the homepage keeps mounting for a moment after hydration: settle the layout again
+            setTimeout(function () { relayout(false); }, 1200);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { relayout(false); veilBuildSoon(); });
+          });
+        });
+      });
+    }).catch(function (err) { console.warn('[nm-sky] sky unavailable:', err && err.message); });
+  }
+  // fn once the particle space has started or has failed (NMSpace.whenReady), so the sky's first frame
+  // already turns with its camera; at once without the space (and, should it never settle, after
+  // 8 s of the page being shown)
+  function afterSpace(fn) {
+    var sp = window.NMSpace, done = false, go = function () { if (!done) { done = true; fn(); } };
+    if (!sp || !sp.whenReady) { go(); return; }
+    sp.whenReady(go);
+    (function late() { setTimeout(function () { if (document.hidden) late(); else go(); }, 8000); })();
+  }
+  // fn in a task of its own (after anything already queued); its errors are reported, not thrown
+  function later(fn) {
+    setTimeout(function () {
+      try { fn(); } catch (err) { console.warn('[nm-sky] sky unavailable:', err && err.message); }
+    }, 0);
+  }
+  // the next task after the coming frame (so a mount never lengthens the frame that hydrates the page)
+  function afterFrame(fn) {
+    var done = false, go = function () { if (!done) { done = true; later(fn); } };
+    requestAnimationFrame(go);
+    setTimeout(go, 1000);   // (no frames in a background tab: go on anyway)
   }
 
   /* ------------------------------------------------------------------- API */
@@ -1736,7 +2121,13 @@
       }),
       events: EV.list.map(function (e) { var p = e.kind === 'meteor' ? project(e.u0) : evPos(e); return { kind: e.kind, t: +e.t.toFixed(2), x: p ? Math.round(p.x) : null, y: p ? Math.round(p.y) : null }; }),
       next: { meteor: +(EV.next.meteor - S.t).toFixed(1), satellite: +(EV.next.satellite - S.t).toFixed(1), ufo: +(EV.next.ufo - S.t).toFixed(1) }, seen: EV.seen, show: SHOW,
-      veilClear: veil.clear, label: label.on ? (label.kind === 'cons' ? 'NM' : S.featured[label.star].id) : null,
+      veilClear: veil.clear, veil: (function () {   // the scrim's cache against the probes, here and now
+        var hb = headerBand(), y = window.scrollY || 0, ys = [hb * 0.35, hb * 0.7, hb - 3], pts = false;
+        if (!veil.box || hb <= 0) return { cache: !!veil.box, hb: hb };
+        for (var a = 0; a < ys.length; a++) pts = pts || veilRow(y + ys[a], y, hb);
+        return { cache: true, hb: +hb.toFixed(1), hero: heroCovers(), probes: probeClear(hb, null), points: !pts, band: !veilHit(y + hb * 0.35, y + hb, y, y + hb), liveHit: veil.live.some(function (L) { var r = L.el.getBoundingClientRect(); return r.bottom > 0 && r.top < hb && r.width > 0 && !probeClear(hb, r); }),
+          live: veil.live.length, buildMs: +(veil.ms || 0).toFixed(2), entries: veil.box.reduce(function (n, b) { return n + (b ? b.length : 0); }, 0) };
+      })(), label: label.on ? (label.kind === 'cons' ? 'NM' : S.featured[label.star].id) : null,
       stats: { frames: S.stats.frames, draws: S.stats.draws, avgMs: S.stats.frames ? +(S.stats.ms / S.stats.frames).toFixed(2) : 0, worstMs: +S.stats.worst.toFixed(2),
         drawAvgMs: S.stats.draws ? +(S.stats.drawMs / S.stats.draws).toFixed(2) : 0 },
       cons: cons.canvas ? { w: Math.round(cons.w), h: Math.round(cons.h), door: !!cons.door, visible: cons.visible, nm: S.nm && [Math.round(S.nm.x), Math.round(S.nm.y)] } : null
