@@ -502,6 +502,9 @@ main > #about{ background:#0a0a0a !important;
 #nm-brands .nm-b-puffco{ height:max(40px,2.0833vw); }
 #nm-brands .nm-b-pawsta{ height:max(44px,2.2916vw); }
 #nm-brands .nm-b-ravi{ height:max(26px,1.3541vw); }
+/* paused while the strip is more than 200px off screen (nm-brands.js); it resumes where it
+   stopped, out of sight */
+#nm-brands.nm-brands-off .nm-brands-track{ animation-play-state:paused; }
 /* 4 identical sets in the track, so travelling exactly -25% lands set 2 where
    set 1 began -- the loop point is invisible. */
 @keyframes nmBrandsScroll{ from{ transform:translateX(0); } to{ transform:translateX(-25%); } }
