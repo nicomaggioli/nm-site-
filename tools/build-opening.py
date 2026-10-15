@@ -14,6 +14,9 @@ critical='<style id="nm-opening-style">'+css+'</style><script id="nm-opening-boo
 s=s.replace('</script>', '</script>'+critical, 1)
 needle=re.search(r'<script src="/js/nm-sync\.js[^\"]*"></script>',s)
 assert needle, 'Missing initialization bridge'
+# Night Sky's loader and stylesheet follow the bridge; the controller keeps its place after them.
+sky=re.compile(r'<script src="/js/nm-theme\.js[^\"]*"></script><link rel="stylesheet" href="/css/theme-stars\.css[^\"]*">').match(s,needle.end())
+if sky: needle=sky
 s=s[:needle.end()]+'<script src="/js/nm-opening.js?v='+version+'" defer></script>'+s[needle.end():]
 p.write_text(s)
 print('Built critical opening setup and deferred controller.')
