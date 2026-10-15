@@ -9,7 +9,7 @@
       .map(function (el) {
         el.classList.add('nm-mag');
         if (getComputedStyle(el).display === 'inline') el.classList.add('nm-mag-on');
-        return { el: el, values: [0,0,0,0,0], x:0, y:0 };
+        return { el: el, values: [0,0,0,0,0], x:0, y:0, tf: el.style.transform };
       });
     dirty = true;
   }
@@ -25,10 +25,15 @@
   function frame() {
     raf=0;
     if (!enabled.matches || document.hidden) return;
+    // React replaces the statement's words after the first collect(): words no longer in the page
+    // never show, so stop animating them (a resize collects the live ones, as before)
+    if (!items.every(function (item) { return item.el.isConnected; }))
+      items = items.filter(function (item) { return item.el.isConnected; });
+    if (!items.length) return;
     if (dirty) measure();
-    var settling=false;
+    var settling=false, sx=scrollX, sy=scrollY;
     items.forEach(function (item) {
-      var dx=mx-(item.x-scrollX), dy=my-(item.y-scrollY), distance=Math.hypot(dx,dy);
+      var dx=mx-(item.x-sx), dy=my-(item.y-sy), distance=Math.hypot(dx,dy);
       var strength=Math.max(0,1-distance/130);
       strength=strength*strength*(3-2*strength);
       var target=[dx*.34*strength,dy*.34*strength,26*strength,-dy/130*15*strength,dx/130*15*strength];
@@ -38,15 +43,16 @@
         return target[i];
       });
       var v=item.values;
-      item.el.style.transform=v.every(function (n) { return Math.abs(n)<.01; }) ? '' :
+      var tf=v.every(function (n) { return Math.abs(n)<.01; }) ? '' :
         'perspective(520px) translate3d('+v[0].toFixed(2)+'px,'+v[1].toFixed(2)+'px,'+v[2].toFixed(2)+'px) rotateX('+v[3].toFixed(2)+'deg) rotateY('+v[4].toFixed(2)+'deg)';
+      if (tf!==item.tf) { item.tf=tf; item.el.style.transform=tf; }
     });
     if (settling) schedule();
   }
-  function schedule() { if (enabled.matches && !document.hidden && !raf) raf=requestAnimationFrame(frame); }
+  function schedule() { if (items.length && enabled.matches && !document.hidden && !raf) raf=requestAnimationFrame(frame); }
   function reset() {
     cancelAnimationFrame(raf); raf=0; mx=my=-9999;
-    items.forEach(function (item) { item.el.style.transform=''; item.values=[0,0,0,0,0]; });
+    items.forEach(function (item) { item.el.style.transform=''; item.tf=''; item.values=[0,0,0,0,0]; });
   }
   window.addEventListener('pointermove',function (e) { if(e.pointerType==='touch')return; mx=e.clientX;my=e.clientY;schedule(); },{passive:true});
   document.documentElement.addEventListener('pointerleave',function () {mx=my=-9999;schedule();},{passive:true});
