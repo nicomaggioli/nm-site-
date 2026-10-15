@@ -99,7 +99,9 @@ html[data-nm-theme="stars"] .nm-sky-cons {
   opacity: 1 !important; transition: none !important;   /* Index styles .foot-mark canvas for its cloud */
 }
 html[data-nm-theme="stars"] main > section.h-lvh .nm-sky-cons { z-index: 1; }
-html[data-nm-theme="stars"] .nm-run-door img { visibility: hidden !important; }
+/* the Cloud Run door's cloud picture is not shown under Night Sky; display:none (not visibility)
+   so its lazy image is never downloaded. The door's box is its own width and height. */
+html[data-nm-theme="stars"] .nm-run-door img { display: none !important; }
 html[data-nm-theme="stars"][data-nm-sky] main > section.h-lvh .nm-run-door,
 html[data-nm-theme="stars"][data-nm-sky] .nm-footer .nm-run-door,
 html[data-nm-theme="stars"] .nm-sky-door {
