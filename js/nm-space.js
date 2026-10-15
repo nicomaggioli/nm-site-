@@ -918,21 +918,73 @@
     return TK;
   };
   api.drawN = 0;   // draws so far (the hero's backdrop can skip an upload when it has not changed)
+  // The display's own frame interval: a low percentile (20th) of the last 120 gaps at rest (the
+  // camera still), retaken every 30. At 60 or 120 Hz it is under 20 ms, and the limits below are
+  // the 24 / 18 ms they always were.
+  var CAD = { g: [], n: 0, ms: 0 };
+  function cadence(ms) {
+    CAD.g.push(ms); if (CAD.g.length > 120) CAD.g.shift();
+    if (++CAD.n % 30 === 0) { var s = CAD.g.slice().sort(function (a, b) { return a - b; }); CAD.ms = s[Math.floor(s.length * 0.2)]; }
+  }
+  // A slower cadence is either the display's cap (Low Power Mode, an energy saver: 30 fps however
+  // little is drawn) or this page's own drawing (a slow GPU or CPU, which fewer particles do help).
+  // While it lasts, and while the resolution is lowered, every 16th draw is timed: its frame's time
+  // here, and on the GPU a fence after it (WebGL2), polled a task at a time. Only when both are a
+  // small part of the frame is it the cap, and a frame counts as slow only when it misses that
+  // cadence too (over 1.45 of it).
+  var OWN = { cpu: [], gpu: [], n: 0, fence: null };
+  function keep(a, v) { a.push(v); if (a.length > 5) a.shift(); }
+  function mid(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[s.length >> 1]; }
+  function capped() {
+    return CAD.ms > 20 && OWN.gpu.length > 0 && OWN.cpu.length > 0 && Math.max(mid(OWN.gpu), mid(OWN.cpu)) < CAD.ms * 0.35;
+  }
+  // the full resolution would fit: this frame's work, its GPU part scaled back up, within half a frame
+  function roomForFull() {
+    var k = S.dprK || 1;
+    return OWN.gpu.length > 0 && OWN.cpu.length > 0 && Math.max(mid(OWN.cpu), mid(OWN.gpu) / (k * k)) < 0.5 * Math.max(16.7, capped() ? CAD.ms : 0);
+  }
+  function timeGPU() {
+    var gl = G.gl, f = null, t0 = performance.now();
+    if (!G.v2 || OWN.fence) return;
+    try { f = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } catch (e) { f = null; }
+    if (!f) return;
+    OWN.fence = f;
+    var poll = function () {
+      var ms = performance.now() - t0, done = true;
+      try { done = G.lost || gl.getSyncParameter(f, gl.SYNC_STATUS) === gl.SIGNALED; } catch (e) {}
+      if (!done && ms < 100) { setTimeout(poll, 1); return; }
+      try { gl.deleteSync(f); } catch (e) {}
+      OWN.fence = null;
+      if (!G.lost) keep(OWN.gpu, ms);
+    };
+    setTimeout(poll, 1);
+  }
   function quality(now, dt) {
     // frames that run long while the camera moves lower the particle count, then the resolution
     if (S.still || !dt) return;
-    var ms = dt * 1000;
-    if (CAM.moving || CAM.vg) {
-      if (ms > 24) S.slow++; else if (ms < 18) S.fast++;
-      if (S.slow > 45) {
-        S.slow = S.fast = 0;
-        if (S.q > 0.5) S.q = Math.max(0.5, S.q - 0.15);
-        else if (!S.dprK || S.dprK > 0.75) { S.dprK = 0.75; measure(); }
-      } else if (S.fast > 600) { S.fast = S.slow = 0; if (S.q < 1 && !S.dprK) S.q = Math.min(1, S.q + 0.1); }
+    var ms = dt * 1000, moving = CAM.moving || CAM.vg;
+    // a frame of the scroll dip in WebKit (js/nm-warp.js: it filters on the CPU), or the one after
+    // it, is not counted as slow: fewer particles would not make it faster
+    var dip = !!window.__nmDip, inDip = dip || S.dipWas;
+    S.dipWas = dip;
+    if (!moving) { cadence(ms); return; }
+    var c = capped() ? CAD.ms : 0;
+    if (ms > Math.max(24, c * 1.45)) { if (!inDip) S.slow++; }
+    else if (ms < Math.max(18, c * 1.1)) S.fast++;
+    if (S.slow > 45) {
+      S.slow = S.fast = 0;
+      if (S.q > 0.5) S.q = Math.max(0.5, S.q - 0.15);
+      else if (!S.dprK || S.dprK > 0.75) { S.dprLock = S.dprUp; S.dprK = 0.75; measure(); }
+    } else if (S.fast > 600) {
+      S.fast = S.slow = 0;
+      // a drop that did not last (the work measured leaves room): the resolution comes back first,
+      // then the particles. Once it has had to drop again after coming back, it stays down
+      if (S.dprK && !S.dprLock && roomForFull()) { S.dprK = 0; S.dprUp = true; measure(); }
+      else if (S.q < 1 && !S.dprK) S.q = Math.min(1, S.q + 0.1);
     }
   }
   function frame(now) {
-    var t0 = performance.now(), prev = S.last;
+    var t0 = performance.now(), prev = S.last, drew = false;
     step(now);
     var dt = prev ? (now - prev) / 1000 : 0;
     quality(now, dt);
@@ -941,11 +993,12 @@
     var busy = CAM.moving || Math.abs(CAM.vg) > 1e-3;
     if (S.still || busy || TK.t30 || !S.lastDraw || S.force) {
       S.lastDraw = now; S.force = false;
-      if (G.ok && !G.lost) draw();
+      if (G.ok && !G.lost) { draw(); drew = true; }
     }
     var st = S.stats, ms = performance.now() - t0;
     st.frames++; st.ms += ms; if (ms > st.worst) st.worst = ms;
     if (dt) { st.gaps.push(dt * 1000); if (st.gaps.length > 240) st.gaps.shift(); }
+    if (drew && (CAD.ms > 20 || S.dprK) && ++OWN.n % 16 === 0) { keep(OWN.cpu, ms); timeGPU(); }
   }
   function loop(now) { S.raf = requestAnimationFrame(loop); frame(now); }
   function active() { return S.ready && !document.hidden && !gameOpen(); }
@@ -1062,6 +1115,7 @@
     return {
       page: S.page, ready: S.ready, running: S.running, still: S.still, gl: G.ok ? (G.v2 ? 'webgl2' : 'webgl') + '/' + G.fmt.name : false,
       size: [S.vw, S.vh], dpr: +S.dpr.toFixed(2), particles: S.N, quality: S.q, marks: S.marks || 0, maxY: S.maxY, zpx: +S.zpx.toFixed(4),
+      governor: { cadence: +CAD.ms.toFixed(1), cpu: OWN.cpu.length ? +mid(OWN.cpu).toFixed(1) : null, gpu: OWN.gpu.length ? +mid(OWN.gpu).toFixed(1) : null, capped: capped(), dprK: S.dprK || 1 },
       cam: { y: +CAM.y.toFixed(1), vy: +CAM.vy.toFixed(1), hp: +CAM.hp.toFixed(3), z: +CAM.z.toFixed(2), roll: +CAM.roll.toFixed(2),
         yaw: +(CAM.yaw * 57.3).toFixed(2), pitch: +(CAM.pitch * 57.3).toFixed(2), pp: [Math.round(CAM.cx), Math.round(CAM.cy)], F: +CAM.F.toFixed(1),
         gather: +CAM.gather.toFixed(3), presence: +CAM.presence.toFixed(3), vP: +CAM.vP.toFixed(3), mark: CAM.mark && CAM.mark.map(Math.round) },

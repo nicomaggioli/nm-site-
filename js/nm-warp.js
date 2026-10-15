@@ -106,6 +106,7 @@
   function release(it) { it.wc = false; it.el.style.willChange = ''; }
   // the episode is over (or the items are rebuilt): everything flat, will-change dropped in one pass
   function flat() {
+    window.__nmDip = false;
     for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
   }
   function apply(w) {
@@ -146,6 +147,9 @@
     // Adding or dropping will-change rebuilds the page's layers. A tile keeps it while it is within a
     // screen of the warped band; tiles further out give it up 16 at a time, not one per frame.
     if (far.length >= 16) for (i = 0; i < far.length; i++) release(far[i]);
+    // WebKit draws the filter on the CPU: js/nm-space.js does not count these frames against its
+    // particles (fewer would not make them faster)
+    if (WEBKIT && page !== 'index') { var on = false; for (i = 0; i < n && !on; i++) on = !!items[i].on; window.__nmDip = on; }
   }
   // The easing rates below were tuned per 60 Hz frame. Each is applied as 1 - (1 - rate)^(dt * 60):
   // exactly the tuned rate for a 60 Hz frame, and the same pull per second at 120 Hz.

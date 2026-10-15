@@ -173,6 +173,19 @@ The look is unchanged; these change only when and how often the work is done.
   inside one moves on its own (the homepage collage) the old probes decide there (every 140 ms
   while it covers the band, every 60 ms while it does not). At rest the probes decide, as before,
   and the cache is rebuilt if it disagrees. `NMSky.debug().veil` compares the two.
+- Quality governor (`quality()` in `js/nm-space.js`). Frames that run long while the camera moves
+  lower the particle count (to half), then the resolution (×0.75); unchanged at 60 and 120 Hz
+  (over 24 ms is slow, under 18 ms fast). Two kinds of long frame no longer count, because fewer
+  particles would not shorten them: a display capped at 30 fps (Low Power Mode, an energy saver;
+  the cadence is the 20th percentile of the camera's resting frames, and it counts as a cap only
+  when this page's own work, timed every 16th draw on the CPU and with a WebGL2 fence on the GPU,
+  is under 0.35 of it; then a frame is slow only past 1.45 of the cadence), and WebKit's scroll-dip
+  frames (`js/nm-warp.js` sets `window.__nmDip` while its CPU filter is on; that frame and the next
+  are not counted). A slow GPU or CPU still steps down exactly as before. After 600 fast moving
+  frames a lowered resolution comes back when the measured work leaves room for it (once; if it
+  has to drop again it stays), then the particles 0.1 at a time, as they always could. Before this,
+  Safari under Low Power Mode, or after a few fast flings on About, ended at half the particles and
+  0.75 resolution for the rest of the visit.
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).
