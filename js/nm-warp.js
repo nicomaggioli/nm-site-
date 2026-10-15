@@ -34,7 +34,7 @@
   // it on the CPU, so a fast fling there is heavier than in Chrome; Chrome keeps user units.
   var ua = navigator.userAgent;
   var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
-  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false;
+  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false, filtered = false;
   var hist = [], seen = -1;   // recent [time, scrollY] pairs; how many sections the last list found
   var firstDt = 1 / 60, age = 0;
 
@@ -106,12 +106,22 @@
   function release(it) { it.wc = false; it.el.style.willChange = ''; }
   // the episode is over (or the items are rebuilt): everything flat, will-change dropped in one pass
   function flat() {
-    window.__nmDip = false;
+    filtered = window.__nmDip = false;
     for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
   }
-  function apply(w) {
+  // WebKit samples the displacement at whole device pixels, truncating toward zero: a dip under 1.5
+  // device px down, or 0.5 up, moves nothing (its frames match the zero-scale filter's, measured), yet
+  // each still costs WebKit a CPU-filtered frame. At an episode's edges (before the filter goes on, and
+  // once the page has slowed and the dip springs back) those frames go without it; mid-episode it stays
+  // on as before. The dip's timing, spring and speed are untouched. Margins: 1.25 and 0.4 device px.
+  function unseen(amount) {
+    var px = amount * (window.devicePixelRatio || 1) * ((window.visualViewport && window.visualViewport.scale) || 1);
+    return px < 1.25 && px > -0.4;
+  }
+  function apply(w, target) {
     if (w === 0) { flat(); return; }
     var vw = window.innerWidth, vh = window.innerHeight, amount = DIP * Math.min(1, vw / 1440) * w, n = items.length, i;
+    if (WEBKIT && page !== 'index' && (!filtered || target === 0) && unseen(amount)) { flat(); return; }
     // Read every box before writing anything. A read after a write forces a style and layout pass,
     // which on Index meant one per tile per frame. The boxes are the same either way: a tile's
     // transform never moves another tile, and filters never move layout.
@@ -149,7 +159,7 @@
     if (far.length >= 16) for (i = 0; i < far.length; i++) release(far[i]);
     // WebKit draws the filter on the CPU: js/nm-space.js does not count these frames against its
     // particles (fewer would not make them faster)
-    if (WEBKIT && page !== 'index') { var on = false; for (i = 0; i < n && !on; i++) on = !!items[i].on; window.__nmDip = on; }
+    if (WEBKIT && page !== 'index') { var on = false; for (i = 0; i < n && !on; i++) on = !!items[i].on; filtered = window.__nmDip = on; }
   }
   // The easing rates below were tuned per 60 Hz frame. Each is applied as 1 - (1 - rate)^(dt * 60):
   // exactly the tuned rate for a 60 Hz frame, and the same pull per second at 120 Hz.
@@ -174,7 +184,7 @@
     warp += (target - warp) * ease(Math.abs(target) > Math.abs(warp) ? .45 : .1, dt);
     // stay at least one 60 Hz frame before giving up, so a fast screen judges the speed as fully as 60 Hz
     if (Math.abs(warp) < .004 && target === 0 && age > .014) { warp = 0; apply(0); moving = false; last = 0; vel = 0; hist = []; return; }
-    apply(warp);
+    apply(warp, target);
     raf = requestAnimationFrame(frame);
   }
   // Velocity needs the position before this scroll moved. Native scrolling (touch, and every page

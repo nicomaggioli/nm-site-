@@ -186,6 +186,15 @@ The look is unchanged; these change only when and how often the work is done.
   has to drop again it stays), then the particles 0.1 at a time, as they always could. Before this,
   Safari under Low Power Mode, or after a few fast flings on About, ended at half the particles and
   0.75 resolution for the rest of the visit.
+- The scroll dip in WebKit (`js/nm-warp.js`). WebKit samples the dip's displacement at whole device
+  pixels, truncating toward zero, so a dip under 1.5 device px down or 0.5 up moves nothing (measured
+  on About and the homepage at DPR 1, 2 and 3: those frames match a zero-scale filter's), yet each one
+  is a CPU-filtered frame. At an episode's edges (before the filter first goes on, and once the scroll
+  has slowed and the dip springs back) such frames go without the filter (margins: under 1.25 down,
+  0.4 up, scaled by `devicePixelRatio` and pinch zoom); mid-episode it stays on. The dip's speed,
+  spring and timing are untouched. The only pixel change is the filter's own antialiasing, at most
+  one level on 0.1–0.6% of the screen, the same flip the filter makes when it comes off today, a few
+  frames earlier. Chrome is unchanged.
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).
