@@ -94,10 +94,12 @@
   function inside(u, v) { return field(u, v) < VIS; }
 
   /* ---------- screen -> shapeUv, mirroring the hero shader ---------- */
+  var heroCanvas = null;          // the hero's WebGL canvas, looked up again only once it is replaced
   function canvasRect() {
     if (rectAt === now) return rect;
     rectAt = now;
-    var c = document.querySelector('#global-canvas canvas');
+    if (!heroCanvas || !heroCanvas.isConnected) heroCanvas = document.querySelector('#global-canvas canvas');
+    var c = heroCanvas;
     if (c) { var r = c.getBoundingClientRect(); if (r.width > 0 && r.height > 0) rect = r; }
     else rect = { left: 0, top: 0, width: innerWidth, height: innerHeight };
     return rect;
