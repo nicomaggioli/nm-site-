@@ -96,35 +96,16 @@ for (const engine of ['webkit','chromium']) {
       await page.route('**/textures/nm-mark-sdf.png',async route=>{await gate;await route.continue();});
       try {
         await page.goto(origin+'/index/',{waitUntil:'domcontentloaded'});
-        await page.waitForSelector('.foot-mark canvas',{state:'attached'});
         await page.setViewportSize({width:1024,height:768});
         await page.waitForTimeout(250);
       } finally {release();}
-      await page.waitForSelector('.foot-mark.is-ready',{state:'attached'});
+      // (Night Sky's footer NM on Index is nm-sky.js's; the 2D cloud of js/nm-footmark.js is no longer loaded)
+      assert.equal(await page.locator('.foot-mark canvas:not(.nm-sky-cons)').count(),0,'no footer cloud canvas');
       await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
       await page.waitForTimeout(250);
-      await page.evaluate(()=>{
-        window.__footerDraws=0;
-        const draw=CanvasRenderingContext2D.prototype.drawImage;
-        CanvasRenderingContext2D.prototype.drawImage=function(...args){
-          if(this.canvas.closest('.foot-mark'))window.__footerDraws++;
-          return draw.apply(this,args);
-        };
-      });
-      await page.emulateMedia({reducedMotion:'reduce'});
-      await page.waitForTimeout(200);
-      await page.evaluate(()=>window.__footerDraws=0);
-      await page.waitForTimeout(200);
-      assert.equal(await page.evaluate(()=>window.__footerDraws),0,'reduced motion stops the footer loop');
-      await page.emulateMedia({reducedMotion:'no-preference'});
-      await page.waitForTimeout(200);
-      assert.ok(await page.evaluate(()=>window.__footerDraws)>0,'footer motion resumes when requested');
       await page.evaluate(()=>scrollTo(0,0));
-      await page.waitForTimeout(100);
-      await page.evaluate(()=>window.__footerDraws=0);
       await page.setViewportSize({width:1280,height:800});
       await page.waitForTimeout(250);
-      assert.equal(await page.evaluate(()=>window.__footerDraws),0,'resizing does not wake an offscreen footer');
       assert.deepEqual(errors,[],'rotation during a delayed texture load must not throw');
       await context.close();
     } finally {await browser.close();}
