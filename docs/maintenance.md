@@ -1,6 +1,6 @@
 # Portfolio maintenance
 
-This repository is a static Next.js export served by GitHub Pages. It does not contain the original React source project or a package/build manifest. Files in `_next/static/chunks/` are production bundles, so changes to React-owned markup must also match the server HTML and embedded Flight data in `index.html`.
+This repository is a static Next.js export served by GitHub Pages. It does not contain the original React source project or a package/build manifest. Files in `_next/static/chunks/` are production bundles, so changes to React-owned markup must also match the server HTML and embedded Flight data in `index.html`. A hand-edited site bundle (`nm-home-*`, `nm-scenes-*`) gets a new name, the first 12 hex of its SHA-256, and every reference moves to it; keep the previous file for pages still cached (GitHub Pages sends max-age=600) and remove older unreferenced ones.
 
 ## Search metadata and static fallback
 
