@@ -195,6 +195,16 @@ The look is unchanged; these change only when and how often the work is done.
   spring and timing are untouched. The only pixel change is the filter's own antialiasing, at most
   one level on 0.1–0.6% of the screen, the same flip the filter makes when it comes off today, a few
   frames earlier. Chrome is unchanged.
+- The scroll dip on Index (`js/nm-warp.js`). Each tile's box is read once (document px) instead of
+  178 `getBoundingClientRect` calls every frame of a dip: a tile's own transform never moves layout.
+  It is read again when the wall's box or the lowest tile of any column moves (checked each frame:
+  the wall and one tile per column), on a resize, and on a ResizeObserver report from the wall, the
+  body or any tile. A box read mid-dip has the tile's offset taken off and the near-screen test adds
+  it back, so every tile gets exactly the offset it did (checked frame by frame on a fake clock,
+  with a block inserted above the wall, tiles resized and the window resized mid-dip). `will-change`
+  goes to a band of tiles at once (the stretch that can dip, plus a screen ahead and a quarter
+  behind) and moves on in one pass, so the wall relays out about once a screen of scrolling instead
+  of most frames; tiles on screen hold it exactly as before and about as many layers exist.
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).

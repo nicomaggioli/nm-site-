@@ -34,7 +34,7 @@
   // it on the CPU, so a fast fling there is heavier than in Chrome; Chrome keeps user units.
   var ua = navigator.userAgent;
   var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
-  var items = [], rects = [], far = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false, filtered = false;
+  var items = [], rects = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false, filtered = false;
   var hist = [], seen = -1;   // recent [time, scrollY] pairs; how many sections the last list found
   var firstDt = 1 / 60, age = 0;
 
@@ -58,6 +58,7 @@
     items = [];
     if (page === 'index') {
       document.querySelectorAll('main#main > figure.tile').forEach(function (el) { items.push({ el: el, tile: true }); });
+      geo = null; watch();
       return;
     }
     if (!svg) {
@@ -96,18 +97,93 @@
       });
     });
   }
-  // it.on: this item carries the dip (items already flat are skipped); it.wc: this tile has will-change
+  // it.on: this item carries the dip (items already flat are skipped); it.wc: this tile has will-change;
+  // it.dy: the tile's offset now (what its box was read with), it.ds the same as written
   function clear(it) {
     if (!it.on) return;
     it.on = false;
-    if (it.tile) it.el.style.transform = '';
+    if (it.tile) { it.el.style.transform = ''; it.dy = 0; it.ds = null; }
     else it.el.style.filter = '';
   }
   function release(it) { it.wc = false; it.el.style.willChange = ''; }
   // the episode is over (or the items are rebuilt): everything flat, will-change dropped in one pass
   function flat() {
     filtered = window.__nmDip = false;
+    band = null;
     for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
+  }
+
+  // Index. Each tile's box in document px (left, width, top, bottom: geo[4i..4i+3]) is read once, and
+  // again when the wall moves or changes size, when the last tile of a column moves (any tile above it
+  // changed), or after a resize or a ResizeObserver report: a tile's own transform never moves layout.
+  // Read live every frame of a dip, the 178 boxes cost a throttled phone ~30 ms a second; the check is
+  // the wall's box and one tile per column. A box read mid-dip has the tile's offset taken off, and the
+  // near-screen test adds the offset back, so it decides exactly as the live boxes did.
+  var geo = null, wall = null, tails = [], ro = null, band = null;
+  function wallBox() {
+    var el = document.querySelector('main#main');
+    return el ? el.getBoundingClientRect() : null;
+  }
+  function measureTiles() {
+    var sy = window.scrollY, n = items.length, g = new Array(n * 4), m = wallBox();
+    for (var i = 0; i < n; i++) {
+      var it = items[i], r = it.el.getBoundingClientRect(), d = it.on ? it.dy : 0;
+      g[4 * i] = r.left; g[4 * i + 1] = r.width; g[4 * i + 2] = r.top + sy - d; g[4 * i + 3] = r.bottom + sy - d;
+    }
+    geo = g;
+    wall = m && [m.left, m.top + sy, m.width, m.height];
+    var last = {};   // the lowest tile of each column
+    for (i = 0; i < n; i++) { var c = Math.round(g[4 * i]); if (last[c] == null || g[4 * i + 3] > g[4 * last[c] + 3]) last[c] = i; }
+    tails = Object.keys(last).map(function (c) { return last[c]; });
+  }
+  function wallMoved() {
+    var m = wallBox(), sy = window.scrollY;
+    if (!m || !wall) return !!m !== !!wall;
+    if (Math.abs(m.left - wall[0]) > .01 || Math.abs(m.top + sy - wall[1]) > .01 || Math.abs(m.width - wall[2]) > .01 || Math.abs(m.height - wall[3]) > .01) return true;
+    for (var j = 0; j < tails.length; j++) {
+      var i = tails[j], it = items[i], r = it.el.getBoundingClientRect(), d = it.on ? it.dy : 0;
+      if (Math.abs(r.left - geo[4 * i]) > .05 || Math.abs(r.bottom + sy - d - geo[4 * i + 3]) > .05) return true;   // (a transformed box can be rounded to 1/64 px)
+    }
+    return false;
+  }
+  function watch() {
+    if (!window.ResizeObserver) return;
+    if (ro) ro.disconnect();
+    ro = new ResizeObserver(function () { geo = null; });
+    var m = document.querySelector('main#main');
+    if (m) ro.observe(m);
+    ro.observe(document.body);
+    for (var i = 0; i < items.length; i++) ro.observe(items[i].el);
+  }
+  // Adding or dropping will-change rebuilds the page's layers and relays out the whole wall, so it is
+  // given to a band of tiles at once: the stretch that can carry the dip (half a screen above the view
+  // to a screen and a half below, plus the dip), a screen more in the direction of travel and a
+  // quarter behind. When that stretch reaches the band's edge the band moves on in one pass (tiles
+  // ahead promoted, tiles left behind released): one relayout a screen of scrolling instead of one
+  // most frames, with about as many layers as before. Tiles on screen hold will-change exactly as
+  // before, and the episode's end releases everything, as before.
+  function promote(sy, vh, down) {
+    var lo = sy - vh * (down ? .75 : 1.5) - DIP, hi = sy + vh * (down ? 2.5 : 1.75) + DIP;
+    band = [lo, hi];
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i], inb = geo[4 * i + 3] >= lo && geo[4 * i + 2] <= hi;
+      if (inb && !it.wc) { it.wc = true; it.el.style.willChange = 'transform'; }
+      else if (!inb && it.wc && !it.on) release(it);
+    }
+  }
+  function applyTiles(amount, vw, vh) {
+    var sy = window.scrollY, n = items.length;
+    if (!geo || wallMoved()) measureTiles();
+    if (!band || sy - vh * .5 - DIP < band[0] || sy + vh * 1.5 + DIP > band[1]) promote(sy, vh, vel >= 0);
+    for (var i = 0; i < n; i++) {
+      var it = items[i], d = it.on ? it.dy : 0;
+      if (geo[4 * i + 3] - sy + d < -vh * .5 || geo[4 * i + 2] - sy + d > vh * 1.5) { clear(it); continue; }   // only what is near the screen
+      var u = Math.max(0, Math.min(1, (geo[4 * i] + geo[4 * i + 1] / 2) / vw));
+      var s = (amount * sag(u)).toFixed(1);
+      if (!it.wc) { it.wc = true; it.el.style.willChange = 'transform'; }
+      if (s !== it.ds) { it.el.style.transform = 'translateY(' + s + 'px)'; it.ds = s; it.dy = +s; }
+      it.on = true;
+    }
   }
   // WebKit samples the displacement at whole device pixels, truncating toward zero: a dip under 1.5
   // device px down, or 0.5 up, moves nothing (its frames match the zero-scale filter's, measured), yet
@@ -121,45 +197,30 @@
   function apply(w, target) {
     if (w === 0) { flat(); return; }
     var vw = window.innerWidth, vh = window.innerHeight, amount = DIP * Math.min(1, vw / 1440) * w, n = items.length, i;
-    if (WEBKIT && page !== 'index' && (!filtered || target === 0) && unseen(amount)) { flat(); return; }
-    // Read every box before writing anything. A read after a write forces a style and layout pass,
-    // which on Index meant one per tile per frame. The boxes are the same either way: a tile's
-    // transform never moves another tile, and filters never move layout.
-    rects.length = n; far.length = 0;
+    if (page === 'index') { applyTiles(amount, vw, vh); return; }
+    if (WEBKIT && (!filtered || target === 0) && unseen(amount)) { flat(); return; }
+    // Read every box before writing anything (a read after a write forces a style and layout pass);
+    // filters never move layout, so the boxes are the same either way
+    rects.length = n;
     for (i = 0; i < n; i++) rects[i] = items[i].el.getBoundingClientRect();
     for (i = 0; i < n; i++) {
       var it = items[i], r = rects[i];
-      if (r.bottom < -vh * .5 || r.top > vh * 1.5) {   // only what is near the screen
-        clear(it);
-        if (it.wc && (r.bottom < -vh * 1.5 || r.top > vh * 2.5)) far.push(it);
-        continue;
-      }
-      if (it.tile) {
-        var u = Math.max(0, Math.min(1, (r.left + r.width / 2) / vw));
-        var dy = amount * sag(u);
-        if (!it.wc) { it.wc = true; it.el.style.willChange = 'transform'; }
-        it.el.style.transform = 'translateY(' + dy.toFixed(1) + 'px)';
-        it.on = true;
-      } else {
-        // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
-        var hh = r.height || it.h;   // the section's height now (images can still be loading)
-        var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(hh + it.pad, Math.ceil(vh - r.top + it.pad));
-        if (y1 <= y0) { clear(it); continue; }
-        var k = WEBKIT ? 1 / hh : 1;   // bounding-box units in WebKit
-        it.f.setAttribute('y', String(y0 * k)); it.f.setAttribute('height', String((y1 - y0) * k));
-        it.im.setAttribute('y', String(y0 * k)); it.im.setAttribute('height', String((y1 - y0) * k));
-        // the map samples from above by 0.5 * scale at the centre, so the centre moves down by that
-        it.disp.setAttribute('scale', WEBKIT ? String(2 * amount * k) : (2 * amount).toFixed(1));
-        if (it.el.style.filter !== 'url("#' + it.id + '")' && it.el.style.filter !== 'url(#' + it.id + ')') it.el.style.filter = 'url(#' + it.id + ')';
-        it.on = true;
-      }
+      if (r.bottom < -vh * .5 || r.top > vh * 1.5) { clear(it); continue; }   // only what is near the screen
+      // filter only the strip that is on screen (plus the sag margin): far fewer pixels per frame
+      var hh = r.height || it.h;   // the section's height now (images can still be loading)
+      var y0 = Math.max(-it.pad, Math.floor(-r.top - it.pad)), y1 = Math.min(hh + it.pad, Math.ceil(vh - r.top + it.pad));
+      if (y1 <= y0) { clear(it); continue; }
+      var k = WEBKIT ? 1 / hh : 1;   // bounding-box units in WebKit
+      it.f.setAttribute('y', String(y0 * k)); it.f.setAttribute('height', String((y1 - y0) * k));
+      it.im.setAttribute('y', String(y0 * k)); it.im.setAttribute('height', String((y1 - y0) * k));
+      // the map samples from above by 0.5 * scale at the centre, so the centre moves down by that
+      it.disp.setAttribute('scale', WEBKIT ? String(2 * amount * k) : (2 * amount).toFixed(1));
+      if (it.el.style.filter !== 'url("#' + it.id + '")' && it.el.style.filter !== 'url(#' + it.id + ')') it.el.style.filter = 'url(#' + it.id + ')';
+      it.on = true;
     }
-    // Adding or dropping will-change rebuilds the page's layers. A tile keeps it while it is within a
-    // screen of the warped band; tiles further out give it up 16 at a time, not one per frame.
-    if (far.length >= 16) for (i = 0; i < far.length; i++) release(far[i]);
     // WebKit draws the filter on the CPU: js/nm-space.js does not count these frames against its
     // particles (fewer would not make them faster)
-    if (WEBKIT && page !== 'index') { var on = false; for (i = 0; i < n && !on; i++) on = !!items[i].on; filtered = window.__nmDip = on; }
+    if (WEBKIT) { var on = false; for (i = 0; i < n && !on; i++) on = !!items[i].on; filtered = window.__nmDip = on; }
   }
   // The easing rates below were tuned per 60 Hz frame. Each is applied as 1 - (1 - rate)^(dt * 60):
   // exactly the tuned rate for a 60 Hz frame, and the same pull per second at 120 Hz.
