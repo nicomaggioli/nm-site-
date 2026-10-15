@@ -14,19 +14,8 @@ for (const engine of ['webkit','chromium']) {
       await page.goto(origin+'/index/',{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.querySelector('.grid img').complete);
       assert.match(await page.locator('.grid img').first().evaluate(el=>el.currentSrc),/\/nm-index\//,'Retina phones use the intermediate image');
-      await page.locator('#nm-coord').focus();await page.keyboard.press('Enter');
-      assert.equal(await page.evaluate(()=>document.activeElement.className),'nm-c-p-go','keyboard activation reaches the popup link');
-      await page.keyboard.press('Escape');
-      assert.equal(await page.evaluate(()=>document.activeElement.id),'nm-coord','Escape returns focus to the location button');
-      async function locationToMenu() {
-        await page.locator('#nm-coord').click();
-        await page.locator('.nm-burger').click();
-        assert.equal(await page.locator('.nm-c-panel').evaluate(el=>el.classList.contains('is-open')||el.matches(':popover-open')),false,'location card must not cover the mobile menu');
-        assert.equal(await page.locator('#nm-coord').getAttribute('aria-expanded'),'false');
-        assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Close menu');
-        await page.locator('.nm-menu-close').click();
-      }
-      await locationToMenu();
+      // (the coordinates widget is not loaded on the Night Sky pages: nm-coord.js only serves the proposal pages)
+      assert.equal(await page.locator('#nm-coord').count(),0,'no hidden coordinates widget on Index');
       const tile=page.locator('.grid .tile').nth(40);
       await tile.focus();await page.keyboard.press('Enter');
       await page.waitForSelector('.nm-lb img.is-ready');
@@ -68,7 +57,6 @@ for (const engine of ['webkit','chromium']) {
       await page.waitForURL('**/about/');await page.waitForSelector('#about-title');
       assert.equal(await page.locator('#about-title').innerText(),'Hey,\nI’m Nico!');
       assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('nm-menu-open')),false);
-      await locationToMenu();
 
       await page.goto(origin+'/#run',{waitUntil:'domcontentloaded'});
       const start=page.getByRole('button',{name:'Start run',exact:true});

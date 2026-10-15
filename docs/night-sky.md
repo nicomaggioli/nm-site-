@@ -13,7 +13,8 @@ Keep: the nav bar and the "NICO MAGGIOLI" logo as they are, the opening zoom int
 the scroll into the NM collage, "View all", the big statement, everything down to the footer.
 Remove: the coordinates pill (top right), "Design & Manufacturing" and "Scroll Down" (hero
 captions), "Where visions come true / Work with me" (footer headline). Already done in
-`css/theme-stars.css`.
+`css/theme-stars.css`; since 2026-10-15 the three pages also no longer load the hidden
+coordinates widget (`js/nm-coord.js` / `css/nm-coord.css`, which the proposal pages still use).
 
 Footer: "go heavy into the stars". The NM logo that is currently a cloud becomes a
 constellation: the shape of a constellation is his NM mark, and it fits the sky perfectly.
