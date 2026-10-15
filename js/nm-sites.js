@@ -10,7 +10,7 @@
 
   var PW = 380, PH = Math.round(PW * 10 / 16), PAD = 24;
   var peek = null, img = null, host = null, active = '', raf = 0, px = 0, py = 0;
-  var shots = new Map(), pointerInside = false;
+  var shots = new Map(), pointerInside = false, near = true, watched = null;
 
   function screenshot(src) {
     if (shots.has(src)) return shots.get(src);
@@ -84,7 +84,8 @@
   }
 
   function schedule() {
-    if (enabled.matches && pointerInside && !raf) raf = requestAnimationFrame(update);
+    // a row can only be under the pointer while the list is near the screen (see the observer below)
+    if (enabled.matches && pointerInside && (near || !watched.isConnected) && !raf) raf = requestAnimationFrame(update);
   }
 
   function pointer(e) {
@@ -132,6 +133,17 @@
     }, { rootMargin: '1000px' });
     observer.observe(section);
   } else warm();
+  /* Outside 1000px of the list nothing under the pointer can be a row, so the per-frame hit test
+     only runs near it (it ran on every scroll frame of the page). Leaving hides the preview, as the
+     next hit test would have. A replaced list falls back to testing everywhere, as before. */
+  if (section && 'IntersectionObserver' in window) {
+    watched = section;
+    new IntersectionObserver(function (entries) {
+      var was = near; near = entries[entries.length - 1].isIntersecting;
+      if (was && !near) { if (raf) { cancelAnimationFrame(raf); raf = 0; } hide(); }
+      else if (near) schedule();
+    }, { rootMargin: '1000px' }).observe(section);
+  }
   enabled.addEventListener('change', function () {
     if (nearby) warm();
     if (!enabled.matches) hide();

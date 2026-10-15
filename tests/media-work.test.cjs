@@ -62,13 +62,14 @@ test('media work follows playback boundaries and intersections without per-scrol
 test('desktop previews warm near their section and do no pointer work while inactive', () => {
   const window = new EventTarget(), document = new EventTarget(), enabled = new EventTarget();
   enabled.matches = true;
-  let intersection, disconnected = 0, scheduled = 0, idle = 0;
-  const images = [], section = {};
+  let disconnected = 0, scheduled = 0, idle = 0;
+  const images = [], section = {}, observers = [];
+  const intersection = entries => observers.forEach(callback => callback(entries));
   class Image { constructor() { images.push(this); } decode() { return Promise.resolve(); } }
   document.getElementById = id => id === 'nm-sites' ? section : {};
   document.querySelectorAll = () => Array.from({length: 8}, (_, i) => ({getAttribute: () => '/shot-' + i + '.webp'}));
   function IntersectionObserver(callback, options) {
-    intersection = callback; assert.equal(options.rootMargin, '1000px');
+    observers.push(callback); assert.equal(options.rootMargin, '1000px');
     this.observe = target => assert.equal(target, section); this.disconnect = () => { disconnected++; };
   }
   window.IntersectionObserver = IntersectionObserver;
@@ -87,4 +88,43 @@ test('desktop previews warm near their section and do no pointer work while inac
   const event = new Event('pointermove'); Object.assign(event, {pointerType: 'mouse', clientX: 10, clientY: 10});
   document.dispatchEvent(event); window.dispatchEvent(new Event('scroll'));
   assert.equal(scheduled, 0, 'disabled desktop previews schedule no frame work');
+});
+
+test('desktop previews hit-test rows only while the list is near the screen', () => {
+  const window = new EventTarget(), document = new EventTarget(), enabled = new EventTarget();
+  enabled.matches = true;
+  const observers = [], frames = new Map(), section = {isConnected: true};
+  let id = 0, hits = 0, row = null;
+  const peek = {classList: {on: false, add() { this.on = true; }, remove() { this.on = false; }}, style: {}, isConnected: true,
+    querySelector: s => s === 'img' ? {replaceWith() {}} : {textContent: ''}};
+  document.getElementById = id => id === 'nm-sites' ? section : null;
+  document.querySelectorAll = () => [];
+  document.createElement = () => peek;
+  document.body = {appendChild() {}};
+  document.elementFromPoint = () => { hits++; return row; };
+  function IntersectionObserver(callback) { observers.push(callback); this.observe = () => {}; this.disconnect = () => {}; }
+  window.IntersectionObserver = IntersectionObserver;
+  const near = value => observers.forEach(callback => callback([{isIntersecting: value}]));
+  const flush = () => { const queued = [...frames.values()]; frames.clear(); queued.forEach(callback => callback()); };
+  vm.runInNewContext(script('nm-sites.js'), {
+    window, document, navigator: {}, Image: class { decode() { return Promise.resolve(); } }, IntersectionObserver, matchMedia: () => enabled,
+    innerWidth: 1440, innerHeight: 900,
+    requestAnimationFrame: callback => { frames.set(++id, callback); return id; }, cancelAnimationFrame: key => { frames.delete(key); }
+  });
+  const move = Object.assign(new Event('pointermove'), {pointerType: 'mouse', clientX: 300, clientY: 400});
+  document.dispatchEvent(move); flush();
+  assert.equal(hits, 1, 'before the observer reports, the pointer is checked as before');
+  near(false);
+  for (let i = 0; i < 5; i++) { window.dispatchEvent(new Event('scroll')); flush(); }
+  assert.equal(hits, 1, 'scrolling far from the list does no hit testing');
+  row = {getAttribute: () => '/shot.webp', href: 'https://example.com/', closest: () => row};
+  near(true); flush();
+  assert.equal(hits, 2, 'coming near checks the row under the still pointer once');
+  assert.equal(peek.classList.on, true, 'a row under the pointer shows its preview');
+  window.dispatchEvent(new Event('scroll')); document.dispatchEvent(move);
+  near(false); flush();
+  assert.equal(hits, 2, 'leaving cancels the pending check');
+  assert.equal(peek.classList.on, false, 'leaving hides the preview, as the next check would have');
+  section.isConnected = false; window.dispatchEvent(new Event('scroll')); flush();
+  assert.equal(hits, 3, 'a replaced list falls back to checking on every scroll frame');
 });
