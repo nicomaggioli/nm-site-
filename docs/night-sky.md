@@ -205,6 +205,20 @@ The look is unchanged; these change only when and how often the work is done.
   goes to a band of tiles at once (the stretch that can dip, plus a screen ahead and a quarter
   behind) and moves on in one pass, so the wall relays out about once a screen of scrolling instead
   of most frames; tiles on screen hold it exactly as before and about as many layers exist.
+- Index under its image wall. The wall is opaque from its lowest column top to its highest column
+  bottom (tiles edge to edge, filled #141414 under their images); `js/nm-sky.js` measures it at
+  layout (and forgets it at once on a resize or ResizeObserver report, until the next layout). While
+  it covers the screen with a screen plus the dip to spare at both ends (`NMSky.covered()`), the sky,
+  its overlay and the particle space skip their draws; clocks, camera, events, labels and the scrim
+  run on, and the first frame out draws whatever the beat (never the first draw of a visit, which
+  fades the canvases in). That is 77–90% of the scroll range (82% at 1440×900, 87.5% on a 390×844
+  phone). Checked frame by frame on a fake clock, flinging out across both edges in Chrome and WebKit
+  at 1440×900@2 and 390×844@3: on every frame where any sky can show, the draws are exactly the old
+  code's and a forced redraw of that frame changes nothing on screen; drawing resumes 13–15 frames
+  (830–880 px) before the sky shows. With real (compositor) flings up to 15,000 px/s no frame showed
+  the sky undrawn. Only a main-thread stall long enough for compositor scrolling to carry the view a
+  whole screen in the last screen before an edge (120 ms at 8000 px/s) shows the sky as last drawn
+  under the wall for those frames (the old code shows it as drawn before the stall).
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).

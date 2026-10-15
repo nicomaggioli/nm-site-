@@ -991,7 +991,11 @@
     // display rate while the camera moves, else ~30 fps on the shared beat (the sky draws on the
     // same frames)
     var busy = CAM.moving || Math.abs(CAM.vg) > 1e-3;
-    if (S.still || busy || TK.t30 || !S.lastDraw || S.force) {
+    // under Index's image wall (NMSky.covered) no draws; the first frame out draws, beat or not
+    var sky = window.NMSky, cov = S.shown && !!(sky && sky.covered && sky.covered());
+    if (cov) S.cov = true;
+    else if (S.cov) { S.cov = false; S.force = true; }
+    if (!cov && (S.still || busy || TK.t30 || !S.lastDraw || S.force)) {
       S.lastDraw = now; S.force = false;
       if (G.ok && !G.lost) { draw(); drew = true; }
     }

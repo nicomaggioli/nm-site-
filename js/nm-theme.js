@@ -27,8 +27,8 @@
     '/js/theme-stars.js': '19d1735148',
     '/js/nm-starcut.js': 'e72f4740b3',
     '/js/nm-warp.js': 'a0f4462559',
-    '/js/nm-space.js': '02d47c4dcf',
-    '/js/nm-sky.js': '3d672b7e97'
+    '/js/nm-space.js': '9faf9aef33',
+    '/js/nm-sky.js': '7577cd3ce3'
   };
   var DATA = {
     '/media/sky/stars.json': 'ede78d3203',

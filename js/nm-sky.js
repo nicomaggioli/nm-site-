@@ -496,6 +496,7 @@
     S.docH = docHeight();
     S.maxY = Math.max(1, S.docH - (window.innerHeight || S.vh));
     layoutFooter();
+    measureWall();
     var sig = [S.vw, S.vh, S.dpr, S.docH, S.R, S.nm && Math.round(S.nm.x), S.nm && Math.round(S.nm.y), document.body.offsetHeight].join('|');
     if (!force && sig === S.sig) return;
     S.sig = sig;
@@ -504,6 +505,48 @@
     veilBuildSoon();
     kick();
   }
+
+  /* ------------------------------------------------------ Index: the image wall */
+  // Index's image wall is opaque from its lowest column top to its highest column bottom: tiles edge
+  // to edge with no gaps, each filled (#141414) under its image. While it covers the whole screen
+  // with room to spare (a screen plus the scroll dip each way, so neither scrolling ahead of this
+  // thread nor a dipping column can show the sky before a frame here has drawn it), the sky and the
+  // particle space skip their draws; their clocks, camera, events, labels and the header scrim run
+  // on as before, so the first frame drawn again is exactly the one it would have been. Measured at
+  // layout; unknown (never covered) from any resize until then.
+  var WALL = null;   // [top, bottom], document px
+  function measureWall() {
+    WALL = null;
+    if (S.page !== 'index') return;
+    var tiles = document.querySelectorAll('main#main > figure.tile'), sy = window.scrollY || 0, cols = {}, keys = [], i, j;
+    for (i = 0; i < tiles.length; i++) {
+      var el = tiles[i], cs = getComputedStyle(el), bg = parseRgba(cs.backgroundColor);
+      if (!bg || bg[3] < 1 || +cs.opacity < 1 || cs.visibility !== 'visible') return;   // not opaque: no wall
+      var r = el.getBoundingClientRect(), m = /translateY\(([-\d.]+)px\)/.exec(el.style.transform), d = m ? +m[1] : 0;
+      var k = Math.round(r.left * 8);
+      if (!cols[k]) { cols[k] = { l: r.left, w: r.width, b: [] }; keys.push(k); }
+      cols[k].b.push([r.top + sy - d, r.bottom + sy - d]);
+    }
+    if (!keys.length) return;
+    keys.sort(function (a, b) { return a - b; });
+    var x = 0, top = -Infinity, bot = Infinity;
+    for (i = 0; i < keys.length; i++) {
+      var c = cols[keys[i]];
+      if (Math.abs(c.l - x) > 0.5) return;   // a gap between columns
+      x = c.l + c.w;
+      c.b.sort(function (a, b) { return a[0] - b[0]; });
+      for (j = 1; j < c.b.length; j++) if (c.b[j][0] - c.b[j - 1][1] > 0.5) return;   // a gap in a column
+      top = Math.max(top, c.b[0][0]); bot = Math.min(bot, c.b[c.b.length - 1][1]);
+    }
+    if (x < (root.clientWidth || innerWidth) - 0.5) return;   // short of the right edge
+    WALL = [top, bot];
+  }
+  function covered() {
+    if (!WALL) return false;
+    var sy = window.scrollY || 0, vh = Math.max(window.innerHeight || 0, S.vh), m = vh + 45;
+    return sy >= WALL[0] + m && sy + vh <= WALL[1] - m;
+  }
+  api.covered = covered;
 
   /* -------------------------------------------------------- AA contrast caps */
   // For every line of text on the page: the most light the sky may add behind it so the
@@ -1845,14 +1888,18 @@
     S.foot = fl;
     flyStep();
     var glide = camGlides();
-    if (S.still || glide || fastEvent() || (tk ? tk.t30 : now - S.lastDraw > 31) || !S.lastDraw || S.force) {
+    // under Index's wall: no draws (the first frame out draws, beat or not)
+    var cov = S.shown && covered();
+    if (cov) S.cov = true;
+    else if (S.cov) { S.cov = false; S.force = true; }
+    if (!cov && (S.still || glide || fastEvent() || (tk ? tk.t30 : now - S.lastDraw > 31) || !S.lastDraw || S.force)) {
       S.lastDraw = now; S.force = false;
       drawSky(t);
     }
     label.a += ((label.on ? 1 : 0) - label.a) * (S.still ? 1 : Math.min(1, dt * 7));
     if (label.on) placeLabel();
     eventsTick(dt);
-    drawFx(now);
+    if (!cov) drawFx(now);
     cons.hover += (cons.hoverTo - cons.hover) * (S.still ? 1 : Math.min(1, dt * 6));
     cons.linesIn = S.still ? 1 : smooth(0.4, 0.9, fl);
     if (cons.visible && cons.ctx && (S.still || S.force || (tk ? tk.t30 : now - cons.lastT > 31) || Math.abs(cons.hover - cons.hoverTo) > 0.01)) { cons.lastT = now; drawCons(t); }
@@ -1919,6 +1966,7 @@
   /* ------------------------------------------------------------------- mount */
   var resizeT = 0, roT = 0;
   function onResize() {
+    WALL = null;
     clearTimeout(resizeT);
     resizeT = setTimeout(function () {
       if (!S.ready) { measure(); return; }
@@ -1963,6 +2011,7 @@
     addEventListener('scroll', onScroll, { passive: true });
     if ('ResizeObserver' in window) {
       new ResizeObserver(function () {
+        WALL = null;
         clearTimeout(roT);
         roT = setTimeout(function () { if (S.ready) { relayout(false); checkVeil(); } }, 220);
       }).observe(document.body);
