@@ -7,12 +7,22 @@
    attached while the page is moving. Index: the image wall is a single 18,000px column, too big
    to filter, so each tile drops by the curve at its centre. Tiles stay upright (tilting them
    opened black wedges and overlaps between neighbours), so each column of the wall dips as one
-   solid strip and the images stay whole. Never touches sticky/fixed layers. Off under prefers-reduced-motion. */
+   solid strip and the images stay whole. Never touches sticky/fixed layers. Off under prefers-reduced-motion.
+
+   Preview switch (2026-10-15): ?dip=blocks moves Home's and About's sections in pieces instead of
+   filtering them (the lighter dip meant for Safari, see "Blocks" below), ?dip=filter the filter as
+   it is, ?dip=off no dip (as ?warp=off). The choice is kept for the tab (sessionStorage
+   'nm-dip-mode'). Index is the same in every mode. With no switch nothing changes. */
 (function () {
   'use strict';
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
   if (/[?&]warp=off\b/.test(location.search)) return;   // preview: compare against no warp
   var page = document.querySelector('footer .foot-mark') ? 'index' : document.body.classList.contains('nm-about-page') ? 'about' : 'home';
+  var dm = /[?&]dip=(blocks|filter|off)\b/.exec(location.search), MODE = dm ? dm[1] : null;
+  try { if (MODE) sessionStorage.setItem('nm-dip-mode', MODE); else MODE = sessionStorage.getItem('nm-dip-mode'); } catch (e) {}
+  if (MODE !== 'blocks' && MODE !== 'filter' && MODE !== 'off') MODE = null;
+  if (MODE === 'off') return;
+  var BLOCKS = MODE === 'blocks' && page !== 'index';
   var SECTIONS = {
     home: ['#about', '#nm-brands', '#nm-services', '#nm-sites'],
     about: ['main#main > section:not(#contact)']
@@ -36,7 +46,7 @@
   var WEBKIT = (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)) || /CriOS|FxiOS|EdgiOS/.test(ua);
   var items = [], rects = [], svg = null, mapURL = '', last = 0, vel = 0, warp = 0, raf = 0, moving = false, filtered = false;
   var hist = [], seen = -1;   // recent [time, scrollY] pairs; how many sections the last list found
-  var firstDt = 1 / 60, age = 0;
+  var firstDt = 1 / 60, age = 0, hold = null;
 
   // the curve: 0 at both edges, 1 in the middle (a soft rope sag)
   function sag(u) { var t = 2 * u - 1; return 1 - t * t; }
@@ -61,6 +71,7 @@
       geo = null; watch();
       return;
     }
+    if (BLOCKS) { bCollect(); return; }
     if (!svg) {
       svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('aria-hidden', 'true');
@@ -111,6 +122,7 @@
     filtered = window.__nmDip = window.__nmTileDip = false;
     band = null;
     for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
+    if (BLOCKS) bFlat();
   }
 
   // Index. Each tile's box in document px (left, width, top, bottom: geo[4i..4i+3]) is read once, and
@@ -188,6 +200,304 @@
     // draws (NMSky.covered), so the sky in the dip's 1-px seams and fling gaps is the live one
     window.__nmTileDip = true;
   }
+  // Blocks (?dip=blocks): the lighter dip, meant for Safari. WebKit draws the SVG filter on the CPU
+  // over each section's on-screen strip every frame the page moves under it; here the pieces of each
+  // section move instead, by transform on the compositor. Each piece rides the same curve the filter's
+  // map encodes (across the section's own width): its centre at the curve's height there, sheared
+  // with the curve's slope there, as the filter shears what it bends, so a section still reads as one
+  // bowed surface. A piece is the smallest whole thing: an image or video, a paragraph or heading, a
+  // box that paints itself (a pill, a framed photo, a button), or anything narrower than a third of the
+  // section; wider plain containers are taken apart (rows into their cells, columns into what they
+  // hold), a headline written as one span per word (the homepage statement) moves word by word, and
+  // the logo strip logo by logo (see strip()). A container's top or bottom rule is taken over by eight
+  // short segments (fewer on a narrow rule) that ride the curve, so a full-width line bends as a
+  // polyline; the rule itself is transparent only while its segments are on. Boxes are read when the pieces are listed (document
+  // px, while everything is flat) and listed again after a resize, a ResizeObserver report from a
+  // section or the body, or a change of the sections' content or classes (once the page is flat
+  // again); nothing is read per frame. will-change goes to a band of pieces at once, as on Index.
+  var pieces = [], owners = [], strips = [], secs = [], lists = 0, host = null, hx = 0, hy = 0, bdirty = true, bband = null, bro = null, bmo = null, bidle = 0, broInit = false;
+  var MAXU = 0.34, SEGS = 8, WORDPX = 28;
+  var ATOM = { IMG: 1, VIDEO: 1, CANVAS: 1, svg: 1, PICTURE: 1, IFRAME: 1, BUTTON: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1, OBJECT: 1, EMBED: 1 };
+  var TRANSLATE = document.documentElement.style.translate !== undefined;
+  function sagc(u) { return u <= 0 || u >= 1 ? 0 : sag(u); }
+  function slope(u) { return u <= 0 || u >= 1 ? 0 : 4 * (1 - 2 * u); }   // d sag / du
+  function see(c) { return c && c !== 'transparent' && !/^rgba\(.*,\s*0\)$/.test(c); }
+  function rule(cs, s) { var st = cs['border' + s + 'Style']; return parseFloat(cs['border' + s + 'Width']) > 0 && st !== 'none' && st !== 'hidden' && see(cs['border' + s + 'Color']); }
+  function pseudo(el, p) { var c = getComputedStyle(el, p); return c.content !== 'none' && c.content !== 'normal' && c.display !== 'none'; }
+  // a box that paints something of its own (besides top and bottom rules), or groups what it holds
+  function whole(el, cs) {
+    return ATOM[el.tagName] || see(cs.backgroundColor) || cs.backgroundImage !== 'none' || cs.boxShadow !== 'none' || rule(cs, 'Left') || rule(cs, 'Right')
+      || cs.overflowX !== 'visible' || cs.overflowY !== 'visible' || cs.clipPath !== 'none' || (cs.maskImage || cs.webkitMaskImage || 'none') !== 'none'
+      || cs.opacity !== '1' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || cs.transform !== 'none' || pseudo(el, '::before') || pseudo(el, '::after');
+  }
+  // 0: block content only; 1: text or inline elements (it moves whole); 2: a headline of word spans
+  function inline(el, cs) {
+    var ws = parseFloat(cs.fontSize) >= WORDPX, any = false;
+    for (var n = el.firstChild; n; n = n.nextSibling) {
+      if (n.nodeType === 3) { if (/\S/.test(n.data)) return 1; continue; }
+      if (n.nodeType !== 1 || getComputedStyle(n).display !== 'inline') continue;
+      any = true;
+      if (n.tagName !== 'SPAN' || n.firstElementChild) ws = false;
+    }
+    return any ? (ws ? 2 : 1) : 0;
+  }
+  function bCollect() {
+    bFlat();
+    for (var i = 0; i < owners.length; i++) for (var j = 0; j < owners[i].segs.length; j++) owners[i].segs[j].el.remove();
+    pieces = []; owners = []; strips = []; secs = []; bdirty = false; bband = null; lists++;
+    var sx = window.scrollX, sy = window.scrollY;
+    if (!host) {
+      host = document.createElement('div');
+      host.setAttribute('aria-hidden', 'true');
+      host.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none';
+      document.body.appendChild(host);
+    }
+    var hr = host.getBoundingClientRect(); hx = hr.left + sx; hy = hr.top + sy;
+    var list = document.querySelectorAll(SECTIONS[page].join(','));
+    seen = list.length;
+    list.forEach(function (el) {
+      var cs = getComputedStyle(el);
+      if (cs.position === 'sticky' || cs.position === 'fixed' || cs.display === 'none') return;
+      var r = el.getBoundingClientRect();
+      if (!r.width) return;
+      var sec = { el: el, l: r.left, w: r.width, sx: sx, sy: sy };
+      secs.push(sec);
+      rules(el, cs, r, sec, null);
+      walk(el, sec, null);
+    });
+    bWatch();
+  }
+  function walk(el, sec, cull) {
+    for (var c = el.firstElementChild; c; c = c.nextElementSibling) {
+      var t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE' || t === 'BR') continue;
+      var cs = getComputedStyle(c), d = cs.display;
+      // (unseen: the five services photos stacked behind the open one would be ~8 MB of layers each)
+      if (d === 'none' || cs.position === 'fixed' || cs.opacity === '0') continue;
+      if (d === 'contents') { walk(c, sec, cull); continue; }
+      var cc = cull;
+      if (cs.position === 'sticky') {   // it moves within its parent while the page scrolls: kept near the screen while that is
+        var pr = c.parentElement.getBoundingClientRect();
+        cc = [pr.top + sec.sy, pr.bottom + sec.sy];
+      }
+      var r = c.getBoundingClientRect();
+      if ((!r.width || !r.height) && !c.firstElementChild) continue;
+      if (c.classList.contains('nm-brands-marquee') && TRANSLATE && strip(c, cs, r, sec, cc)) continue;
+      var kind = inline(c, cs);
+      if (kind === 2 && r.width > MAXU * sec.w && !whole(c, cs)) { rules(c, cs, r, sec, cc); words(c, sec, cc); }
+      else if (kind === 1 || !c.firstElementChild || r.width <= MAXU * sec.w || whole(c, cs)) piece(c, cs, r, sec, cc);
+      else { rules(c, cs, r, sec, cc); walk(c, sec, cc); }
+    }
+  }
+  // a headline written one span per word: each word is a piece. An inline box cannot be transformed, so
+  // while a word holds will-change it is an inline-block aligned to the line's top, which lays the
+  // lines out exactly as before (aligned to the baseline the lines grew by 1/64 px each); at rest it is
+  // the inline it was (as an inline-block, WebKit placed two words' glyphs a fraction of a pixel apart)
+  function words(el, sec, cull) {
+    for (var c = el.firstElementChild; c; c = c.nextElementSibling) {
+      if (!/\S/.test(c.textContent)) continue;
+      var cs = getComputedStyle(c);
+      piece(c, cs, c.getBoundingClientRect(), sec, cull, cs.display === 'inline');
+    }
+  }
+  function piece(el, cs, r, sec, cull, word) {
+    var x0 = r.left, x1 = r.right, top = r.top, bot = r.bottom;
+    // plain text and plain containers: centred on what they hold (a short heading in a wide box)
+    if (!whole(el, cs) && !rule(cs, 'Top') && !rule(cs, 'Bottom')) {
+      var rg = document.createRange(); rg.selectNodeContents(el);
+      var q = rg.getBoundingClientRect();
+      if (q.width > 0) { x0 = q.left; x1 = q.right; top = Math.min(top, q.top); bot = Math.max(bot, q.bottom); }
+    }
+    var uc = ((x0 + x1) / 2 - sec.l) / sec.w;
+    var own = cs.transform !== 'none' || el.classList.contains('nm-mag');   // its own transform (the magnetic words): moved by translate only
+    if (own && !TRANSLATE) return;
+    pieces.push({ el: el, S: sagc(uc), K: own ? 0 : slope(uc) / sec.w, ox: (x0 + x1) / 2 - r.left, own: own, word: !!word,
+      top: cull ? cull[0] : top + sec.sy, bot: cull ? cull[1] : bot + sec.sy, on: false, wc: false, ds: null });
+  }
+  function rules(el, cs, r, sec, cull) {
+    ['Top', 'Bottom'].forEach(function (s) {
+      if (!rule(cs, s)) return;
+      var bw = parseFloat(cs['border' + s + 'Width']), y = (s === 'Top' ? r.top : r.bottom - bw) + sec.sy;
+      var n = Math.max(1, Math.min(SEGS, Math.round(SEGS * r.width / sec.w)));
+      var o = { el: el, prop: 'border' + s + 'Color', prev: el.style['border' + s + 'Color'], segs: [],
+        top: cull ? cull[0] : y, bot: cull ? cull[1] : y + bw, on: false, wc: false };
+      for (var i = 0; i < n; i++) {
+        var xa = Math.round(r.left + r.width * i / n), xb = Math.round(r.left + r.width * (i + 1) / n), uc = ((xa + xb) / 2 - sec.l) / sec.w;
+        var d = document.createElement('div');
+        d.style.cssText = 'position:absolute;display:none;left:' + (xa + sec.sx - hx) + 'px;top:' + (y - hy) + 'px;width:' + (xb - xa) + 'px;height:' + bw + 'px;background:' + cs['border' + s + 'Color'];
+        host.appendChild(d);
+        o.segs.push({ el: d, S: sagc(uc), K: slope(uc) / sec.w, ox: (xb - xa) / 2, own: false, on: false, wc: false, ds: null });
+      }
+      owners.push(o);
+    });
+  }
+  // The logo strip slides sideways all the time inside its own mask and clip, so moved whole it could
+  // only drop level. Its logos ride the curve instead, each from where the strip's animation has it this
+  // frame (its timing, not layout); while they hold will-change the strip's box reaches further up and
+  // down (padding, with as much negative margin: nothing else moves), so the mask does not cut them.
+  function prog(a) { var t = a.effect.getComputedTiming().progress; return t == null ? 0 : t; }
+  function strip(el, cs, r, sec, cull) {
+    var tr = el.firstElementChild, an = tr && tr.getAnimations ? tr.getAnimations() : [];
+    if (!an.length || !an[0].effect || !an[0].effect.getKeyframes) return false;
+    var kf = an[0].effect.getKeyframes(), tw = tr.offsetWidth;
+    var tx = function (k) { var m = /translateX\((-?[\d.]+)(px|%)?\)/.exec((k && k.transform) || ''); return m ? (m[2] === '%' ? +m[1] * tw / 100 : +m[1]) : NaN; };
+    var x0 = tx(kf[0]), x1 = tx(kf[kf.length - 1]);
+    if (kf.length < 2 || isNaN(x0) || isNaN(x1)) return false;
+    var q = tr.getBoundingClientRect(), logos = [];
+    for (var c = tr.firstElementChild; c; c = c.nextElementSibling) {
+      var g = c.getBoundingClientRect();
+      if (g.width) logos.push({ el: c, x: g.left - q.left + g.width / 2, S: 0, own: true, on: false, wc: false, ds: null });
+    }
+    strips.push({ el: el, an: an[0], x0: x0, x1: x1, base: q.left - (x0 + (x1 - x0) * prog(an[0])), sec: sec, logos: logos,
+      css: [cs.paddingTop, cs.paddingBottom, cs.marginTop, cs.marginBottom],
+      prev: [el.style.paddingTop, el.style.paddingBottom, el.style.marginTop, el.style.marginBottom],
+      top: cull ? cull[0] : r.top + sec.sy, bot: cull ? cull[1] : r.bottom + sec.sy, wc: false });
+    return true;
+  }
+  function sLift(t) {
+    var e = (DIP + 4) + 'px', st = t.el.style;
+    t.wc = true;
+    st.paddingTop = 'calc(' + t.css[0] + ' + ' + e + ')'; st.paddingBottom = 'calc(' + t.css[1] + ' + ' + e + ')';
+    st.marginTop = 'calc(' + t.css[2] + ' - ' + e + ')'; st.marginBottom = 'calc(' + t.css[3] + ' - ' + e + ')';
+    for (var j = 0; j < t.logos.length; j++) if (!t.logos[j].wc) lift(t.logos[j]);
+  }
+  function sDrop(t) {
+    var st = t.el.style;
+    t.wc = false;
+    st.paddingTop = t.prev[0]; st.paddingBottom = t.prev[1]; st.marginTop = t.prev[2]; st.marginBottom = t.prev[3];
+    for (var j = 0; j < t.logos.length; j++) { bClear(t.logos[j]); if (t.logos[j].wc) drop(t.logos[j]); }
+  }
+  function sPut(t, a) {
+    var x = t.base + t.x0 + (t.x1 - t.x0) * prog(t.an) - t.sec.l;
+    for (var j = 0; j < t.logos.length; j++) {
+      var g = t.logos[j], u = (x + g.x) / t.sec.w;
+      if (u <= 0 || u >= 1) { bClear(g); continue; }
+      g.S = sag(u); put(g, a);
+    }
+  }
+  function bWatch() {
+    if (window.ResizeObserver) {
+      if (bro) bro.disconnect();
+      broInit = true;
+      bro = new ResizeObserver(function () { if (broInit) broInit = false; else bStaleSoon(); });
+      for (var i = 0; i < secs.length; i++) bro.observe(secs[i].el);
+      bro.observe(document.body);
+    }
+    if (window.MutationObserver) {
+      if (bmo) bmo.disconnect();
+      // (a section's own class moves nothing: #nm-brands pauses its strip that way as it scrolls by)
+      bmo = new MutationObserver(function (recs) {
+        for (var k = 0; k < recs.length; k++) {
+          var t = recs[k].target, root = false;
+          for (var s = 0; s < secs.length && !root; s++) root = secs[s].el === t;
+          if (recs[k].type !== 'attributes' || !root) { bStaleSoon(); return; }
+        }
+      });
+      for (i = 0; i < secs.length; i++) bmo.observe(secs[i].el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'hidden', 'open', 'aria-expanded'] });
+    }
+  }
+  // listed again in a quiet moment once the page is flat (or when the next swipe starts, if sooner)
+  function bStaleSoon() {
+    bdirty = true;
+    if (!bidle) bidle = setTimeout(function () { bidle = 0; if (!bdirty) return; if (moving) bStaleSoon(); else collect(); }, 250);
+  }
+  function bStale() {
+    if (bdirty || document.querySelectorAll(SECTIONS[page].join(',')).length !== seen) return true;
+    for (var i = 0; i < pieces.length; i++) if (!pieces[i].el.isConnected) return true;
+    return false;
+  }
+  function put(p, a) {
+    var v;
+    if (p.own) {
+      v = '0 ' + (a * p.S).toFixed(2) + 'px';
+      if (v !== p.ds) { p.el.style.translate = v; p.ds = v; }
+    } else {
+      v = 'matrix(1,' + (a * p.K).toFixed(5) + ',0,1,0,' + (a * p.S).toFixed(2) + ')';
+      if (v !== p.ds) { if (!p.on) p.el.style.transformOrigin = p.ox.toFixed(2) + 'px 0'; p.el.style.transform = v; p.ds = v; }
+    }
+    if (!p.wc) lift(p);
+    p.on = true;
+  }
+  function lift(p) {
+    p.wc = true;
+    if (p.word) { p.el.style.display = 'inline-block'; p.el.style.verticalAlign = 'top'; }
+    p.el.style.willChange = 'transform';
+  }
+  function drop(p) {
+    p.wc = false;
+    if (p.word) { p.el.style.display = ''; p.el.style.verticalAlign = ''; }
+    p.el.style.willChange = '';
+  }
+  function bClear(p) {
+    if (!p.on) return;
+    p.on = false; p.ds = null;
+    if (p.own) p.el.style.translate = '';
+    else { p.el.style.transform = ''; p.el.style.transformOrigin = ''; }
+  }
+  function oClear(o) {
+    if (!o.on) return;
+    o.on = false;
+    o.el.style[o.prop] = o.prev;
+    for (var j = 0; j < o.segs.length; j++) { bClear(o.segs[j]); o.segs[j].el.style.visibility = 'hidden'; }
+  }
+  function oRelease(o) {
+    o.wc = false;
+    for (var j = 0; j < o.segs.length; j++) { var s = o.segs[j]; s.wc = false; s.el.style.willChange = ''; s.el.style.display = 'none'; }
+  }
+  function bFlat() {
+    bband = null;
+    for (var i = 0; i < pieces.length; i++) { var p = pieces[i]; bClear(p); if (p.wc) drop(p); }
+    for (i = 0; i < owners.length; i++) { oClear(owners[i]); if (owners[i].wc) oRelease(owners[i]); }
+    for (i = 0; i < strips.length; i++) if (strips[i].wc) sDrop(strips[i]);
+  }
+  // will-change for a band (as on Index): the stretch that can dip, a screen more ahead, a quarter behind
+  function bPromote(sy, vh, down) {
+    var lo = sy - vh * (down ? .75 : 1.5) - DIP, hi = sy + vh * (down ? 2.5 : 1.75) + DIP, i, j, inb;
+    bband = [lo, hi];
+    for (i = 0; i < pieces.length; i++) {
+      var p = pieces[i]; inb = p.bot >= lo && p.top <= hi;
+      if (inb && !p.wc) lift(p);
+      else if (!inb && p.wc && !p.on) drop(p);
+    }
+    for (i = 0; i < owners.length; i++) {
+      var o = owners[i]; inb = o.bot >= lo && o.top <= hi;
+      if (inb && !o.wc) {
+        o.wc = true;
+        for (j = 0; j < o.segs.length; j++) { var s = o.segs[j]; s.wc = true; s.el.style.visibility = 'hidden'; s.el.style.display = 'block'; s.el.style.willChange = 'transform'; }
+      } else if (!inb && o.wc && !o.on) oRelease(o);
+    }
+    for (i = 0; i < strips.length; i++) {
+      var t = strips[i]; inb = t.bot >= lo && t.top <= hi;
+      if (inb && !t.wc) sLift(t);
+      else if (!inb && t.wc) sDrop(t);
+    }
+  }
+  function applyBlocks(amount, vh) {
+    var sy = window.scrollY, m = Math.abs(amount), lo = sy - vh * .5 - m, hi = sy + vh * 1.5 + m, i, j;
+    if (!bband || sy - vh * .5 - DIP < bband[0] || sy + vh * 1.5 + DIP > bband[1]) bPromote(sy, vh, vel >= 0);
+    for (i = 0; i < pieces.length; i++) {
+      var p = pieces[i];
+      if (p.bot < lo || p.top > hi) bClear(p);   // only what is near the screen
+      else put(p, amount);
+    }
+    for (i = 0; i < owners.length; i++) {
+      var o = owners[i];
+      if (o.bot < lo || o.top > hi) { oClear(o); continue; }
+      if (!o.wc) bPromote(sy, vh, vel >= 0);
+      for (j = 0; j < o.segs.length; j++) put(o.segs[j], amount);
+      if (!o.on) {
+        o.on = true;
+        for (j = 0; j < o.segs.length; j++) o.segs[j].el.style.visibility = 'visible';
+        o.el.style[o.prop] = 'transparent';
+      }
+    }
+    for (i = 0; i < strips.length; i++) {
+      var t = strips[i];
+      if (t.bot < lo || t.top > hi) { for (j = 0; j < t.logos.length; j++) bClear(t.logos[j]); continue; }
+      if (!t.wc) bPromote(sy, vh, vel >= 0);
+      sPut(t, amount);
+    }
+  }
   // WebKit samples the displacement at whole device pixels, truncating toward zero: a dip under 1.5
   // device px down, or 0.5 up, moves nothing (its frames match the zero-scale filter's, measured), yet
   // each still costs WebKit a CPU-filtered frame. At an episode's edges (before the filter goes on, and
@@ -198,9 +508,11 @@
     return px < 1.25 && px > -0.4;
   }
   function apply(w, target) {
+    if (hold !== null) { w = target = hold; }   // the preview's capture rig (?dip= only)
     if (w === 0) { flat(); return; }
     var vw = window.innerWidth, vh = window.innerHeight, amount = DIP * Math.min(1, vw / 1440) * w, n = items.length, i;
     if (page === 'index') { applyTiles(amount, vw, vh); return; }
+    if (BLOCKS) { applyBlocks(amount, vh); return; }
     if (WEBKIT && (!filtered || target === 0) && unseen(amount)) { flat(); return; }
     // Read every box before writing anything (a read after a write forces a style and layout pass);
     // filters never move layout, so the boxes are the same either way
@@ -279,11 +591,22 @@
     // Home and About: on the homepage most sections (brands, services, sites) are added by script
     // after this file starts, so a list taken at start-up could hold only the statement. Re-list
     // them when a swipe starts and their number has changed.
-    if (!moving && page !== 'index' && document.querySelectorAll(SECTIONS[page].join(',')).length !== seen) collect();
+    if (BLOCKS) { if (!moving && bStale()) collect(); }
+    else if (!moving && page !== 'index' && document.querySelectorAll(SECTIONS[page].join(',')).length !== seen) collect();
     else if (!items.length) collect();
     if (!moving) { moving = true; hist = [fromT, fromY]; last = 0; age = 0; firstDt = 1 / 60; }
     if (!raf) raf = requestAnimationFrame(frame);
   }
+  // the preview's capture rig: hold(w) sets the dip (-1..1) until hold(null); warp is the live value
+  if (MODE) window.__nmDipDebug = {
+    mode: page === 'index' ? 'tiles' : BLOCKS ? 'blocks' : 'filter',
+    hold: function (w) { hold = w == null ? null : +w; apply(hold === null ? 0 : hold, hold); },
+    get warp() { return warp; },
+    get pieces() { return pieces.length; },
+    get rules() { return owners.length; },
+    get strips() { return strips.length; },
+    get lists() { return lists; }
+  };
   function start() {
     collect();
     addEventListener('scroll', onScroll, { passive: true });

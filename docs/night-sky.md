@@ -204,6 +204,59 @@ The look is unchanged; these change only when and how often the work is done.
   spring and timing are untouched. The only pixel change is the filter's own antialiasing, at most
   one level on 0.1–0.6% of the screen, the same flip the filter makes when it comes off today, a few
   frames earlier. Chrome is unchanged.
+- The lighter dip, a preview for Safari (`?dip=blocks`, `js/nm-warp.js`, 2026-10-15; not the default
+  anywhere yet). The filter is the whole cost of the dip in WebKit: every frame the page moves under it
+  is a CPU filter pass over each on-screen strip of the sections. In Playwright WebKit with fast wheel
+  flings it ran About at about 8 fps on a 1440×900@2 desktop and 19 on a 390×844@3 phone, the
+  homepage at about 36 and 44 (31 and 38 over the dip's own frames); blocks mode ran all four at
+  59.6–60 fps (one run in twelve had a single 0.3 s frame on the homepage, not seen again). Under Low
+  Power Mode (a 30 fps cap) the filter ran 5, 12.5, 20 and 25 fps and blocks held 30 in all four.
+  Measured that way the logo strip (below) costs the homepage one dropped frame as each episode
+  starts (its wider box is laid out then, and its logos get layers); untried: widening the box once
+  when the pieces are listed. Nico chose it on 2026-10-15 to see in real Safari before it becomes
+  Safari's default.
+  - How: the same speed reading, START/FULL, `DIP`, spring and episodes; instead of the filter, the
+    pieces of each section move by transform on the compositor. Each piece rides the curve the
+    filter's map encodes (across its section's width): its centre at the curve's height there and
+    sheared to the curve's slope there (`matrix(1, slope, 0, 1, 0, dip)` about its centre), as the
+    filter shears what it bends. Kept level (translate only) the two columns of About and every
+    full-width block on a phone drop alike and the page reads as lagging, not bowing; sheared, they
+    meet the real bend within a few px.
+  - Pieces: an image or video, a paragraph or heading (centred on its text, not its box), a box that
+    paints itself (the pills, the framed services photo, buttons), or anything up to a third of its
+    section wide; wider plain containers are taken apart (rows into their cells, grids and columns
+    into what they hold); anything at opacity 0 is left out (the five services photos stacked behind
+    the open one would be ~8 MB of layers each). The logo strip slides sideways inside its own mask
+    and clip, so each logo rides the curve from where the strip's animation has it that frame (read
+    from its `getComputedTiming()`, not from layout), and while they hold `will-change` the strip's box
+    reaches `DIP` + 4 px further up and down (padding, with as much negative margin, so nothing else
+    moves) so the mask does not cut them. The homepage statement, one span per word, moves word by word
+    (while a word holds `will-change` it is an inline-block aligned to the line's top, which lays the
+    lines out exactly as the inline did; at rest it is the inline it was). Top and bottom rules of the
+    containers taken apart (section tops, list rows, the services and sites lines) become eight short
+    segments (fewer on a short rule) in one absolutely placed layer, shown only while they are on, the
+    rule itself transparent meanwhile, so a full-width line bends as a polyline. About: about 58
+    pieces and 6 rules on a desktop, 86 and 9 on a phone; the homepage about 65, 17 and the strip's 40
+    logos.
+  - Reads: boxes are read when the pieces are listed (document px, flat) and listed again 250 ms after
+    a ResizeObserver report from a section or the body, or a change of the sections' content, classes,
+    `hidden` or `aria-expanded` (a section's own class does not count: the logo strip pauses that way),
+    once the page is flat; or when a swipe starts if the sections changed. A list takes 2–5 ms. Nothing
+    is read per frame; `will-change` goes to a band of pieces at once, as on Index.
+  - The same at rest: in both engines, desktop and phone, after flings, the page is pixel for pixel the
+    same as without the switch. No element is ever both filtered and moved (checked every frame of
+    flings in both engines and all three modes); blocks mode builds no SVG and never sets `__nmDip`.
+  - Still different from the filter: a paragraph is one piece, so its lines tilt but do not bow (on a
+    phone, where a paragraph spans the screen, it drops level by the centre's 12 px while the real bend
+    leaves its ends near 0; the rules and rows around it do bow); each logo of the strip stays level
+    where the filter shears it a little; rules are polylines of eight; transforms move hit-testing with
+    the pieces (the filter does not), so mid-dip a pointer can sit over the next row of the sites list.
+  - Switch: `?dip=blocks` (any browser, so Chrome can show it next to its filter), `?dip=filter` (the
+    filter, as without a switch), `?dip=off` (as `?warp=off`). The choice is kept for the tab in
+    sessionStorage `nm-dip-mode`; Index is the same in every mode. With no switch and nothing kept,
+    nothing changes (the dip sweep and screenshots match the live site). With a switch,
+    `window.__nmDipDebug` serves capture rigs: `hold(w)` holds the dip at w (−1…1) until `hold(null)`;
+    `warp`, `pieces`, `rules`, `strips`, `lists`.
 - The scroll dip on Index (`js/nm-warp.js`). Each tile's box is read once (document px) instead of
   178 `getBoundingClientRect` calls every frame of a dip: a tile's own transform never moves layout.
   It is read again when the wall's box or the lowest tile of any column moves (checked each frame:
