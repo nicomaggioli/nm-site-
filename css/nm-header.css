@@ -274,15 +274,6 @@ header[data-nm-header],.nm-hdr{
 }
 header[data-nm-header]::before,.nm-hdr::before,
 header[data-nm-header]::after,.nm-hdr::after{content:none}
-/* Phones: nm-burger.js adds the 44px menu control to this row after the first paint, which made
-   the row taller and moved the wordmark down 3.5px. An empty 0-wide flex item reserves the row's
-   height from the first frame; it sits between the wordmark and the burger (order 0 / 2), so with
-   space-between neither moves. Only where JavaScript runs (Night Sky marks <html> in <head>), the
-   no-JavaScript header stays as it was. */
-@media (max-width:767.98px){
-  html[data-nm-theme] header[data-nm-header]::after,
-  html[data-nm-theme] .nm-hdr::after{content:"";order:1;flex:none;width:0;height:44px;pointer-events:none}
-}
 
 html.nm-menu-open .nm-burger{visibility:hidden}
 @media (max-width:359px){
