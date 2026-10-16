@@ -108,7 +108,7 @@
   function release(it) { it.wc = false; it.el.style.willChange = ''; }
   // the episode is over (or the items are rebuilt): everything flat, will-change dropped in one pass
   function flat() {
-    filtered = window.__nmDip = false;
+    filtered = window.__nmDip = window.__nmTileDip = false;
     band = null;
     for (var i = 0; i < items.length; i++) { clear(items[i]); if (items[i].wc) release(items[i]); }
   }
@@ -184,6 +184,9 @@
       if (s !== it.ds) { it.el.style.transform = 'translateY(' + s + 'px)'; it.ds = s; it.dy = +s; }
       it.on = true;
     }
+    // tiles are moving: js/nm-sky.js draws the sky behind the wall as it did before it skipped those
+    // draws (NMSky.covered), so the sky in the dip's 1-px seams and fling gaps is the live one
+    window.__nmTileDip = true;
   }
   // WebKit samples the displacement at whole device pixels, truncating toward zero: a dip under 1.5
   // device px down, or 0.5 up, moves nothing (its frames match the zero-scale filter's, measured), yet
@@ -260,6 +263,16 @@
     var recent = now - evT < 120;
     kick(recent ? evY : y, recent ? evF : f);
     evY = y; evT = now; evF = f;
+    // Index: this frame's sky and space draw before this file's frame moves the tiles, so when that frame
+    // will start a dip they are told now (NMSky.covered), from the speed it is about to read (read here
+    // the same way, without keeping it; at the frame's time in Chrome, a frame early in WebKit, so the
+    // margin); applyTiles tells them on the dip's later frames
+    if (page === 'index' && moving && !window.__nmTileDip) {
+      var h = hist.concat([f, y]);
+      while (h.length > 4 && f - h[2] >= WINDOW) h.splice(0, 2);
+      var span = f - h[0];
+      if (span > 4 && Math.abs(y - h[1]) / span * 1000 > START * 0.95) window.__nmTileDip = true;
+    }
   }
   function kick(fromY, fromT) {
     if (reduce && reduce.matches) return;

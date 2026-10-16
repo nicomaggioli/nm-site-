@@ -215,13 +215,22 @@ The look is unchanged; these change only when and how often the work is done.
   its overlay and the particle space skip their draws; clocks, camera, events, labels and the scrim
   run on, and the first frame out draws whatever the beat (never the first draw of a visit, which
   fades the canvases in). That is 77–90% of the scroll range (82% at 1440×900, 87.5% on a 390×844
-  phone). Checked frame by frame on a fake clock, flinging out across both edges in Chrome and WebKit
-  at 1440×900@2 and 390×844@3: on every frame where any sky can show, the draws are exactly the old
-  code's and a forced redraw of that frame changes nothing on screen; drawing resumes 13–15 frames
-  (830–880 px) before the sky shows. With real (compositor) flings up to 15,000 px/s no frame showed
-  the sky undrawn. Only a main-thread stall long enough for compositor scrolling to carry the view a
-  whole screen in the last screen before an edge (120 ms at 8000 px/s) shows the sky as last drawn
-  under the wall for those frames (the old code shows it as drawn before the stall).
+  phone). While the scroll dip moves the tiles the wall is not quite solid: 1-px seams open between
+  tiles, and in a fast fling on a slow phone bands where the dip's near-screen stretch ends (both
+  are as old as the dip). So `js/nm-warp.js` sets `window.__nmTileDip` from the scroll event that
+  starts a dip (the sky and space draw before its frame moves the tiles) until the tiles are flat
+  again, and `covered()` is false meanwhile: both layers draw as before and the sky in those gaps is
+  the live one. The skip therefore holds at rest and while scrolling slower than the dip starts
+  (about 665–700 px/s). Checked frame by frame on a fake clock, flinging out across both edges in
+  Chrome and WebKit at 1440×900@2 and 390×844@3: on every frame where any sky can show, the draws
+  are exactly the old code's and a forced redraw of that frame changes nothing on screen; drawing
+  resumes at least 13–15 frames (830–880 px) before the sky shows (2,400–2,700 px in those flings,
+  where the dip starts it). With real (compositor) flings up to 15,000 px/s, both canvases painted
+  magenta whenever covering starts showed no magenta sky in any composited frame (Chrome 1440×900@1 and @2, 390×844@3 at 4× CPU), and every frame with tiles
+  offset drew both layers (Chrome and WebKit). A 120 ms main-thread stall in the last screen before
+  an edge at 8000 px/s shows the sky as drawn just before the stall, as the old code does. Only a
+  stall of well over a second while scrolling slower than the dip, in the last screen before an
+  edge, could still show the sky as last drawn under the wall.
 - The Index footer door loads `/js/nm-run.js` at its content version (`RUN_SRC` in
   `js/nm-sky.js`, refreshed by `tools/build-theme-versions.py` like the home and About pages'
   own `?v=`).

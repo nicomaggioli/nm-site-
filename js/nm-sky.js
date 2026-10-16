@@ -542,7 +542,10 @@
     WALL = [top, bot];
   }
   function covered() {
-    if (!WALL) return false;
+    // While the scroll dip moves the tiles (js/nm-warp.js) the wall is not quite solid: 1-px seams can
+    // open between tiles, and in a fast fling on a slow phone bands where the dip's near-screen stretch
+    // ends. Then the sky draws as before, so what shows there is the live sky.
+    if (!WALL || window.__nmTileDip) return false;
     var sy = window.scrollY || 0, vh = Math.max(window.innerHeight || 0, S.vh), m = vh + 45;
     return sy >= WALL[0] + m && sy + vh <= WALL[1] - m;
   }
