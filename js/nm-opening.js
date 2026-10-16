@@ -11,10 +11,6 @@
   var frame = 0, start = null, mediaReady = false, section = null;
   var width = window.innerWidth;
   var listeners = [];
-  // Deferred scripts (the collage's among them) all run before DOMContentLoaded, but on a slow link
-  // React can commit before they have: until then a missing collage may still be on its way.
-  var parsed = document.readyState === 'complete';
-  document.addEventListener('DOMContentLoaded', function () { parsed = true; }, {once:true});
 
   function listen(target, type, fn) {
     target.addEventListener(type, fn, {passive:true, capture:true});
@@ -69,10 +65,9 @@
   (window.__nmReady || function (fn) { fn(); })(function () {
     // This controller registers in the head. Let the remaining ready callbacks
     // mount the collage and its stable scroll track before reading the images.
-    requestAnimationFrame(function check() {
+    requestAnimationFrame(function () {
       if (!state.active) return;
       section = document.getElementById('nm-made');
-      if (!section && !parsed) { requestAnimationFrame(check); return; }
       if (!section) { finish('missing-content'); return; }
       var images = Array.from(section.querySelectorAll('img'));
       // Decode the mounted images so srcset selection and the phone's collage
