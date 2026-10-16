@@ -968,6 +968,9 @@
     var dip = !!window.__nmDip, inDip = dip || S.dipWas;
     S.dipWas = dip;
     if (!moving) { cadence(ms); return; }
+    // the frame before this one drew nothing (Index's image wall covered the screen, NMSky.covered):
+    // its time says nothing about the drawing, so it is counted neither way
+    if (S.cov) return;
     var c = capped() ? CAD.ms : 0;
     if (ms > Math.max(24, c * 1.45)) { if (!inDip) S.slow++; }
     else if (ms < Math.max(18, c * 1.1)) S.fast++;

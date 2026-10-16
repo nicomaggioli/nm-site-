@@ -182,11 +182,13 @@ The look is unchanged; these change only when and how often the work is done.
   when this page's own work, timed every 16th draw on the CPU and with a WebGL2 fence on the GPU,
   is under 0.35 of it; then a frame is slow only past 1.45 of the cadence), and WebKit's scroll-dip
   frames (`js/nm-warp.js` sets `window.__nmDip` while its CPU filter is on; that frame and the next
-  are not counted). A slow GPU or CPU still steps down exactly as before. After 600 fast moving
-  frames a lowered resolution comes back when the measured work leaves room for it (once; if it
-  has to drop again it stays), then the particles 0.1 at a time, as they always could. Before this,
-  Safari under Low Power Mode, or after a few fast flings on About, ended at half the particles and
-  0.75 resolution for the rest of the visit.
+  are not counted). Nor is a frame after one that drew nothing under Index's image wall
+  (`NMSky.covered()`, below): it is fast only because nothing was drawn, and 600 of them would bring
+  back particles that the open sky then has to lose again. A slow GPU or CPU still steps down
+  exactly as before. After 600 fast moving frames a lowered resolution comes back when the measured
+  work leaves room for it (once; if it has to drop again it stays), then the particles 0.1 at a
+  time, as they always could. Before this, Safari under Low Power Mode, or after a few fast flings
+  on About, ended at half the particles and 0.75 resolution for the rest of the visit.
 - The scroll dip in WebKit (`js/nm-warp.js`). WebKit samples the dip's displacement at whole device
   pixels, truncating toward zero, so a dip under 1.5 device px down or 0.5 up moves nothing (measured
   on About and the homepage at DPR 1, 2 and 3: those frames match a zero-scale filter's), yet each one
