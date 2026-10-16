@@ -188,7 +188,13 @@ The look is unchanged; these change only when and how often the work is done.
   exactly as before. After 600 fast moving frames a lowered resolution comes back when the measured
   work leaves room for it (once; if it has to drop again it stays), then the particles 0.1 at a
   time, as they always could. Before this, Safari under Low Power Mode, or after a few fast flings
-  on About, ended at half the particles and 0.75 resolution for the rest of the visit.
+  on About, ended at half the particles and 0.75 resolution for the rest of the visit. Not on the
+  homepage: there the fence also waits for the hero's WebGL work queued ahead of it (13–14 ms in
+  Playwright WebKit at 1440×900@2 with a 30 Hz rAF, against 2–3 ms on About and Index), over 0.35 of
+  the 33 ms cadence, so the cap is not recognised and the homepage still drops to half the particles
+  under a 30 fps cap (it kept its full resolution in two of three runs; before, it always lost
+  both). Timing only the space's own GPU work there (a second fence before its draw, or measuring
+  while the hero is paused) is untried; check it in real Safari under Low Power Mode.
 - The scroll dip in WebKit (`js/nm-warp.js`). WebKit samples the dip's displacement at whole device
   pixels, truncating toward zero, so a dip under 1.5 device px down or 0.5 up moves nothing (measured
   on About and the homepage at DPR 1, 2 and 3: those frames match a zero-scale filter's), yet each one
