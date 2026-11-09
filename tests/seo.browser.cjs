@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const {test} = require('node:test');
 const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const origin = process.env.NM_TEST_URL || 'http://127.0.0.1:8814';
+// the live-sites list is authored in nm-brands.js; the no-JavaScript homepage lists every one
+const liveSites = (require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'js/nm-brands.js'), 'utf8').match(/class=\\"nm-site\\"/g) || []).length;
 
 for (const engine of ['chromium', 'webkit']) {
   test(`${engine}: public metadata survives hydration and the home fallback works without scripts`, {timeout:120000}, async () => {
@@ -41,7 +43,7 @@ for (const engine of ['chromium', 'webkit']) {
         await page.goto(origin + '/', {waitUntil:'networkidle'});
         assert.equal(await page.locator('.nm-nojs h1').isVisible(), true);
         assert.equal(await page.locator('.nm-nojs-services li').count(), 6);
-        assert.equal(await page.locator('.nm-nojs-sites li').count(), 8);
+        assert.equal(await page.locator('.nm-nojs-sites li').count(), liveSites);
         assert.equal(await page.locator('.nm-nojs-work img').count(), 6);
         for (const image of await page.locator('.nm-nojs-work img').all()) {
           await image.scrollIntoViewIfNeeded();
